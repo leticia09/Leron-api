@@ -1,25 +1,25 @@
-package com.leron.api.model;
+package com.leron.api.model.entities;
 
 import com.leron.api.commons.TypeCardEnum;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_cartao")
-public class CardModel {
+public class CardEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario")
-    private String user;
+    @Column(name = "usuario_id_cartao")
+    private String userId;
 
     @Column(name = "nome_cartao")
     private String cardName;

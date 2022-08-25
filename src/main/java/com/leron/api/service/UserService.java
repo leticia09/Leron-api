@@ -1,6 +1,6 @@
 package com.leron.api.service;
 
-import com.leron.api.model.UserModel;
+import com.leron.api.model.entities.UserEntity;
 import com.leron.api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +14,7 @@ public class UserService {
     }
 
     public Long getUser(){
-        UserModel userModel = userRepository.save(new UserModel());
+        UserEntity userModel = userRepository.save(new UserEntity());
         return userModel.getId();
     }
 }
