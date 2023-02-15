@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 
 @Entity
@@ -25,7 +26,7 @@ public class ShoppingEntity {
     private String shoppingName;
 
     @Column(name = "valor_compras")
-    private Double shoppingValue;
+    private BigDecimal shoppingValue;
 
     @Column(name = "cartao_id_compras")
     private Long shoppingCardId;
@@ -43,7 +44,7 @@ public class ShoppingEntity {
     private Long amountParcel;
 
     @Column(name = "valor_parcela")
-    private Double valueParcel;
+    private BigDecimal valueParcel;
 
     @Column(name = "local_compra")
     private String place;

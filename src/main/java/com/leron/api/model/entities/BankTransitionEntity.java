@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 
 @Entity
@@ -37,7 +38,7 @@ public class BankTransitionEntity {
     private Long revenueIdTransition;
 
     @Column(name = "valor")
-    private Double value;
+    private BigDecimal value;
 
 
 

@@ -20,14 +20,13 @@ public class UserEntity {
     @Column(name = "nome")
     private String name;
 
+    @Column(name = "cpf")
+    private String cpf;
+
     @Column(name = "email")
     private String email;
 
-    @Column(name = "senha")
-    private String password;
-
-    @Column(name = "email_recuperacao")
-    private String emailRecuperacao;
-
+    @Column(name = "permissao")
+    private String permissao;
 
 }
