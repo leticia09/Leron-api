@@ -1,9 +1,9 @@
-package com.leron.api.service;
+package com.leron.api.service.user;
 
 import com.leron.api.mapper.user.UserMapper;
-import com.leron.api.model.UserDTO;
-import com.leron.api.model.UserRequest;
-import com.leron.api.model.UserResponse;
+import com.leron.api.model.DTO.user.UserDTO;
+import com.leron.api.model.DTO.user.UserRequest;
+import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.model.entities.UserEntity;
 import com.leron.api.repository.UserRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -40,6 +40,5 @@ public class UserService {
         response.setMessage("Sucesso");
         return response;
     }
-
 
 }

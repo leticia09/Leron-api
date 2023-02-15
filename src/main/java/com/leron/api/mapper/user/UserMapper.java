@@ -1,8 +1,8 @@
 package com.leron.api.mapper.user;
 
-import com.leron.api.model.UserDTO;
-import com.leron.api.model.UserRequest;
-import com.leron.api.model.UserResponse;
+import com.leron.api.model.DTO.user.UserDTO;
+import com.leron.api.model.DTO.user.UserRequest;
+import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.model.entities.UserEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;

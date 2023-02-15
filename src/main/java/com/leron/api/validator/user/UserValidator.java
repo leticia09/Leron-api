@@ -1,6 +1,6 @@
 package com.leron.api.validator.user;
 
-import com.leron.api.model.UserRequest;
+import com.leron.api.model.DTO.user.UserRequest;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;
