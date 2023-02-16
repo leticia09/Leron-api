@@ -1,38 +1,39 @@
 package com.leron.api.model.entities;
 
-import com.leron.api.commons.TypeCardEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_cartao")
+@Table(name = "tb_card")
 public class CardEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario_id_cartao")
+    @Column(name = "user_id")
     private String userId;
 
-    @Column(name = "nome_cartao")
+    @Column(name = "card_name")
     private String cardName;
 
-    @Column(name = "tipo")
-    private TypeCardEnum type;
+    @Column(name = "status")
+    private String status;
 
-    @Column(name = "final")
-    private Long endCard;
+    @Column(name = "modality")
+    private String modality;
 
-    @Column(name = "agente_financeiro_id")
-    private Long financialAgentId;
+    @Column(name = "final_card")
+    private Long finalCard;
 
-    @Column(name = "data_vencimento")
-    private Date dueDate;
+    @Column(name = "bank_id")
+    private Long bankId;
+
+    @Column(name = "due_date")
+    private Long dueDate;
 }

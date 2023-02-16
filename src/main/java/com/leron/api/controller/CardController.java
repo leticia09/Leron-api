@@ -3,29 +3,28 @@ package com.leron.api.controller;
 import com.leron.api.model.DTO.bank.BankDTO;
 import com.leron.api.model.DTO.bank.BankRequest;
 import com.leron.api.model.DTO.bank.BankResponse;
-import com.leron.api.model.DTO.user.UserDTO;
-import com.leron.api.model.DTO.user.UserRequest;
-import com.leron.api.model.DTO.user.UserResponse;
+import com.leron.api.model.DTO.card.CardDTO;
+import com.leron.api.model.DTO.card.CardRequest;
+import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.service.bank.BankService;
-import com.leron.api.service.user.UserService;
+import com.leron.api.service.card.CardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/bank")
-public class BankController {
+@RequestMapping("/card")
+public class CardController {
 
     @Autowired
-    BankService bankService;
+    CardService cardService;
 
     @GetMapping("")
-    public DataListResponse<BankDTO> list(){
-        DataListResponse<BankDTO> list = bankService.list();
+    public DataListResponse<CardDTO> list(){
+        DataListResponse<CardDTO> list = cardService.list();
         return list;
     }
 
@@ -34,17 +33,17 @@ public class BankController {
             consumes = "application/json",
             produces = "application/json"
     )
-    public DataResponse<BankResponse> create(
-            @RequestBody BankRequest requestCreation,
+    public DataResponse<CardResponse> create(
+            @RequestBody CardRequest requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
 
-        DataRequest<BankRequest> request = new DataRequest<>(requestCreation, locale, authorization);
-        DataResponse<BankResponse> response = new DataResponse<>();
+        DataRequest<CardRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<CardResponse> response = new DataResponse<>();
 
         try {
-            response = bankService.create(request);
+            response = cardService.create(request);
             return response;
 
         } catch (ApplicationBusinessException error){
