@@ -12,7 +12,8 @@ public class CardRequest {
     private String userId;
     private String status;
     private String modality;
-    private Long finalCard;
-    private Long bankId;
-    private Long dueDate;
+    private String finalCard;
+    private String bankId;
+    private String dueDate;
+    private String nickName;
 }

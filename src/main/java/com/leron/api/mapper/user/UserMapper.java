@@ -8,6 +8,7 @@ import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -37,6 +38,8 @@ public class UserMapper {
         user.setEmail(userRequest.getEmail());
         user.setName(userRequest.getName());
         user.setPermissao(userRequest.getPermissao());
+        user.setCreatedIn(new Date());
+
         return user;
     }
 

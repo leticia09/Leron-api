@@ -1,7 +1,6 @@
 package com.leron.api.validator.bank;
 
 import com.leron.api.model.DTO.bank.BankRequest;
-import com.leron.api.model.DTO.user.UserRequest;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;

@@ -9,10 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 public class CardResponse {
     private Long id;
-    private String userId;
+    private Long userId;
     private String status;
     private String modality;
     private Long finalCard;
     private Long bankId;
     private Long dueDate;
+    private String nickName;
 }

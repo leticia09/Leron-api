@@ -8,6 +8,7 @@ import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -34,6 +35,7 @@ public class BankMapper {
         BankEntity bank = new BankEntity();
         bank.setStatus(userRequest.getStatus());
         bank.setName(userRequest.getName());
+        bank.setCreatedIn(new Date());
 
         return bank;
     }
