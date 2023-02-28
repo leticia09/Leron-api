@@ -1,38 +1,57 @@
 package com.leron.api.model.entities;
 
-import com.leron.api.commons.TypeCardEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_cartao")
+@Table(name = "tb_card")
 public class CardEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "usuario_id_cartao")
-    private String userId;
+    @Column(name = "nick_name", nullable = false)
+    private String nickName;
 
-    @Column(name = "nome_cartao")
-    private String cardName;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @Column(name = "tipo")
-    private TypeCardEnum type;
+    @Column(name = "status", nullable = false)
+    private String status;
 
-    @Column(name = "final")
-    private Long endCard;
+    @Column(name = "modality", nullable = false)
+    private String modality;
 
-    @Column(name = "agente_financeiro_id")
-    private Long financialAgentId;
+    @Column(name = "final_card", nullable = false)
+    private Long finalCard;
 
-    @Column(name = "data_vencimento")
-    private Date dueDate;
+    @Column(name = "bank_id", nullable = false)
+    private Long bankId;
+
+    @Column(name = "due_date", nullable = false)
+    private Long dueDate;
+
+    @Column(name= "deleted")
+    private Boolean deleted = Boolean.FALSE;
+
+    @Column(name = "CREATED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdIn;
+
+    @Column(name = "CREATED_BY")
+    private Long createdBy;
+
+    @Column(name = "CHANGED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date changedIn;
+
+    @Column(name = "CHANGED_BY")
+    private Long changedBy;
+
 }

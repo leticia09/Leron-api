@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Date;
 
 @Entity
@@ -25,7 +26,7 @@ public class ShoppingEntity {
     private String shoppingName;
 
     @Column(name = "valor_compras")
-    private Double shoppingValue;
+    private BigDecimal shoppingValue;
 
     @Column(name = "cartao_id_compras")
     private Long shoppingCardId;
@@ -43,7 +44,7 @@ public class ShoppingEntity {
     private Long amountParcel;
 
     @Column(name = "valor_parcela")
-    private Double valueParcel;
+    private BigDecimal valueParcel;
 
     @Column(name = "local_compra")
     private String place;
@@ -56,5 +57,22 @@ public class ShoppingEntity {
 
     @Column(name = "observacao")
     private String obs;
+
+    @Column(name= "deleted")
+    private Boolean deleted = Boolean.FALSE;
+
+    @Column(name = "CREATED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdIn;
+
+    @Column(name = "CREATED_BY")
+    private Long createdBy;
+
+    @Column(name = "CHANGED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date changedIn;
+
+    @Column(name = "CHANGED_BY")
+    private Long changedBy;
 
 }
