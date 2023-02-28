@@ -9,18 +9,16 @@ import lombok.NoArgsConstructor;
 @Data
 public class ExpenseRequest {
     private String userId;
-    private String nickName;
+    private String description;
     private String type;
     private java.util.Date shoppingDate;
     private String local;
     private String group;
     private String price;
-    private String obs;
-    private String method;
+    private Boolean advance;
     private String formPayment;
     private String payer;
     private String cardId;
     private String typePayment;
-    private String status; // SETAR NA MAPPER
-    private String paymentDate; // SETAR NA MAPPER
+    private Long installment;
 }

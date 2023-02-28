@@ -27,29 +27,15 @@ public class ExpenseValidator {
         if(expenseRequest.getData().getPrice() == null){
             throw new ApplicationBusinessException("Lascou", "price");
         }
-        if(expenseRequest.getData().getObs() == null){
-            throw new ApplicationBusinessException("Lascou", "obs");
-        }
         if(expenseRequest.getData().getFormPayment() == null){
             throw new ApplicationBusinessException("Lascou", "formPayment");
         }
-        if(expenseRequest.getData().getPayer() == null){
+        if(expenseRequest.getData().getPayer() == null) {
             throw new ApplicationBusinessException("Lascou", "payer");
         }
-        if(expenseRequest.getData().getCardId() == null){
-            throw new ApplicationBusinessException("Lascou", "cardId");
-        }
-        if(expenseRequest.getData().getMethod() == null){
-            throw new ApplicationBusinessException("Lascou", "method");
-        }
+
         if(expenseRequest.getData().getTypePayment() == null){
             throw new ApplicationBusinessException("Lascou", "typePayment");
-        }
-        if(expenseRequest.getData().getStatus() == null){
-            throw new ApplicationBusinessException("Lascou", "status");
-        }
-        if(expenseRequest.getData().getPaymentDate() == null){
-            throw new ApplicationBusinessException("Lascou", "paymentDate");
         }
     }
 }

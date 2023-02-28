@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Data
 public class ExpenseResponse {
     private Long id;
-    private String nickName;
+    private String description;
     private String type;
     private String userName;
     private Long userId;
@@ -19,13 +19,13 @@ public class ExpenseResponse {
     private String local;
     private String group;
     private BigDecimal price;
-    private String obs;
     private String formPayment;
     private String payer;
     private Long cardId;
     private String cardNickName;
-    private String method;
+    private Boolean advance;
     private String typePayment;
     private String status;
-    private String paymentDate;
+    private java.util.Date paymentDate;
+    private Long installment;
 }

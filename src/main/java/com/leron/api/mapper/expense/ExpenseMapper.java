@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ExpenseMapper {
@@ -37,19 +38,21 @@ public class ExpenseMapper {
             expenseResponse.setId(expense.getId());
             expenseResponse.setType(expense.getType());
             expenseResponse.setUserId(expense.getUserId());
-            expenseResponse.setNickName(expense.getNickName());
+            expenseResponse.setDescription(expense.getDescription());
             expenseResponse.setShoppingDate(expense.getShoppingDate());
             expenseResponse.setLocal(expense.getLocal());
             expenseResponse.setGroup(expense.getGroup());
             expenseResponse.setPrice(expense.getPrice());
-            expenseResponse.setObs(expense.getObs());
             expenseResponse.setFormPayment(expense.getFormPayment());
             expenseResponse.setPayer(expense.getPayer());
-            expenseResponse.setCardId(expense.getCardId());
-            expenseResponse.setMethod(expense.getMethod());
+            if(Objects.nonNull(expense.getCardId())){
+                expenseResponse.setCardId(expense.getCardId());
+            }
+            expenseResponse.setAdvance(expense.getAdvance());
             expenseResponse.setTypePayment(expense.getTypePayment());
             expenseResponse.setStatus(expense.getStatus());
             expenseResponse.setPaymentDate(expense.getPaymentDate());
+            expenseResponse.setInstallment(expense.getInstallment());
 
             responseList.add(expenseResponse);
         }
@@ -61,20 +64,21 @@ public class ExpenseMapper {
         ExpenseEntity expenseEntity = new ExpenseEntity();
 
         expenseEntity.setUserId(Long.valueOf(expenseRequest.getUserId()));
-        expenseEntity.setNickName(expenseRequest.getNickName());
+        expenseEntity.setDescription(expenseRequest.getDescription());
         expenseEntity.setType(expenseRequest.getType());
         expenseEntity.setShoppingDate(expenseRequest.getShoppingDate());
         expenseEntity.setLocal(expenseRequest.getLocal());
         expenseEntity.setGroup(expenseRequest.getGroup());
         expenseEntity.setPrice(new BigDecimal(expenseRequest.getPrice()));
-        expenseEntity.setObs(expenseRequest.getObs());
         expenseEntity.setFormPayment(expenseRequest.getFormPayment());
         expenseEntity.setPayer(expenseRequest.getPayer());
-        expenseEntity.setCardId(Long.valueOf(expenseRequest.getCardId()));
-        expenseEntity.setMethod(expenseRequest.getMethod());
+        if(Objects.nonNull(expenseRequest.getCardId())){
+            expenseEntity.setCardId(Long.valueOf(expenseRequest.getCardId()));
+        }
+        expenseEntity.setAdvance(expenseRequest.getAdvance());
         expenseEntity.setTypePayment(expenseRequest.getTypePayment());
-        expenseEntity.setStatus(expenseRequest.getStatus());
-        expenseEntity.setPaymentDate(expenseRequest.getPaymentDate());
+        expenseEntity.setStatus("Aberto");
+        expenseEntity.setInstallment(expenseRequest.getInstallment());
 
         return expenseEntity;
     }
@@ -84,16 +88,17 @@ public class ExpenseMapper {
         ExpenseResponse expenseResponse = new ExpenseResponse();
         expenseResponse.setUserId(expenseEntity.getUserId());
         expenseResponse.setType(expenseEntity.getType());
-        expenseResponse.setNickName(expenseEntity.getNickName());
+        expenseResponse.setDescription(expenseEntity.getDescription());
         expenseResponse.setShoppingDate(expenseEntity.getShoppingDate());
         expenseResponse.setLocal(expenseEntity.getLocal());
         expenseResponse.setGroup(expenseEntity.getGroup());
         expenseResponse.setPrice(expenseEntity.getPrice());
-        expenseResponse.setObs(expenseEntity.getObs());
         expenseResponse.setFormPayment(expenseEntity.getFormPayment());
         expenseResponse.setPayer(expenseEntity.getPayer());
-        expenseResponse.setCardId(expenseEntity.getCardId());
-        expenseResponse.setMethod(expenseEntity.getMethod());
+        if(Objects.nonNull(expenseEntity.getCardId())){
+            expenseResponse.setCardId(expenseEntity.getCardId());
+        }
+        expenseResponse.setAdvance(expenseEntity.getAdvance());
         expenseResponse.setTypePayment(expenseEntity.getTypePayment());
         expenseResponse.setStatus(expenseEntity.getStatus());
         expenseResponse.setPaymentDate(expenseEntity.getPaymentDate());

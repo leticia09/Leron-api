@@ -23,10 +23,11 @@ public class ExpenseEntity {
     @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(name = "nickName", nullable = false)
-    private String nickName;
+    @Column(name = "description", nullable = false)
+    private String description;
 
     @Column(name = "shopping_date", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date shoppingDate;
 
     @Column(name = "local", nullable = false)
@@ -38,20 +39,17 @@ public class ExpenseEntity {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    @Column(name = "obs", nullable = false)
-    private String obs;
-
     @Column(name = "form_payment", nullable = false)
     private String formPayment;
 
     @Column(name = "payer", nullable = false)
     private String payer;
 
-    @Column(name = "card_id", nullable = false)
+    @Column(name = "card_id")
     private Long cardId;
 
-    @Column(name = "method", nullable = false)
-    private String method;
+    @Column(name = "advance", nullable = false)
+    private Boolean advance = Boolean.FALSE;
 
     @Column(name = "type_payment", nullable = false)
     private String typePayment;
@@ -59,8 +57,12 @@ public class ExpenseEntity {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "payment_date", nullable = false)
-    private String paymentDate;
+    @Column(name = "installment")
+    private Long installment;
+
+    @Column(name = "payment_date")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date paymentDate;
 
     @Column(name= "deleted")
     private Boolean deleted = Boolean.FALSE;
