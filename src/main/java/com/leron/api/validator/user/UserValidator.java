@@ -9,16 +9,16 @@ import org.springframework.stereotype.Component;
 public class UserValidator {
     public static void validatorUser(DataRequest<UserRequest> userRequest) throws ApplicationBusinessException {
         if(userRequest.getData().getCpf() == null){
-            throw new ApplicationBusinessException("Lascou", "CPF");
+            throw new ApplicationBusinessException("ERROR", "CPF");
         }
         if(userRequest.getData().getEmail() == null){
-            throw new ApplicationBusinessException("Lascou", "EMAIL");
+            throw new ApplicationBusinessException("ERROR", "EMAIL");
         }
         if(userRequest.getData().getName() == null){
-            throw new ApplicationBusinessException("Lascou", "NOME");
+            throw new ApplicationBusinessException("ERROR", "NOME");
         }
         if(userRequest.getData().getPermissao() == null){
-            throw new ApplicationBusinessException("Lascou", "PERMISSAO");
+            throw new ApplicationBusinessException("ERROR", "PERMISSAO");
         }
 
     }

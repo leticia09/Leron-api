@@ -44,7 +44,7 @@ public class UserAuthController {
         DataResponse<UserAuthRespose> response = new DataResponse<>();
 
         try {
-            response = userAuthService.create(request, locale, authorization);
+            response = userAuthService.create(request);
             return response;
 
         } catch (ApplicationBusinessException error){
