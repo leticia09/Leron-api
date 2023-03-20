@@ -34,6 +34,9 @@ public class CardEntity {
     @Column(name = "bank_id", nullable = false)
     private Long bankId;
 
+    @Column(name = "bill_close", nullable = false)
+    private Long billClose;
+
     @Column(name = "due_date", nullable = false)
     private Long dueDate;
 

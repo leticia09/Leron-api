@@ -37,6 +37,7 @@ public class CardMapper {
             cardDTO.setFinalCard(card.getFinalCard());
             cardDTO.setBankId(card.getBankId());
             cardDTO.setDueDate(card.getDueDate());
+            cardDTO.setBillClose(card.getBillClose());
             cardDTO.setModality(card.getModality());
             cardDTO.setUserId(card.getUserId());
             cardDTO.setNickName(card.getNickName());
@@ -56,6 +57,7 @@ public class CardMapper {
         card.setFinalCard(Long.valueOf(cardRequest.getFinalCard()));
         card.setBankId(Long.valueOf(cardRequest.getBankId()));
         card.setDueDate(Long.valueOf(cardRequest.getDueDate()));
+        card.setBillClose(cardRequest.getBillClose());
         card.setModality(cardRequest.getModality());
         card.setUserId(Long.valueOf(cardRequest.getUserId()));
         card.setCreatedIn(new Date());
@@ -72,6 +74,7 @@ public class CardMapper {
         cardResponse.setStatus(card.getStatus());
         cardResponse.setFinalCard(card.getFinalCard());
         cardResponse.setBankId(card.getBankId());
+        cardResponse.setBillClose(card.getBillClose());
         cardResponse.setDueDate(card.getDueDate());
         cardResponse.setModality(card.getModality());
         cardResponse.setUserId(card.getUserId());

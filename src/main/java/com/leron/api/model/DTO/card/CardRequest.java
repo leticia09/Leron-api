@@ -12,6 +12,7 @@ public class CardRequest {
     private String status;
     private String modality;
     private String finalCard;
+    private Long billClose;
     private String bankId;
     private String dueDate;
     private String nickName;

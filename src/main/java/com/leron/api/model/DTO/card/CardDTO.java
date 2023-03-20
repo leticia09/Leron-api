@@ -14,6 +14,7 @@ public class CardDTO {
     private String status;
     private String modality;
     private Long finalCard;
+    private Long billClose;
     private Long bankId;
     private Long dueDate;
     private String bankName;
