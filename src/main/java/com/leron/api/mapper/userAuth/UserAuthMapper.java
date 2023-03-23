@@ -22,6 +22,8 @@ public class UserAuthMapper {
             userDTO.setName(user.getName());
             userDTO.setLogin(user.getLogin());
             userDTO.setPassword(user.getPassword());
+            userDTO.setCpf(user.getCpf());
+            userDTO.setSex(user.getSex());
             responseList.add(userDTO);
         }
         response.setData(responseList);
@@ -33,6 +35,8 @@ public class UserAuthMapper {
         user.setName(userRequest.getName());
         user.setLogin(userRequest.getLogin());
         user.setPassword(userRequest.getPassword());
+        user.setCpf(userRequest.getCpf());
+        user.setSex(userRequest.getSex());
         return user;
     }
 
@@ -42,6 +46,8 @@ public class UserAuthMapper {
         userResponse.setName(user.getName());
         userResponse.setLogin(user.getLogin());
         userResponse.setId(userResponse.getId());
+        userResponse.setCpf(userResponse.getCpf());
+        userResponse.setSex(userResponse.getSex());
         return userResponse;
     }
 }

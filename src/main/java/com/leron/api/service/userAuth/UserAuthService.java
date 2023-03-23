@@ -3,6 +3,7 @@ package com.leron.api.service.userAuth;
 import com.leron.api.mapper.userAuth.UserAuthMapper;
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
 import com.leron.api.model.DTO.userAuth.UserAuthRespose;
+import com.leron.api.model.DTO.userAuth.UserValidResponse;
 import com.leron.api.model.entities.UserAuthEntity;
 import com.leron.api.repository.UserAuthRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -39,9 +40,9 @@ public class UserAuthService {
         return response;
     }
 
-    public List<String> validate(UserAuthRequest requestCreation){
+    public UserValidResponse validate(UserAuthRequest requestCreation){
         AtomicReference<Boolean> response = new AtomicReference<>(false);
-                List<String> user = userAuthRepository.validate(requestCreation.getLogin(), requestCreation.getPassword());
+                UserValidResponse user = userAuthRepository.validate(requestCreation.getLogin(), requestCreation.getPassword());
 
         return user;
     }

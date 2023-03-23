@@ -23,6 +23,12 @@ public class UserAuthEntity {
     @Column(name = "login", nullable = false, unique = true)
     private String login;
 
+    @Column(name = "cpf", nullable = false)
+    private String cpf;
+
+    @Column(name = "sex", nullable = false)
+    private String sex;
+
     @Column(name = "password", nullable = false)
     private String password;
 }

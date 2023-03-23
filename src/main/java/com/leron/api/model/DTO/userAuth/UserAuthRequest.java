@@ -12,4 +12,6 @@ public class UserAuthRequest {
     private String name;
     private String login;
     private String password;
+    private String cpf;
+    private String sex;
 }

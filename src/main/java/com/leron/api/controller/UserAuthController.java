@@ -3,6 +3,7 @@ package com.leron.api.controller;
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
 import com.leron.api.model.DTO.userAuth.UserAuthRespose;
 
+import com.leron.api.model.DTO.userAuth.UserValidResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -54,7 +55,7 @@ public class UserAuthController {
     }
 
     @PostMapping("/validate")
-    public List<String> validate (
+    public UserValidResponse validate (
             @RequestBody UserAuthRequest requestCreation
     ){
         return userAuthService.validate(requestCreation);
