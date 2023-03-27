@@ -15,4 +15,5 @@ public class SalaryRequest {
     private BigDecimal price;
     private String status;
     private String type;
+    private Long userAuthId;
 }

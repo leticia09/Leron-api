@@ -1,5 +1,6 @@
 package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_card")
-public class CardEntity {
+public class CardEntity extends GenericEntities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,22 +40,5 @@ public class CardEntity {
 
     @Column(name = "due_date", nullable = false)
     private Long dueDate;
-
-    @Column(name= "deleted")
-    private Boolean deleted = Boolean.FALSE;
-
-    @Column(name = "CREATED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdIn;
-
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
-    @Column(name = "CHANGED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
 
 }

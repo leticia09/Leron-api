@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface UserAuthRepository extends JpaRepository<UserAuthEntity, Long> {
     public Optional<UserAuthEntity> findByLogin(String login);
 
-    @Query(value = "SELECT new com.leron.api.model.DTO.userAuth.UserValidResponse(u.name,u.login,u.password, u.sex) FROM UserAuthEntity u " +
+    @Query(value = "SELECT new com.leron.api.model.DTO.userAuth.UserValidResponse(u.id,u.name,u.login,u.password, u.sex) FROM UserAuthEntity u " +
             "WHERE u.login = :login " +
             "AND u.password = :password ")
     UserValidResponse validate(String login, String password);

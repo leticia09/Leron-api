@@ -18,9 +18,9 @@ public class MacroGroupController {
     @Autowired
     MacroGroupService macroGroupService;
 
-    @GetMapping("")
-    public DataListResponse<MacroGroupResponse> list(){
-        DataListResponse<MacroGroupResponse> list = macroGroupService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<MacroGroupResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<MacroGroupResponse> list = macroGroupService.list(userAuthId);
         return list;
     }
 

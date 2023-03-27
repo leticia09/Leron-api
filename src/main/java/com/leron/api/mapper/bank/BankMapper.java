@@ -1,6 +1,5 @@
 package com.leron.api.mapper.bank;
 
-import com.leron.api.model.DTO.bank.BankDTO;
 import com.leron.api.model.DTO.bank.BankRequest;
 import com.leron.api.model.DTO.bank.BankResponse;
 import com.leron.api.model.entities.BankEntity;
@@ -13,17 +12,17 @@ import java.util.List;
 
 @Component
 public class BankMapper {
-    public static DataListResponse<BankDTO> bankEntitiesToDataListResponse(List<BankEntity> bankEntities){
-        DataListResponse<BankDTO> response = new DataListResponse<>();
-        List<BankDTO> responseList = new ArrayList<>();
+    public static DataListResponse<BankResponse> bankEntitiesToDataListResponse(List<BankEntity> bankEntities){
+        DataListResponse<BankResponse> response = new DataListResponse<>();
+        List<BankResponse> responseList = new ArrayList<>();
 
         for (BankEntity bank : bankEntities) {
-            BankDTO bankDTO = new BankDTO();
+            BankResponse bankDTO = new BankResponse();
 
             bankDTO.setId(bank.getId());
             bankDTO.setName(bank.getName());
             bankDTO.setStatus(bank.getStatus());
-
+            bankDTO.setUserAuthId(bank.getUserAuthId());
             responseList.add(bankDTO);
         }
         response.setData(responseList);
@@ -35,6 +34,7 @@ public class BankMapper {
         BankEntity bank = new BankEntity();
         bank.setStatus(userRequest.getStatus());
         bank.setName(userRequest.getName());
+        bank.setUserAuthId(userRequest.getUserAuthId());
         bank.setCreatedIn(new Date());
 
         return bank;
@@ -45,6 +45,7 @@ public class BankMapper {
         bankResponse.setStatus(user.getStatus());
         bankResponse.setName(user.getName());
         bankResponse.setId(user.getId());
+        bankResponse.setUserAuthId(user.getUserAuthId());
 
         return bankResponse;
     }

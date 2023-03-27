@@ -1,6 +1,7 @@
 package com.leron.api.model.entities;
 
 import com.leron.api.commons.TypeRevenueEnum;
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,45 +13,28 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_receita")
-public class RevenueEntity {
+@Table(name = "tb_revenue")
+public class RevenueEntity extends GenericEntities {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nome_receita")
+    @Column(name = "name")
     private String name;
 
-    @Column(name = "agente_financeiro_id")
+    @Column(name = "financial_agent_id")
     private Long financialAgentId;
 
-    @Column(name = "tipo")
+    @Column(name = "type")
     private TypeRevenueEnum type;
 
     @Column(name = "status")
     private Boolean status = Boolean.FALSE;
 
-    @Column(name = "data_inicio")
+    @Column(name = "start_date")
     private Date startDate;
 
-    @Column(name = "nome")
+    @Column(name = "end_date")
     private String endDate;
-
-    @Column(name= "deleted")
-    private Boolean deleted = Boolean.FALSE;
-
-    @Column(name = "CREATED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdIn;
-
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
-    @Column(name = "CHANGED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
 }

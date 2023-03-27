@@ -38,6 +38,7 @@ public class BankAccountMapper {
             bankAccountResponse.setIdUser(bankAccount.getIdUser());
             bankAccountResponse.setIdBank(bankAccount.getIdBank());
             bankAccountResponse.setIdBank(bankAccount.getIdBank());
+            bankAccountResponse.setUserAuthId(bankAccount.getUserAuthId());
 
             responseList.add(bankAccountResponse);
         }
@@ -56,6 +57,7 @@ public class BankAccountMapper {
         bankAccount.setIdBank(bankAccountRequest.getIdBank());
         bankAccount.setIdUser(bankAccountRequest.getIdUser());
         bankAccount.setCreatedIn(new Date());
+        bankAccount.setUserAuthId(bankAccountRequest.getUserAuthId());
 
         return bankAccount;
     }
@@ -69,6 +71,7 @@ public class BankAccountMapper {
         bankAccountResponse.setIdUser(bank.getIdUser());
         bankAccountResponse.setAccountNumber(bank.getAccountNumber());
         bankAccountResponse.setNickName(bank.getNickName());
+        bankAccountResponse.setUserAuthId(bank.getUserAuthId());
 
         return bankAccountResponse;
     }

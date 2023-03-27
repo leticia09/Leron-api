@@ -21,4 +21,5 @@ public class ExpenseRequest {
     private String cardId;
     private String typePayment;
     private Long installment;
+    private Long userAuthId;
 }

@@ -1,5 +1,6 @@
 package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_usuario")
-public class UserEntity {
+public class UserEntity extends GenericEntities {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,22 +30,5 @@ public class UserEntity {
 
     @Column(name = "permissao", nullable = false)
     private String permissao;
-
-    @Column(name= "deleted")
-    private Boolean deleted = Boolean.FALSE;
-
-    @Column(name = "CREATED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdIn;
-
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
-    @Column(name = "CHANGED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
-
 }
+

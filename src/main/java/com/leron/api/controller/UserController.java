@@ -1,6 +1,5 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.user.UserDTO;
 import com.leron.api.model.DTO.user.UserRequest;
 import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -21,9 +20,9 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @GetMapping("")
-    public DataListResponse<UserDTO> list(){
-        DataListResponse<UserDTO> list = userService.getUser();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<UserResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<UserResponse> list = userService.list(userAuthId);
         return list;
     }
 

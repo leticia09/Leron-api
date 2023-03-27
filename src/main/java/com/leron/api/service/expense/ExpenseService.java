@@ -35,10 +35,10 @@ public class ExpenseService {
         this.bankRepository = bankRepository;
     }
 
-    public DataListResponse<ExpenseResponse> list(){
-        List<ExpenseEntity> expenseEntities = expenseRepository.findAll();
-        List<CardEntity> cardEntities = cardRepository.findAll();
-        List<UserEntity> userEntityList =  userRepository.findAll();
+    public DataListResponse<ExpenseResponse> list(Long userAuthId){
+        List<ExpenseEntity> expenseEntities = expenseRepository.findAllByAuthUserId(userAuthId);
+        List<CardEntity> cardEntities = cardRepository.findAllByAuthUserId(userAuthId);
+        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
 
         DataListResponse<ExpenseResponse> response  = ExpenseMapper.expenseEntitiesToDataListResponse(expenseEntities, cardEntities, userEntityList);
 

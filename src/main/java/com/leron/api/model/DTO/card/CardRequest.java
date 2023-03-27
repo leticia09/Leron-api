@@ -16,4 +16,5 @@ public class CardRequest {
     private String bankId;
     private String dueDate;
     private String nickName;
+    private Long userAuthId;
 }

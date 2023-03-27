@@ -1,8 +1,5 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.bank.BankDTO;
-import com.leron.api.model.DTO.bank.BankRequest;
-import com.leron.api.model.DTO.bank.BankResponse;
 import com.leron.api.model.DTO.bankAccount.BankAccountRequest;
 import com.leron.api.model.DTO.bankAccount.BankAccountResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -21,9 +18,9 @@ public class BankAccountController {
     @Autowired
     BankAccountService bankAccountService;
 
-    @GetMapping("")
-    public DataListResponse<BankAccountResponse> list(){
-        DataListResponse<BankAccountResponse> list = bankAccountService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<BankAccountResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<BankAccountResponse> list = bankAccountService.list(userAuthId);
         return list;
     }
 

@@ -17,4 +17,7 @@ public class CardResponse {
     private Long bankId;
     private Long dueDate;
     private String nickName;
+    private String userName;
+    private String bankName;
+    private Long userAuthId;
 }

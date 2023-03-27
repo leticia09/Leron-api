@@ -29,8 +29,8 @@ public class MacroGroupService {
         this.macroGroupRepository = macroGroupRepository;
     }
 
-    public DataListResponse<MacroGroupResponse> list() {
-        return MacroGroupMapper.macroGroupEntitiesToDataListResponse(macroGroupRepository.findAll());
+    public DataListResponse<MacroGroupResponse> list(Long userAuthId) {
+        return MacroGroupMapper.macroGroupEntitiesToDataListResponse(macroGroupRepository.findAllByAuthUserId(userAuthId));
     }
 
     public DataResponse<MacroGroupResponse> create(DataRequest<MacroGroupRequest> request) throws ApplicationBusinessException {

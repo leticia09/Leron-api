@@ -41,10 +41,7 @@ public class UserAuthService {
     }
 
     public UserValidResponse validate(UserAuthRequest requestCreation){
-        AtomicReference<Boolean> response = new AtomicReference<>(false);
-                UserValidResponse user = userAuthRepository.validate(requestCreation.getLogin(), requestCreation.getPassword());
-
-        return user;
+        return userAuthRepository.validate(requestCreation.getLogin(), requestCreation.getPassword());
     }
 
 }

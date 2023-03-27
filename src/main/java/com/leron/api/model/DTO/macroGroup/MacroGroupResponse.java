@@ -12,4 +12,5 @@ import java.math.BigDecimal;
 public class MacroGroupResponse {
     private Long id;
     private String name;
+    private Long userAuthId;
 }

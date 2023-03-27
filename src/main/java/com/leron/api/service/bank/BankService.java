@@ -1,7 +1,6 @@
 package com.leron.api.service.bank;
 
 import com.leron.api.mapper.bank.BankMapper;
-import com.leron.api.model.DTO.bank.BankDTO;
 import com.leron.api.model.DTO.bank.BankRequest;
 import com.leron.api.model.DTO.bank.BankResponse;
 import com.leron.api.model.entities.BankEntity;
@@ -22,8 +21,8 @@ public class BankService {
         this.bankRepository = bankRepository;
     }
 
-    public DataListResponse<BankDTO> list(){
-        return BankMapper.bankEntitiesToDataListResponse(bankRepository.findAll());
+    public DataListResponse<BankResponse> list(Long userAuthId){
+        return BankMapper.bankEntitiesToDataListResponse(bankRepository.findAllByAuthUserId(userAuthId));
     }
 
     public DataResponse<BankResponse> create(DataRequest<BankRequest> userRequest) throws ApplicationBusinessException {

@@ -9,4 +9,5 @@ import lombok.NoArgsConstructor;
 public class BankRequest {
     private String name;
     private String status;
+    private Long userAuthId;
 }

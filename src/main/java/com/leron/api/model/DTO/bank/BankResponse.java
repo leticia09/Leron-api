@@ -10,4 +10,5 @@ public class BankResponse {
     private Long id;
     private String name;
     private String status;
+    private Long userAuthId;
 }

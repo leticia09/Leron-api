@@ -1,6 +1,5 @@
 package com.leron.api.mapper.card;
 
-import com.leron.api.model.DTO.card.CardDTO;
 import com.leron.api.model.DTO.card.CardRequest;
 import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.model.entities.BankEntity;
@@ -15,13 +14,13 @@ import java.util.List;
 
 @Component
 public class CardMapper {
-    public static DataListResponse<CardDTO> cardEntitiesToDataListResponse(List<CardEntity> cardEntities, List<BankEntity> bankEntityList, List<UserEntity> userEntityList){
+    public static DataListResponse<CardResponse> cardEntitiesToDataListResponse(List<CardEntity> cardEntities, List<BankEntity> bankEntityList, List<UserEntity> userEntityList){
 
-        DataListResponse<CardDTO> response = new DataListResponse<>();
-        List<CardDTO> responseList = new ArrayList<>();
+        DataListResponse<CardResponse> response = new DataListResponse<>();
+        List<CardResponse> responseList = new ArrayList<>();
 
         for (CardEntity card : cardEntities) {
-            CardDTO cardDTO = new CardDTO();
+            CardResponse cardDTO = new CardResponse();
             bankEntityList.forEach(bank -> {
                 if(bank.getId().equals(card.getBankId())){
                     cardDTO.setBankName(bank.getName());
@@ -41,6 +40,7 @@ public class CardMapper {
             cardDTO.setModality(card.getModality());
             cardDTO.setUserId(card.getUserId());
             cardDTO.setNickName(card.getNickName());
+            cardDTO.setUserAuthId(card.getUserAuthId());
 
             responseList.add(cardDTO);
         }
@@ -62,7 +62,7 @@ public class CardMapper {
         card.setUserId(Long.valueOf(cardRequest.getUserId()));
         card.setCreatedIn(new Date());
         card.setNickName(cardRequest.getNickName());
-
+        card.setUserAuthId(cardRequest.getUserAuthId());
 
         return card;
     }
@@ -80,6 +80,7 @@ public class CardMapper {
         cardResponse.setUserId(card.getUserId());
         cardResponse.setId(card.getId());
         cardResponse.setNickName(card.getNickName());
+        cardResponse.setUserAuthId(card.getUserAuthId());
 
         return cardResponse;
     }

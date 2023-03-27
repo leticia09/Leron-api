@@ -1,11 +1,7 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.bank.BankDTO;
 import com.leron.api.model.DTO.bank.BankRequest;
 import com.leron.api.model.DTO.bank.BankResponse;
-import com.leron.api.model.DTO.user.UserDTO;
-import com.leron.api.model.DTO.user.UserRequest;
-import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -22,9 +18,9 @@ public class BankController {
     @Autowired
     BankService bankService;
 
-    @GetMapping("")
-    public DataListResponse<BankDTO> list(){
-        DataListResponse<BankDTO> list = bankService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<BankResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<BankResponse> list = bankService.list(userAuthId);
         return list;
     }
 

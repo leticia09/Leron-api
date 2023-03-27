@@ -1,7 +1,6 @@
 package com.leron.api.service.user;
 
 import com.leron.api.mapper.user.UserMapper;
-import com.leron.api.model.DTO.user.UserDTO;
 import com.leron.api.model.DTO.user.UserRequest;
 import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.model.entities.UserEntity;
@@ -23,8 +22,8 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public DataListResponse<UserDTO> getUser(){
-        return UserMapper.userEntitiesToDataListResponse(userRepository.findAll());
+    public DataListResponse<UserResponse> list(Long userAuthId){
+        return UserMapper.userEntitiesToDataListResponse(userRepository.findAllByAuthUserId(userAuthId));
     }
 
     public DataResponse<UserResponse> create(DataRequest<UserRequest> userRequest,

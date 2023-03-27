@@ -1,9 +1,5 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.bank.BankDTO;
-import com.leron.api.model.DTO.bank.BankRequest;
-import com.leron.api.model.DTO.bank.BankResponse;
-import com.leron.api.model.DTO.card.CardDTO;
 import com.leron.api.model.DTO.card.CardRequest;
 import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -22,9 +18,9 @@ public class CardController {
     @Autowired
     CardService cardService;
 
-    @GetMapping("")
-    public DataListResponse<CardDTO> list(){
-        DataListResponse<CardDTO> list = cardService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<CardResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<CardResponse> list = cardService.list(userAuthId);
         return list;
     }
 

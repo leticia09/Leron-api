@@ -22,6 +22,7 @@ public class MacroGroupMapper {
 
             macroResponse.setId(macro.getId());
             macroResponse.setName(macro.getName());
+            macroResponse.setUserAuthId(macro.getUserAuthId());
 
             responseList.add(macroResponse);
         }
@@ -35,6 +36,7 @@ public class MacroGroupMapper {
         MacroGroupEntity macro = new MacroGroupEntity();
 
         macro.setName(macroGroupRequest.getName());
+        macro.setUserAuthId(macroGroupRequest.getUserAuthId());
         macro.setCreatedIn(new Date());
 
         return macro;
@@ -46,6 +48,7 @@ public class MacroGroupMapper {
 
         response.setId(entity.getId());
         response.setName(entity.getName());
+        response.setUserAuthId(entity.getUserAuthId());
 
         return response;
     }

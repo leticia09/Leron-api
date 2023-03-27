@@ -1,7 +1,6 @@
 package com.leron.api.service.card;
 
 import com.leron.api.mapper.card.CardMapper;
-import com.leron.api.model.DTO.card.CardDTO;
 import com.leron.api.model.DTO.card.CardRequest;
 import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.model.entities.BankEntity;
@@ -32,14 +31,12 @@ public class CardService {
         this.bankRepository = bankRepository;
     }
 
-    public DataListResponse<CardDTO> list(){
-        List<CardEntity> cardEntities = cardRepository.findAll();
-        List<BankEntity> bankEntityList = bankRepository.findAll();
-        List<UserEntity> userEntityList =  userRepository.findAll();
+    public DataListResponse<CardResponse> list(Long userAuthId){
+        List<CardEntity> cardEntities = cardRepository.findAllByAuthUserId(userAuthId);
+        List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
+        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
 
-        DataListResponse<CardDTO> cardDTO  =CardMapper.cardEntitiesToDataListResponse(cardEntities, bankEntityList, userEntityList);
-
-        return cardDTO;
+        return CardMapper.cardEntitiesToDataListResponse(cardEntities, bankEntityList, userEntityList);
     }
 
     public DataResponse<CardResponse> create(DataRequest<CardRequest> cardRequest) throws ApplicationBusinessException {

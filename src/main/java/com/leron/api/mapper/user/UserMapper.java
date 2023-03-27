@@ -1,6 +1,5 @@
 package com.leron.api.mapper.user;
 
-import com.leron.api.model.DTO.user.UserDTO;
 import com.leron.api.model.DTO.user.UserRequest;
 import com.leron.api.model.DTO.user.UserResponse;
 import com.leron.api.model.entities.UserEntity;
@@ -13,18 +12,19 @@ import java.util.List;
 
 @Component
 public class UserMapper {
-    public static DataListResponse<UserDTO> userEntitiesToDataListResponse(List<UserEntity> userEntities){
-        DataListResponse<UserDTO> response = new DataListResponse<>();
-        List<UserDTO> responseList = new ArrayList<>();
+    public static DataListResponse<UserResponse> userEntitiesToDataListResponse(List<UserEntity> userEntities){
+        DataListResponse<UserResponse> response = new DataListResponse<>();
+        List<UserResponse> responseList = new ArrayList<>();
 
         for (UserEntity user : userEntities) {
-            UserDTO userDTO = new UserDTO();
+            UserResponse userDTO = new UserResponse();
 
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
             userDTO.setCpf(user.getCpf());
             userDTO.setEmail(user.getEmail());
             userDTO.setPermissao(user.getPermissao());
+            userDTO.setUserAuthId(user.getUserAuthId());
 
             responseList.add(userDTO);
         }
@@ -39,6 +39,7 @@ public class UserMapper {
         user.setName(userRequest.getName());
         user.setPermissao(userRequest.getPermissao());
         user.setCreatedIn(new Date());
+        user.setUserAuthId(userRequest.getUserAuthId());
 
         return user;
     }
@@ -50,6 +51,8 @@ public class UserMapper {
         userResponse.setName(user.getName());
         userResponse.setPermissao(user.getPermissao());
         userResponse.setId(userResponse.getId());
+        userResponse.setUserAuthId(userResponse.getUserAuthId());
+
         return userResponse;
     }
 }

@@ -27,9 +27,9 @@ public class SalaryService {
         this.userRepository = userRepository;
     }
 
-    public DataListResponse<SalaryResponse> list(){
-        List<UserEntity> userEntityList = userRepository.findAll();
-        return SalaryMapper.salaryEntitiesToDataListResponse(salaryRepository.findAll(), userEntityList);
+    public DataListResponse<SalaryResponse> list(Long userAuthId){
+        List<UserEntity> userEntityList = userRepository.findAllByAuthUserId(userAuthId);
+        return SalaryMapper.salaryEntitiesToDataListResponse(salaryRepository.findAllByAuthUserId(userAuthId), userEntityList);
     }
 
     public DataResponse<SalaryResponse> create(DataRequest<SalaryRequest> userRequest) throws ApplicationBusinessException {

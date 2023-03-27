@@ -1,5 +1,6 @@
 package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_macro_group")
-public class MacroGroupEntity {
+public class MacroGroupEntity extends GenericEntities {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,21 +21,4 @@ public class MacroGroupEntity {
 
     @Column(name= "name", nullable = false)
     private String name;
-
-    @Column(name= "deleted")
-    private Boolean deleted = Boolean.FALSE;
-
-    @Column(name = "CREATED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdIn;
-
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
-    @Column(name = "CHANGED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
 }

@@ -18,9 +18,9 @@ public class SalaryController {
     @Autowired
     SalaryService salaryService;
 
-    @GetMapping("")
-    public DataListResponse<SalaryResponse> list(){
-        DataListResponse<SalaryResponse> list = salaryService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<SalaryResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<SalaryResponse> list = salaryService.list(userAuthId);
         return list;
     }
 

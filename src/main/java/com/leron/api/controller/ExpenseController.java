@@ -18,9 +18,9 @@ public class ExpenseController {
     @Autowired
     ExpenseService expenseService;
 
-    @GetMapping("")
-    public DataListResponse<ExpenseResponse> list(){
-        DataListResponse<ExpenseResponse> list = expenseService.list();
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<ExpenseResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<ExpenseResponse> list = expenseService.list(userAuthId);
         return list;
     }
 

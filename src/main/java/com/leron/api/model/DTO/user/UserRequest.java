@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserRequest {
     private String name;
-
     private String cpf;
-
     private String email;
-
     private String permissao;
+    private Long userAuthId;
 }

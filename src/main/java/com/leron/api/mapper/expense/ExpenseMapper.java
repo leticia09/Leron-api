@@ -53,6 +53,7 @@ public class ExpenseMapper {
             expenseResponse.setStatus(expense.getStatus());
             expenseResponse.setPaymentDate(expense.getPaymentDate());
             expenseResponse.setInstallment(expense.getInstallment());
+            expenseResponse.setUserAuthId(expense.getUserAuthId());
 
             responseList.add(expenseResponse);
         }
@@ -79,6 +80,7 @@ public class ExpenseMapper {
         expenseEntity.setTypePayment(expenseRequest.getTypePayment());
         expenseEntity.setStatus("Aberto");
         expenseEntity.setInstallment(expenseRequest.getInstallment());
+        expenseEntity.setUserAuthId(expenseRequest.getUserAuthId());
 
         return expenseEntity;
     }
@@ -102,6 +104,7 @@ public class ExpenseMapper {
         expenseResponse.setTypePayment(expenseEntity.getTypePayment());
         expenseResponse.setStatus(expenseEntity.getStatus());
         expenseResponse.setPaymentDate(expenseEntity.getPaymentDate());
+        expenseResponse.setUserAuthId(expenseEntity.getUserAuthId());
 
         return expenseResponse;
     }

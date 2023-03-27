@@ -1,12 +1,14 @@
 package com.leron.api.validator.user;
 
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
+import com.leron.api.model.DTO.userAuth.UserValidResponse;
 import com.leron.api.model.entities.UserAuthEntity;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
@@ -45,4 +47,5 @@ public class UserAuthValidator {
         }
 
     }
+
 }

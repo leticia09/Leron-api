@@ -13,4 +13,5 @@ public class BankAccountRequest {
     private String status;
     private Long idBank;
     private Long idUser;
+    private Long userAuthId;
 }

@@ -9,11 +9,14 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.userAuth.UserAuthService;
+import com.leron.api.validator.user.UserAuthValidator;
+import org.hibernate.cfg.CreateKeySecondPass;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @RestController
@@ -55,10 +58,20 @@ public class UserAuthController {
     }
 
     @PostMapping("/validate")
-    public UserValidResponse validate (
+    public DataResponse<UserValidResponse> validate (
             @RequestBody UserAuthRequest requestCreation
-    ){
-        return userAuthService.validate(requestCreation);
+    ) {
+        DataResponse<UserValidResponse> response = new DataResponse<>();
+        UserValidResponse user =  userAuthService.validate(requestCreation);
+        if(Objects.isNull(user)){
+            response.setData(null);
+            response.setMessage("LOGIN_OR_PASSWORD_IS_WRONG");
+        } else {
+            response.setData(user);
+            response.setMessage("SUCCESS");
+        }
+
+        return response;
     }
 
 
