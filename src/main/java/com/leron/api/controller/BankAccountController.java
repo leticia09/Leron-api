@@ -47,4 +47,13 @@ public class BankAccountController {
         }
         return response;
     }
+
+    @GetMapping("/{userAuthId}/{bankId}")
+    public DataListResponse<BankAccountResponse> getAccountByBankId(
+            @PathVariable(value = "userAuthId", required = true) Long userAuthId,
+            @PathVariable(value = "bankId", required = true) Long bankId
+    ){
+        DataListResponse<BankAccountResponse> findById = bankAccountService.listById(userAuthId, bankId);
+        return findById;
+    }
 }

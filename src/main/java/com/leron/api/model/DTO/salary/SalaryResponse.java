@@ -16,6 +16,5 @@ public class SalaryResponse {
     private String type;
     private String userName;
     private String status;
-    private BigDecimal price;
     private Long userAuthId;
 }

@@ -28,9 +28,6 @@ public class SalaryEntity extends GenericEntities {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "price", nullable = false)
-    private BigDecimal price;
-
     @Column(name = "status", nullable = false)
     private String status;
 }

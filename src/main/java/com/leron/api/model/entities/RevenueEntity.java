@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -20,21 +21,28 @@ public class RevenueEntity extends GenericEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "description")
+    private String description;
 
-    @Column(name = "financial_agent_id")
-    private Long financialAgentId;
+    @Column(name = "id_salary", nullable = false)
+    private Long salaryId;
 
-    @Column(name = "type")
-    private TypeRevenueEnum type;
+    @Column(name = "type", nullable = false)
+    private String type;
 
-    @Column(name = "status")
-    private Boolean status = Boolean.FALSE;
+    @Column(name = "status", nullable = false)
+    private String status;
 
-    @Column(name = "start_date")
-    private Date startDate;
+    @Column(name = "receivingDate", nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date receivingDate;
 
-    @Column(name = "end_date")
-    private String endDate;
+    @Column(name = "value", nullable = false)
+    private BigDecimal value;
+
+    @Column(name = "id_bank", nullable = false)
+    private Long bankId;
+
+    @Column(name = "id_account", nullable = false)
+    private Long accountId;
 }

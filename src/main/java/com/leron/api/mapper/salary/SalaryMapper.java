@@ -29,7 +29,6 @@ public class SalaryMapper {
             salaryResponse.setId(salary.getId());
             salaryResponse.setStatus(salary.getStatus());
             salaryResponse.setName(salary.getName());
-            salaryResponse.setPrice(salary.getPrice());
             salaryResponse.setUserAuthId(salary.getUserAuthId());
 
             responseList.add(salaryResponse);
@@ -46,7 +45,6 @@ public class SalaryMapper {
         salary.setStatus(salaryRequest.getStatus());
         salary.setName(salaryRequest.getName());
         salary.setUserId(salaryRequest.getUserId());
-        salary.setPrice(salaryRequest.getPrice());
         salary.setType(salaryRequest.getType());
         salary.setUserAuthId(salaryRequest.getUserAuthId());
 
@@ -63,7 +61,6 @@ public class SalaryMapper {
         salaryResponse.setStatus(salary.getStatus());
         salaryResponse.setUserId(salary.getUserId());
         salaryResponse.setId(salary.getId());
-        salaryResponse.setPrice(salary.getPrice());
         salaryResponse.setName(salary.getName());
         salaryResponse.setUserAuthId(salary.getUserAuthId());
 

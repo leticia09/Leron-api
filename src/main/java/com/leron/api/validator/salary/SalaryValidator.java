@@ -14,9 +14,5 @@ public class SalaryValidator {
         if(salaryRequest.getData().getName().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "name");
         }
-        if(salaryRequest.getData().getPrice() == null){
-            throw new ApplicationBusinessException("Lascou", "price");
-        }
-
     }
 }

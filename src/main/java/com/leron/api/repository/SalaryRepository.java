@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface SalaryRepository extends JpaRepository<SalaryEntity, Long> {
-    @Query(value = "SELECT new com.leron.api.model.entities.SalaryEntity( u.id,u.name,u.type,u.userId,u.price,u.status) FROM SalaryEntity u " +
+    @Query(value = "SELECT new com.leron.api.model.entities.SalaryEntity( u.id,u.name,u.type,u.userId,u.status) FROM SalaryEntity u " +
             "WHERE u.userAuthId = :id ")
     List<SalaryEntity> findAllByAuthUserId(Long id);
 

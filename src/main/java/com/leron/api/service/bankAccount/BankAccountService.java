@@ -54,4 +54,12 @@ public class BankAccountService {
         response.setMessage("Sucesso");
         return response;
     }
+
+    public DataListResponse<BankAccountResponse> listById(Long userAuthId, Long bankId){
+        List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
+        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
+        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAllByAuthUserIdAndBankId(userAuthId, bankId);
+
+        return BankAccountMapper.bankAccountEntitiesToDataListResponse(bankAccountEntities, bankEntityList, userEntityList);
+    }
 }

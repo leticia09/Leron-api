@@ -14,5 +14,8 @@ public interface BankAccountRepository extends JpaRepository<BankAccountEntity, 
     @Query(value = "SELECT new com.leron.api.model.entities.BankAccountEntity(u.id,u.nickName,u.accountNumber,u.status,u.idBank,u.idUser) FROM BankAccountEntity u " +
             "WHERE u.userAuthId = :id ")
     List<BankAccountEntity> findAllByAuthUserId(Long id);
+    @Query(value = "SELECT new com.leron.api.model.entities.BankAccountEntity(u.id,u.nickName,u.accountNumber,u.status,u.idBank,u.idUser) FROM BankAccountEntity u " +
+            "WHERE u.userAuthId = :id AND u.idBank = :bankId")
+    List<BankAccountEntity> findAllByAuthUserIdAndBankId(Long id, Long bankId);
 
 }
