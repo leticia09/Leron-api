@@ -11,7 +11,7 @@ public class SalaryValidator {
         if(salaryRequest.getData().getUserId() == null){
             throw new ApplicationBusinessException("Lascou", "USER_IS_EMPTY");
         }
-        if(salaryRequest.getData().getName().isEmpty()){
+        if(salaryRequest.getData().getName() == null || salaryRequest.getData().getName().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "NAME_IS_EMPTY");
         }
     }

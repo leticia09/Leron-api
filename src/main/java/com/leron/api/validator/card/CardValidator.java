@@ -11,22 +11,22 @@ import java.net.CacheRequest;
 public class CardValidator {
     public static void validatorCard(DataRequest<CardRequest> cardRequest) throws ApplicationBusinessException {
 
-        if(cardRequest.getData().getFinalCard() == null){
+        if(cardRequest.getData().getFinalCard() == null || cardRequest.getData().getFinalCard().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "FINAL_IS_EMPTY");
         }
-        if(cardRequest.getData().getStatus() == null){
+        if(cardRequest.getData().getStatus() == null || cardRequest.getData().getStatus().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "STATUS_IS_EMPTY");
         }
-        if(cardRequest.getData().getDueDate() == null){
+        if(cardRequest.getData().getDueDate() == null || cardRequest.getData().getDueDate().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "DUE_DATE_IS_EMPTY");
         }
-        if(cardRequest.getData().getBankId() == null){
+        if(cardRequest.getData().getBankId() == null || cardRequest.getData().getBankId().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "BANK_IS_EMPTY");
         }
-        if(cardRequest.getData().getUserId() == null){
+        if(cardRequest.getData().getUserId() == null || cardRequest.getData().getUserId().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "USER_IS_EMPTY");
         }
-        if(cardRequest.getData().getModality() == null){
+        if(cardRequest.getData().getModality() == null || cardRequest.getData().getModality().isEmpty()){
             throw new ApplicationBusinessException("Lascou", "MODALITY_IS_EMPTY");
         }
     }
