@@ -12,6 +12,7 @@ import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.validator.revenue.RevenueValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class RevenueService {
 
     public DataResponse<RevenueResponse> create(DataRequest<RevenueRequest> revenueRequest) throws ApplicationBusinessException {
         DataResponse<RevenueResponse> response = new DataResponse<>();
-        //RevenueValidator.validatorRevenue(expenseRequest);
+        RevenueValidator.validator(revenueRequest);
 
         RevenueEntity entity = RevenueMapper.createRevenueFromRevenueRequest(revenueRequest.getData());
         revenueRepository.save(entity);
