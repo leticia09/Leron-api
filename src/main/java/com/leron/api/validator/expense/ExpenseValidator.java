@@ -13,29 +13,29 @@ public class ExpenseValidator {
     public static void validatorExpense(DataRequest<ExpenseRequest> expenseRequest) throws ApplicationBusinessException {
 
         if(expenseRequest.getData().getUserId() == null){
-            throw new ApplicationBusinessException("Lascou", "userId");
+            throw new ApplicationBusinessException("Lascou", "USER_ID_IS_EMPTY");
         }
         if(expenseRequest.getData().getShoppingDate() == null){
-            throw new ApplicationBusinessException("Lascou", "ShoppingDate");
+            throw new ApplicationBusinessException("Lascou", "SHOPPING_DATE_IS_EMPTY");
         }
         if(expenseRequest.getData().getLocal() == null){
-            throw new ApplicationBusinessException("Lascou", "local");
+            throw new ApplicationBusinessException("Lascou", "LOCAL_IS_EMPTY");
         }
         if(expenseRequest.getData().getGroup() == null){
-            throw new ApplicationBusinessException("Lascou", "group");
+            throw new ApplicationBusinessException("Lascou", "GROUP_IS_EMPTY");
         }
         if(expenseRequest.getData().getPrice() == null){
-            throw new ApplicationBusinessException("Lascou", "price");
+            throw new ApplicationBusinessException("Lascou", "PRICE_IS_EMPTY");
         }
         if(expenseRequest.getData().getFormPayment() == null){
-            throw new ApplicationBusinessException("Lascou", "formPayment");
+            throw new ApplicationBusinessException("Lascou", "FORM_PAYMENT_IS_EMPTY");
         }
         if(expenseRequest.getData().getPayer() == null) {
-            throw new ApplicationBusinessException("Lascou", "payer");
+            throw new ApplicationBusinessException("Lascou", "PAYER_IS_EMPTY");
         }
 
         if(expenseRequest.getData().getTypePayment() == null){
-            throw new ApplicationBusinessException("Lascou", "typePayment");
+            throw new ApplicationBusinessException("Lascou", "TYPE_PAYMENT_IS_EMPTY");
         }
     }
 }

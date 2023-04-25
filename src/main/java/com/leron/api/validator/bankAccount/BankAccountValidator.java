@@ -9,19 +9,19 @@ import org.springframework.stereotype.Component;
 public class BankAccountValidator {
     public static void validatorBankAccount(DataRequest<BankAccountRequest> bankRequest) throws ApplicationBusinessException {
         if(bankRequest.getData().getStatus() == null){
-            throw new ApplicationBusinessException("Lascou", "STATUS");
+            throw new ApplicationBusinessException("Lascou", "STATUS_IS_EMPTY");
         }
         if(bankRequest.getData().getIdBank() == null){
-            throw new ApplicationBusinessException("Lascou", "ID BANK");
+            throw new ApplicationBusinessException("Lascou", "ID_BANK_IS_EMPTY");
         }
         if(bankRequest.getData().getAccountNumber() == null){
-            throw new ApplicationBusinessException("Lascou", "ACCOUNT NUMBER");
+            throw new ApplicationBusinessException("Lascou", "ACCOUNT_NUMBER_IS_EMPTY");
         }
         if(bankRequest.getData().getIdUser() == null){
-            throw new ApplicationBusinessException("Lascou", "ID USER");
+            throw new ApplicationBusinessException("Lascou", "ID_USER_IS_EMPTY");
         }
         if(bankRequest.getData().getNickName() == null){
-            throw new ApplicationBusinessException("Lascou", "NICKNAME");
+            throw new ApplicationBusinessException("Lascou", "NICKNAME_IS_EMPTY");
         }
 
 

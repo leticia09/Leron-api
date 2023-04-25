@@ -12,22 +12,22 @@ public class CardValidator {
     public static void validatorCard(DataRequest<CardRequest> cardRequest) throws ApplicationBusinessException {
 
         if(cardRequest.getData().getFinalCard() == null){
-            throw new ApplicationBusinessException("Lascou", "FINAL");
+            throw new ApplicationBusinessException("Lascou", "FINAL_IS_EMPTY");
         }
         if(cardRequest.getData().getStatus() == null){
-            throw new ApplicationBusinessException("Lascou", "STATUS");
+            throw new ApplicationBusinessException("Lascou", "STATUS_IS_EMPTY");
         }
         if(cardRequest.getData().getDueDate() == null){
-            throw new ApplicationBusinessException("Lascou", "VENCIMENTO");
+            throw new ApplicationBusinessException("Lascou", "DUE_DATE_IS_EMPTY");
         }
         if(cardRequest.getData().getBankId() == null){
-            throw new ApplicationBusinessException("Lascou", "BANCO");
+            throw new ApplicationBusinessException("Lascou", "BANK_IS_EMPTY");
         }
         if(cardRequest.getData().getUserId() == null){
-            throw new ApplicationBusinessException("Lascou", "USER");
+            throw new ApplicationBusinessException("Lascou", "USER_IS_EMPTY");
         }
         if(cardRequest.getData().getModality() == null){
-            throw new ApplicationBusinessException("Lascou", "MODALIDADE");
+            throw new ApplicationBusinessException("Lascou", "MODALITY_IS_EMPTY");
         }
     }
 }

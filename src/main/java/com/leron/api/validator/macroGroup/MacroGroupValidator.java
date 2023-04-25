@@ -10,7 +10,7 @@ public class MacroGroupValidator {
     public static void validatorMacroGroup(DataRequest<MacroGroupRequest> request) throws ApplicationBusinessException {
 
         if(request.getData().getName() == null){
-            throw new ApplicationBusinessException("Lascou", "name");
+            throw new ApplicationBusinessException("Lascou", "NAME_IS_EMPTY");
         }
 
     }

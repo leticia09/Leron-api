@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 public class SalaryValidator {
     public static void validatorSalary(DataRequest<SalaryRequest> salaryRequest) throws ApplicationBusinessException {
         if(salaryRequest.getData().getUserId() == null){
-            throw new ApplicationBusinessException("Lascou", "user");
+            throw new ApplicationBusinessException("Lascou", "USER_IS_EMPTY");
         }
         if(salaryRequest.getData().getName().isEmpty()){
-            throw new ApplicationBusinessException("Lascou", "name");
+            throw new ApplicationBusinessException("Lascou", "NAME_IS_EMPTY");
         }
     }
 }

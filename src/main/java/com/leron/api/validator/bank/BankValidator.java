@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class BankValidator {
     public static void validatorBank(DataRequest<BankRequest> bankRequest) throws ApplicationBusinessException {
-        if(bankRequest.getData().getStatus() == null){
-            throw new ApplicationBusinessException("Lascou", "STATUS");
+        if(bankRequest.getData().getStatus() == null || bankRequest.getData().getStatus().isEmpty()){
+            throw new ApplicationBusinessException("Lascou", "STATUS_IS_EMPTY");
         }
-        if(bankRequest.getData().getName() == null){
-            throw new ApplicationBusinessException("Lascou", "NOME");
+        if(bankRequest.getData().getName() == null || bankRequest.getData().getName().isEmpty()){
+            throw new ApplicationBusinessException("Lascou", "NOME_IS_EMPTY");
         }
 
 
