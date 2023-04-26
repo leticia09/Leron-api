@@ -34,8 +34,5 @@ public class ExpenseValidator {
             throw new ApplicationBusinessException("Lascou", "PAYER_IS_EMPTY");
         }
 
-        if(expenseRequest.getData().getTypePayment() == null || expenseRequest.getData().getTypePayment().isEmpty()){
-            throw new ApplicationBusinessException("Lascou", "TYPE_PAYMENT_IS_EMPTY");
-        }
     }
 }
