@@ -2,7 +2,7 @@ package com.leron.api.service.userAuth;
 
 import com.leron.api.mapper.userAuth.UserAuthMapper;
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
-import com.leron.api.model.DTO.userAuth.UserAuthRespose;
+import com.leron.api.model.DTO.userAuth.UserAuthResponse;
 import com.leron.api.model.DTO.userAuth.UserValidResponse;
 import com.leron.api.model.entities.UserAuthEntity;
 import com.leron.api.repository.UserAuthRepository;
@@ -14,7 +14,6 @@ import com.leron.api.validator.user.UserAuthValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class UserAuthService {
@@ -24,17 +23,17 @@ public class UserAuthService {
         this.userAuthRepository = userAuthRepository;
     }
 
-    public DataListResponse<UserAuthRespose> getUser(){
+    public DataListResponse<UserAuthResponse> getUser(){
         return UserAuthMapper.userEntitiesToDataListResponse(userAuthRepository.findAll());
     }
 
-    public DataResponse<UserAuthRespose> create(DataRequest<UserAuthRequest> userRequest) throws ApplicationBusinessException {
-        DataResponse<UserAuthRespose> response = new DataResponse<>();
+    public DataResponse<UserAuthResponse> create(DataRequest<UserAuthRequest> userRequest) throws ApplicationBusinessException {
+        DataResponse<UserAuthResponse> response = new DataResponse<>();
         List<UserAuthEntity> currentUser = userAuthRepository.findAll();
         UserAuthValidator.validatorUser(userRequest, currentUser);
         UserAuthEntity user = UserAuthMapper.createUserFromUserRequest(userRequest.getData());
         userAuthRepository.save(user);
-        UserAuthRespose userResponse = UserAuthMapper.createUserResponse(user);
+        UserAuthResponse userResponse = UserAuthMapper.createUserResponse(user);
         response.setData(userResponse);
         response.setMessage("Sucesso");
         return response;

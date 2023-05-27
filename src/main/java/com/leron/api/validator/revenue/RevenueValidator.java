@@ -1,12 +1,9 @@
 package com.leron.api.validator.revenue;
 
-import com.leron.api.model.DTO.macroGroup.MacroGroupRequest;
 import com.leron.api.model.DTO.revenue.RevenueRequest;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class RevenueValidator {

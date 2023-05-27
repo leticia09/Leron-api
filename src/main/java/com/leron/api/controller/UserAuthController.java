@@ -1,7 +1,7 @@
 package com.leron.api.controller;
 
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
-import com.leron.api.model.DTO.userAuth.UserAuthRespose;
+import com.leron.api.model.DTO.userAuth.UserAuthResponse;
 
 import com.leron.api.model.DTO.userAuth.UserValidResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -9,13 +9,10 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.userAuth.UserAuthService;
-import com.leron.api.validator.user.UserAuthValidator;
-import org.hibernate.cfg.CreateKeySecondPass;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Objects;
 
 
@@ -28,8 +25,8 @@ public class UserAuthController {
     UserAuthService userAuthService;
 
     @GetMapping("")
-    public DataListResponse<UserAuthRespose> list(){
-        DataListResponse<UserAuthRespose> list = userAuthService.getUser();
+    public DataListResponse<UserAuthResponse> list(){
+        DataListResponse<UserAuthResponse> list = userAuthService.getUser();
         return list;
     }
 
@@ -38,14 +35,14 @@ public class UserAuthController {
             consumes = "application/json",
             produces = "application/json"
     )
-    public DataResponse<UserAuthRespose> create(
+    public DataResponse<UserAuthResponse> create(
             @RequestBody UserAuthRequest requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
 
         DataRequest<UserAuthRequest> request = new DataRequest<>(requestCreation, locale, authorization);
-        DataResponse<UserAuthRespose> response = new DataResponse<>();
+        DataResponse<UserAuthResponse> response = new DataResponse<>();
 
         try {
             response = userAuthService.create(request);

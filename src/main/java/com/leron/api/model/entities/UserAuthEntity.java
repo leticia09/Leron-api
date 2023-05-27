@@ -27,7 +27,7 @@ public class UserAuthEntity {
     private String cpf;
 
     @Column(name = "sex", nullable = false)
-    private String sex;
+    private Long sex;
 
     @Column(name = "password", nullable = false)
     private String password;

@@ -37,9 +37,12 @@ public class RevenueService {
         List<RevenueEntity> revenueEntityList = revenueRepository.findAllByAuthUserId(userAuthId);
         List<SalaryEntity> salaryEntityList = salaryRepository.findAllByAuthUserId(userAuthId);
 
-        DataListResponse<RevenueResponse> response  = RevenueMapper.revenueEntitiesToDataListResponse(revenueEntityList, bankEntityList, bankAccountEntityList, salaryEntityList);
-
-        return response;
+        return RevenueMapper.revenueEntitiesToDataListResponse(
+                revenueEntityList,
+                bankEntityList,
+                bankAccountEntityList,
+                salaryEntityList
+        );
     }
 
     public DataResponse<RevenueResponse> create(DataRequest<RevenueRequest> revenueRequest) throws ApplicationBusinessException {

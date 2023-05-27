@@ -12,5 +12,5 @@ public class UserValidResponse {
     private String name;
     private String login;
     private String password;
-    private String sex;
+    private Long sex;
 }

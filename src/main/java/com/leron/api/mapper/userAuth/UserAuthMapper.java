@@ -1,7 +1,7 @@
 package com.leron.api.mapper.userAuth;
 
 import com.leron.api.model.DTO.userAuth.UserAuthRequest;
-import com.leron.api.model.DTO.userAuth.UserAuthRespose;
+import com.leron.api.model.DTO.userAuth.UserAuthResponse;
 import com.leron.api.model.entities.UserAuthEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
@@ -11,12 +11,12 @@ import java.util.List;
 
 @Component
 public class UserAuthMapper {
-    public static DataListResponse<UserAuthRespose> userEntitiesToDataListResponse(List<UserAuthEntity> userEntities){
-        DataListResponse<UserAuthRespose> response = new DataListResponse<>();
-        List<UserAuthRespose> responseList = new ArrayList<>();
+    public static DataListResponse<UserAuthResponse> userEntitiesToDataListResponse(List<UserAuthEntity> userEntities){
+        DataListResponse<UserAuthResponse> response = new DataListResponse<>();
+        List<UserAuthResponse> responseList = new ArrayList<>();
 
         for (UserAuthEntity user : userEntities) {
-            UserAuthRespose userDTO = new UserAuthRespose();
+            UserAuthResponse userDTO = new UserAuthResponse();
 
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
@@ -36,12 +36,17 @@ public class UserAuthMapper {
         user.setLogin(userRequest.getLogin());
         user.setPassword(userRequest.getPassword());
         user.setCpf(userRequest.getCpf());
-        user.setSex(userRequest.getSex());
+        if(userRequest.getSex().equalsIgnoreCase("FEMININO")){
+            user.setSex(1L);
+        } else {
+            user.setSex(2L);
+        }
+
         return user;
     }
 
-    public static UserAuthRespose createUserResponse  (UserAuthEntity user) {
-        UserAuthRespose userResponse = new UserAuthRespose();
+    public static UserAuthResponse createUserResponse  (UserAuthEntity user) {
+        UserAuthResponse userResponse = new UserAuthResponse();
         userResponse.setPassword(user.getPassword());
         userResponse.setName(user.getName());
         userResponse.setLogin(user.getLogin());

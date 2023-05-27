@@ -52,7 +52,7 @@ public class ExpenseEntity extends GenericEntities {
     @Column(name = "advance", nullable = false)
     private Boolean advance = Boolean.FALSE;
 
-    @Column(name = "type_payment", nullable = false)
+    @Column(name = "type_payment")
     private String typePayment;
 
     @Column(name = "status", nullable = false)
