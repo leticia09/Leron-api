@@ -39,6 +39,7 @@ public class MemeberMapper {
             entity.setCpf(user.getCpf());
             entity.setEmail(user.getEmail());
             entity.setName(user.getName());
+            entity.setIndex(user.getIndex());
             entity.setPermission(user.getPermission());
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
