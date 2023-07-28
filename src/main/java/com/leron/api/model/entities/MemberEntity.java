@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_usuario")
-public class UserEntity extends GenericEntities {
+@Table(name = "tb_members")
+public class MemberEntity extends GenericEntities {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,7 +27,10 @@ public class UserEntity extends GenericEntities {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "permissao", nullable = false)
-    private String permissao;
+    @Column(name = "permission", nullable = false)
+    private String permission;
+
+    @Column(name = "index", nullable = false)
+    private Long index;
 }
 

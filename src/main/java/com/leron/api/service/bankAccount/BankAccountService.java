@@ -5,10 +5,10 @@ import com.leron.api.model.DTO.bankAccount.BankAccountRequest;
 import com.leron.api.model.DTO.bankAccount.BankAccountResponse;
 import com.leron.api.model.entities.BankAccountEntity;
 import com.leron.api.model.entities.BankEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.repository.BankAccountRepository;
 import com.leron.api.repository.BankRepository;
-import com.leron.api.repository.UserRepository;
+import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -22,11 +22,11 @@ import java.util.List;
 public class BankAccountService {
 
     private final BankAccountRepository bankAccountRepository;
-    private final UserRepository userRepository;
+    private final MemberRepository userRepository;
     private final BankRepository bankRepository;
 
 
-    public BankAccountService(BankAccountRepository bankAccountRepository, UserRepository userRepository, BankRepository bankRepository) {
+    public BankAccountService(BankAccountRepository bankAccountRepository, MemberRepository userRepository, BankRepository bankRepository) {
         this.bankAccountRepository = bankAccountRepository;
         this.userRepository = userRepository;
         this.bankRepository = bankRepository;
@@ -35,7 +35,7 @@ public class BankAccountService {
     public DataListResponse<BankAccountResponse> list(Long userAuthId){
         List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAllByAuthUserId(userAuthId);
         List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
-        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
 
         DataListResponse<BankAccountResponse> response  = BankAccountMapper.bankAccountEntitiesToDataListResponse(bankAccountEntities, bankEntityList, userEntityList);
 
@@ -57,7 +57,7 @@ public class BankAccountService {
 
     public DataListResponse<BankAccountResponse> listById(Long userAuthId, Long bankId){
         List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
-        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
         List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAllByAuthUserIdAndBankId(userAuthId, bankId);
 
         return BankAccountMapper.bankAccountEntitiesToDataListResponse(bankAccountEntities, bankEntityList, userEntityList);

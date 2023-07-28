@@ -4,7 +4,7 @@ import com.leron.api.model.DTO.bankAccount.BankAccountRequest;
 import com.leron.api.model.DTO.bankAccount.BankAccountResponse;
 import com.leron.api.model.entities.BankAccountEntity;
 import com.leron.api.model.entities.BankEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Component
 public class BankAccountMapper {
-    public static DataListResponse<BankAccountResponse> bankAccountEntitiesToDataListResponse(List<BankAccountEntity> bankAccountEntities, List<BankEntity> bankEntityList, List<UserEntity> userEntityList){
+    public static DataListResponse<BankAccountResponse> bankAccountEntitiesToDataListResponse(List<BankAccountEntity> bankAccountEntities, List<BankEntity> bankEntityList, List<MemberEntity> userEntityList){
 
         DataListResponse<BankAccountResponse> response = new DataListResponse<>();
         List<BankAccountResponse> responseList = new ArrayList<>();

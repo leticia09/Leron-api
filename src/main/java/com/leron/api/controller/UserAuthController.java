@@ -4,6 +4,7 @@ import com.leron.api.model.DTO.userAuth.UserAuthRequest;
 import com.leron.api.model.DTO.userAuth.UserAuthResponse;
 
 import com.leron.api.model.DTO.userAuth.UserValidResponse;
+import com.leron.api.model.DTO.userAuth.ValidResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -55,16 +56,23 @@ public class UserAuthController {
     }
 
     @PostMapping("/validate")
-    public DataResponse<UserValidResponse> validate (
+    public DataResponse<ValidResponse> validate (
             @RequestBody UserAuthRequest requestCreation
     ) {
-        DataResponse<UserValidResponse> response = new DataResponse<>();
+        DataResponse<ValidResponse> response = new DataResponse<>();
         UserValidResponse user =  userAuthService.validate(requestCreation);
+        ValidResponse userAuthResponse = new ValidResponse();
+
         if(Objects.isNull(user)){
-            response.setData(null);
+            userAuthResponse.setAuth(false);
+            response.setData(userAuthResponse);
             response.setMessage("LOGIN_OR_PASSWORD_IS_WRONG");
         } else {
-            response.setData(user);
+            userAuthResponse.setId(user.getId());
+            userAuthResponse.setName(user.getName());
+            userAuthResponse.setSex(user.getSex());
+            userAuthResponse.setAuth(true);
+            response.setData(userAuthResponse);
             response.setMessage("SUCCESS");
         }
 

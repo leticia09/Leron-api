@@ -11,6 +11,7 @@ public class UserRequest {
     private String name;
     private String cpf;
     private String email;
-    private String permissao;
+    private String permission;
     private Long userAuthId;
+    private Long index;
 }

@@ -4,9 +4,9 @@ import com.leron.api.mapper.salary.SalaryMapper;
 import com.leron.api.model.DTO.salary.SalaryRequest;
 import com.leron.api.model.DTO.salary.SalaryResponse;
 import com.leron.api.model.entities.SalaryEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.repository.SalaryRepository;
-import com.leron.api.repository.UserRepository;
+import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -20,15 +20,15 @@ import java.util.List;
 public class SalaryService {
 
     private final SalaryRepository salaryRepository;
-    private final UserRepository userRepository;
+    private final MemberRepository userRepository;
 
-    public SalaryService(SalaryRepository salaryRepository, UserRepository userRepository) {
+    public SalaryService(SalaryRepository salaryRepository, MemberRepository userRepository) {
         this.salaryRepository = salaryRepository;
         this.userRepository = userRepository;
     }
 
     public DataListResponse<SalaryResponse> list(Long userAuthId){
-        List<UserEntity> userEntityList = userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList = userRepository.findAllByAuthUserId(userAuthId);
         return SalaryMapper.salaryEntitiesToDataListResponse(salaryRepository.findAllByAuthUserId(userAuthId), userEntityList);
     }
 

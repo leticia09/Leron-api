@@ -5,10 +5,10 @@ import com.leron.api.model.DTO.card.CardRequest;
 import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.model.entities.BankEntity;
 import com.leron.api.model.entities.CardEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.repository.BankRepository;
 import com.leron.api.repository.CardRepository;
-import com.leron.api.repository.UserRepository;
+import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -22,10 +22,10 @@ import java.util.List;
 public class CardService {
 
     private final CardRepository cardRepository;
-    private final UserRepository userRepository;
+    private final MemberRepository userRepository;
     private final BankRepository bankRepository;
 
-    public CardService(CardRepository cardRepository, UserRepository userRepository, BankRepository bankRepository) {
+    public CardService(CardRepository cardRepository, MemberRepository userRepository, BankRepository bankRepository) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
         this.bankRepository = bankRepository;
@@ -34,7 +34,7 @@ public class CardService {
     public DataListResponse<CardResponse> list(Long userAuthId){
         List<CardEntity> cardEntities = cardRepository.findAllByAuthUserId(userAuthId);
         List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
-        List<UserEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
 
         return CardMapper.cardEntitiesToDataListResponse(cardEntities, bankEntityList, userEntityList);
     }

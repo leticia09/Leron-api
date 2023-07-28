@@ -6,19 +6,21 @@ import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.service.user.UserService;
+import com.leron.api.service.member.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/user")
-public class UserController {
+@RequestMapping("/member")
+public class MemberController {
 
     @Autowired
-    UserService userService;
+    MemberService userService;
 
     @GetMapping("/{userAuthId}")
     public DataListResponse<UserResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
@@ -31,14 +33,14 @@ public class UserController {
             consumes = "application/json",
             produces = "application/json"
     )
-    public DataResponse<UserResponse> create(
-            @RequestBody UserRequest requestCreation,
+    public DataResponse<List<UserResponse>> create(
+            @RequestBody List<UserRequest> requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
          ) {
 
-        DataRequest<UserRequest> request = new DataRequest<>(requestCreation, locale, authorization);
-        DataResponse<UserResponse> response = new DataResponse<>();
+        DataRequest<List<UserRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<List<UserResponse>> response = new DataResponse<>();
 
         try {
             response = userService.create(request, locale, authorization);

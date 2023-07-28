@@ -4,7 +4,7 @@ import com.leron.api.model.DTO.card.CardRequest;
 import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.model.entities.BankEntity;
 import com.leron.api.model.entities.CardEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Component
 public class CardMapper {
-    public static DataListResponse<CardResponse> cardEntitiesToDataListResponse(List<CardEntity> cardEntities, List<BankEntity> bankEntityList, List<UserEntity> userEntityList){
+    public static DataListResponse<CardResponse> cardEntitiesToDataListResponse(List<CardEntity> cardEntities, List<BankEntity> bankEntityList, List<MemberEntity> userEntityList){
 
         DataListResponse<CardResponse> response = new DataListResponse<>();
         List<CardResponse> responseList = new ArrayList<>();
