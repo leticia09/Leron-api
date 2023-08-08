@@ -7,12 +7,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserResponse {
+public class MemberResponse {
     private Long id;
     private String name;
-    private String cpf;
-    private String email;
-    private String permission;
     private Long userAuthId;
-    private Long index;
 }

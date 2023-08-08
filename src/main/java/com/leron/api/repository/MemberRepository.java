@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface MemberRepository extends JpaRepository<MemberEntity, Long> {
-    @Query(value = "SELECT new com.leron.api.model.entities.MemberEntity(u.id,name,u.cpf,u.email,u.permission, u.index) FROM MemberEntity u " +
+    @Query(value = "SELECT new com.leron.api.model.entities.MemberEntity(u.id,name) FROM MemberEntity u " +
             "WHERE u.userAuthId = :id ")
     List<MemberEntity> findAllByAuthUserId(Long id);
 }

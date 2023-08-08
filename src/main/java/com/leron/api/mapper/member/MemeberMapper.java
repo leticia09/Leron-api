@@ -1,7 +1,7 @@
 package com.leron.api.mapper.member;
 
-import com.leron.api.model.DTO.user.UserRequest;
-import com.leron.api.model.DTO.user.UserResponse;
+import com.leron.api.model.DTO.user.MemberRequest;
+import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
@@ -12,18 +12,15 @@ import java.util.List;
 
 @Component
 public class MemeberMapper {
-    public static DataListResponse<UserResponse> userEntitiesToDataListResponse(List<MemberEntity> userEntities){
-        DataListResponse<UserResponse> response = new DataListResponse<>();
-        List<UserResponse> responseList = new ArrayList<>();
+    public static DataListResponse<MemberResponse> userEntitiesToDataListResponse(List<MemberEntity> userEntities){
+        DataListResponse<MemberResponse> response = new DataListResponse<>();
+        List<MemberResponse> responseList = new ArrayList<>();
 
         for (MemberEntity user : userEntities) {
-            UserResponse userDTO = new UserResponse();
+            MemberResponse userDTO = new MemberResponse();
 
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
-            userDTO.setCpf(user.getCpf());
-            userDTO.setEmail(user.getEmail());
-            userDTO.setPermission(user.getPermission());
             userDTO.setUserAuthId(user.getUserAuthId());
 
             responseList.add(userDTO);
@@ -32,15 +29,11 @@ public class MemeberMapper {
         return response;
     }
 
-    public static List<MemberEntity> createUserFromUserRequest(List<UserRequest> userRequest) {
+    public static List<MemberEntity> createUserFromUserRequest(List<MemberRequest> userRequest) {
         List<MemberEntity> entities = new ArrayList<>();
         userRequest.forEach( user -> {
             MemberEntity entity = new MemberEntity();
-            entity.setCpf(user.getCpf());
-            entity.setEmail(user.getEmail());
             entity.setName(user.getName());
-            entity.setIndex(user.getIndex());
-            entity.setPermission(user.getPermission());
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
             entities.add(entity);
@@ -50,14 +43,11 @@ public class MemeberMapper {
         return entities;
     }
 
-    public static List<UserResponse> createUserResponse  (List<MemberEntity> entities) {
-        List<UserResponse> responses = new ArrayList<>();
+    public static List<MemberResponse> createUserResponse  (List<MemberEntity> entities) {
+        List<MemberResponse> responses = new ArrayList<>();
         entities.forEach(entity -> {
-            UserResponse userResponse = new UserResponse();
-            userResponse.setCpf(entity.getCpf());
-            userResponse.setEmail(entity.getEmail());
+            MemberResponse userResponse = new MemberResponse();
             userResponse.setName(entity.getName());
-            userResponse.setPermission(entity.getPermission());
             userResponse.setId(userResponse.getId());
             userResponse.setUserAuthId(userResponse.getUserAuthId());
 

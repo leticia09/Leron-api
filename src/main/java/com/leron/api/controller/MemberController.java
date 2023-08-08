@@ -1,7 +1,7 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.user.UserRequest;
-import com.leron.api.model.DTO.user.UserResponse;
+import com.leron.api.model.DTO.user.MemberRequest;
+import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -23,8 +23,8 @@ public class MemberController {
     MemberService userService;
 
     @GetMapping("/{userAuthId}")
-    public DataListResponse<UserResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        DataListResponse<UserResponse> list = userService.list(userAuthId);
+    public DataListResponse<MemberResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<MemberResponse> list = userService.list(userAuthId);
         return list;
     }
 
@@ -33,14 +33,14 @@ public class MemberController {
             consumes = "application/json",
             produces = "application/json"
     )
-    public DataResponse<List<UserResponse>> create(
-            @RequestBody List<UserRequest> requestCreation,
+    public DataResponse<List<MemberResponse>> create(
+            @RequestBody List<MemberRequest> requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
          ) {
 
-        DataRequest<List<UserRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
-        DataResponse<List<UserResponse>> response = new DataResponse<>();
+        DataRequest<List<MemberRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
         try {
             response = userService.create(request, locale, authorization);

@@ -7,11 +7,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UserRequest {
+public class MemberRequest {
     private String name;
-    private String cpf;
-    private String email;
-    private String permission;
     private Long userAuthId;
     private Long index;
 }

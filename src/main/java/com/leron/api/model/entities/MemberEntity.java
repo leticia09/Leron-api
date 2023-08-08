@@ -20,17 +20,5 @@ public class MemberEntity extends GenericEntities {
 
     @Column(name = "nome", nullable = false)
     private String name;
-
-    @Column(name = "cpf", nullable = false)
-    private String cpf;
-
-    @Column(name = "email", nullable = false)
-    private String email;
-
-    @Column(name = "permission", nullable = false)
-    private String permission;
-
-    @Column(name = "index", nullable = false)
-    private Long index;
 }
 

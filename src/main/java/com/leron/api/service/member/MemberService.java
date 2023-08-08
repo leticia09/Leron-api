@@ -1,8 +1,8 @@
 package com.leron.api.service.member;
 
 import com.leron.api.mapper.member.MemeberMapper;
-import com.leron.api.model.DTO.user.UserRequest;
-import com.leron.api.model.DTO.user.UserResponse;
+import com.leron.api.model.DTO.user.MemberRequest;
+import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -18,20 +18,20 @@ import java.util.List;
 @Service
 public class MemberService {
 
-    private final MemberRepository userRepository;
+    private final MemberRepository memberRepository;
 
     public MemberService(MemberRepository userRepository) {
-        this.userRepository = userRepository;
+        this.memberRepository = userRepository;
     }
 
-    public DataListResponse<UserResponse> list(Long userAuthId){
-        return MemeberMapper.userEntitiesToDataListResponse(userRepository.findAllByAuthUserId(userAuthId));
+    public DataListResponse<MemberResponse> list(Long userAuthId){
+        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findAllByAuthUserId(userAuthId));
     }
 
-    public DataResponse<List<UserResponse>> create(DataRequest<List<UserRequest>> userRequest,
-                                             String locale,
-                                             String authorization) throws ApplicationBusinessException {
-        DataResponse<List<UserResponse>> response = new DataResponse<>();
+    public DataResponse<List<MemberResponse>> create(DataRequest<List<MemberRequest>> userRequest,
+                                                     String locale,
+                                                     String authorization) throws ApplicationBusinessException {
+        DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
         userRequest.getData().forEach(user -> {
             try {
@@ -41,8 +41,8 @@ public class MemberService {
             }
         });
 
-        List<MemberEntity> entities = userRepository.saveAll(MemeberMapper.createUserFromUserRequest(userRequest.getData()));
-        List<UserResponse> userResponse = MemeberMapper.createUserResponse(entities);
+        List<MemberEntity> entities = memberRepository.saveAll(MemeberMapper.createUserFromUserRequest(userRequest.getData()));
+        List<MemberResponse> userResponse = MemeberMapper.createUserResponse(entities);
         response.setData(userResponse);
         response.setMessage("Sucesso");
         return response;
