@@ -4,8 +4,6 @@ import com.leron.api.mapper.revenue.RevenueMapper;
 import com.leron.api.model.DTO.revenue.RevenueRequest;
 import com.leron.api.model.DTO.revenue.RevenueResponse;
 import com.leron.api.model.entities.*;
-import com.leron.api.repository.BankAccountRepository;
-import com.leron.api.repository.BankRepository;
 import com.leron.api.repository.RevenueRepository;
 import com.leron.api.repository.SalaryRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -19,31 +17,25 @@ import java.util.List;
 
 @Service
 public class RevenueService {
-    private final BankRepository bankRepository;
-    private final BankAccountRepository bankAccountRepository;
     private final RevenueRepository revenueRepository;
     private final SalaryRepository salaryRepository;
 
-    public RevenueService(BankRepository bankRepository, BankAccountRepository bankAccountRepository, RevenueRepository revenueRepository, SalaryRepository salaryRepository) {
-        this.bankRepository = bankRepository;
-        this.bankAccountRepository = bankAccountRepository;
+    public RevenueService(RevenueRepository revenueRepository, SalaryRepository salaryRepository) {
         this.revenueRepository = revenueRepository;
         this.salaryRepository = salaryRepository;
     }
 
-    public DataListResponse<RevenueResponse> list(Long userAuthId){
-        List<BankEntity> bankEntityList = bankRepository.findAllByAuthUserId(userAuthId);
-        List<BankAccountEntity> bankAccountEntityList = bankAccountRepository.findAllByAuthUserId(userAuthId);
-        List<RevenueEntity> revenueEntityList = revenueRepository.findAllByAuthUserId(userAuthId);
-        List<SalaryEntity> salaryEntityList = salaryRepository.findAllByAuthUserId(userAuthId);
-
-        return RevenueMapper.revenueEntitiesToDataListResponse(
-                revenueEntityList,
-                bankEntityList,
-                bankAccountEntityList,
-                salaryEntityList
-        );
-    }
+//    public DataListResponse<RevenueResponse> list(Long userAuthId){
+//        List<RevenueEntity> revenueEntityList = revenueRepository.findAllByAuthUserId(userAuthId);
+//        List<SalaryEntity> salaryEntityList = salaryRepository.findAllByAuthUserId(userAuthId);
+//
+//        return RevenueMapper.revenueEntitiesToDataListResponse(
+//                revenueEntityList,
+//                bankEntityList,
+//                bankAccountEntityList,
+//                salaryEntityList
+//        );
+//    }
 
     public DataResponse<RevenueResponse> create(DataRequest<RevenueRequest> revenueRequest) throws ApplicationBusinessException {
         DataResponse<RevenueResponse> response = new DataResponse<>();

@@ -36,12 +36,7 @@ public class UserAuthMapper {
         user.setLogin(userRequest.getLogin());
         user.setPassword(userRequest.getPassword());
         user.setCpf(userRequest.getCpf());
-        if(userRequest.getSex().equalsIgnoreCase("FEMININO")){
-            user.setSex(1L);
-        } else {
-            user.setSex(2L);
-        }
-
+        user.setSex(userRequest.getSex());
         return user;
     }
 

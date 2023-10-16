@@ -3,10 +3,8 @@ package com.leron.api.service.expense;
 import com.leron.api.mapper.expense.ExpenseMapper;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
-import com.leron.api.model.entities.CardEntity;
 import com.leron.api.model.entities.ExpenseEntity;
 import com.leron.api.model.entities.MemberEntity;
-import com.leron.api.repository.BankRepository;
 import com.leron.api.repository.CardRepository;
 import com.leron.api.repository.ExpenseRepository;
 import com.leron.api.repository.MemberRepository;
@@ -25,21 +23,18 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final CardRepository cardRepository;
     private final MemberRepository userRepository;
-    private final BankRepository bankRepository;
 
-    public ExpenseService(ExpenseRepository expenseRepository, CardRepository cardRepository, MemberRepository userRepository, BankRepository bankRepository) {
+    public ExpenseService(ExpenseRepository expenseRepository, CardRepository cardRepository, MemberRepository userRepository) {
         this.expenseRepository = expenseRepository;
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
-        this.bankRepository = bankRepository;
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId){
         List<ExpenseEntity> expenseEntities = expenseRepository.findAllByAuthUserId(userAuthId);
-        List<CardEntity> cardEntities = cardRepository.findAllByAuthUserId(userAuthId);
         List<MemberEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
 
-        DataListResponse<ExpenseResponse> response  = ExpenseMapper.expenseEntitiesToDataListResponse(expenseEntities, cardEntities, userEntityList);
+        DataListResponse<ExpenseResponse> response  = ExpenseMapper.expenseEntitiesToDataListResponse(expenseEntities, null, userEntityList);
 
         return response;
     }

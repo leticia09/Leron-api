@@ -19,8 +19,8 @@ public class PointsController {
 
     @GetMapping("/{userAuthId}")
     public DataListResponse<PointsResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        DataListResponse<PointsResponse> list = pointsService.list(userAuthId);
-        return list;
+       // DataListResponse<PointsResponse> list = pointsService.list(userAuthId);
+        return null;
     }
 
     @PostMapping(

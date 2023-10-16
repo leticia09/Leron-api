@@ -2,7 +2,7 @@ package com.leron.api.mapper.expense;
 
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
-import com.leron.api.model.entities.CardEntity;
+import com.leron.api.model.entities.Card;
 import com.leron.api.model.entities.ExpenseEntity;
 import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.responses.DataListResponse;
@@ -16,7 +16,7 @@ import java.util.Objects;
 @Component
 public class ExpenseMapper {
 
-    public static DataListResponse<ExpenseResponse> expenseEntitiesToDataListResponse(List<ExpenseEntity> expenseEntities, List<CardEntity> cardEntities,  List<MemberEntity> userEntityList){
+    public static DataListResponse<ExpenseResponse> expenseEntitiesToDataListResponse(List<ExpenseEntity> expenseEntities, List<Card> cardEntities, List<MemberEntity> userEntityList){
         DataListResponse<ExpenseResponse> response = new DataListResponse<>();
         List<ExpenseResponse> responseList = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public class ExpenseMapper {
 
             cardEntities.forEach(card -> {
                 if(card.getId().equals(expense.getCardId())){
-                    expenseResponse.setCardNickName(card.getNickName());
+                    expenseResponse.setCardNickName(card.getName());
                 }
             });
 

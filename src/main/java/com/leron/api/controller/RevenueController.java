@@ -20,8 +20,8 @@ public class RevenueController {
 
     @GetMapping("/{userAuthId}")
     public DataListResponse<RevenueResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        DataListResponse<RevenueResponse> list = revenueService.list(userAuthId);
-        return list;
+        //DataListResponse<RevenueResponse> list = revenueService.list(userAuthId);
+        return null;
     }
 
     @PostMapping(

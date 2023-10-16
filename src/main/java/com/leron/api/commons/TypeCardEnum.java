@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum TypeCardEnum {
-    CREDIT(1,"CREDITO"),
-    DEBIT(2,"DEBITO"),
-    CREDIT_DEBIT(3,"CREDITO&DEBITO");
+    CREDIT(1,"Crédito"),
+    DEBIT(2,"Débito"),
+    CREDIT_DEBIT(3,"Crédito/Débito");
 
     private int key;
     private String value;

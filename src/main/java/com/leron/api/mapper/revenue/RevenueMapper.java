@@ -14,47 +14,47 @@ import java.util.List;
 
 @Component
 public class RevenueMapper {
-    public static DataListResponse<RevenueResponse> revenueEntitiesToDataListResponse(List<RevenueEntity> revenueEntityList, List<BankEntity> bankEntityList, List<BankAccountEntity> bankAccountEntityList, List<SalaryEntity> salaryEntityList){
-        DataListResponse<RevenueResponse> response = new DataListResponse<>();
-        List<RevenueResponse> responseList = new ArrayList<>();
-
-        for (RevenueEntity revenue : revenueEntityList) {
-            RevenueResponse revenueResponse = new RevenueResponse();
-
-            bankEntityList.forEach(bank -> {
-                if(bank.getId().equals(revenue.getBankId())){
-                    revenueResponse.setBankId(bank.getId());
-                    revenueResponse.setBankName(bank.getName());
-                }
-            });
-
-            bankAccountEntityList.forEach(account -> {
-                if(account.getId().equals(revenue.getAccountId())){
-                    revenueResponse.setAccountId(account.getId());
-                    revenueResponse.setAccountName(account.getNickName());
-                    revenueResponse.setAccountNumber(account.getAccountNumber());
-                }
-            });
-
-            salaryEntityList.forEach(salary -> {
-                if(salary.getId().equals(revenue.getSalaryId())){
-                    revenueResponse.setSalaryId(salary.getId());
-                    revenueResponse.setSalaryName(salary.getName());
-                }
-            });
-
-            revenueResponse.setId(revenue.getId());
-            revenueResponse.setType(revenue.getType());
-            revenueResponse.setDescription(revenue.getDescription());
-            revenueResponse.setReceivingDate(revenue.getReceivingDate());
-            revenueResponse.setValue(revenue.getValue());
-            revenueResponse.setStatus(revenue.getStatus());
-            revenueResponse.setUserAuthId(revenue.getUserAuthId());
-            responseList.add(revenueResponse);
-        }
-        response.setData(responseList);
-        return response;
-    }
+//    public static DataListResponse<RevenueResponse> revenueEntitiesToDataListResponse(List<RevenueEntity> revenueEntityList, List<BankEntity> bankEntityList, List<BankAccountEntity> bankAccountEntityList, List<SalaryEntity> salaryEntityList){
+//        DataListResponse<RevenueResponse> response = new DataListResponse<>();
+//        List<RevenueResponse> responseList = new ArrayList<>();
+//
+//        for (RevenueEntity revenue : revenueEntityList) {
+//            RevenueResponse revenueResponse = new RevenueResponse();
+//
+//            bankEntityList.forEach(bank -> {
+//                if(bank.getId().equals(revenue.getBankId())){
+//                    revenueResponse.setBankId(bank.getId());
+//                    revenueResponse.setBankName(bank.getName());
+//                }
+//            });
+//
+//            bankAccountEntityList.forEach(account -> {
+//                if(account.getId().equals(revenue.getAccountId())){
+//                    revenueResponse.setAccountId(account.getId());
+//                    revenueResponse.setAccountName(account.getNickName());
+//                    revenueResponse.setAccountNumber(account.getAccountNumber());
+//                }
+//            });
+//
+//            salaryEntityList.forEach(salary -> {
+//                if(salary.getId().equals(revenue.getSalaryId())){
+//                    revenueResponse.setSalaryId(salary.getId());
+//                    revenueResponse.setSalaryName(salary.getName());
+//                }
+//            });
+//
+//            revenueResponse.setId(revenue.getId());
+//            revenueResponse.setType(revenue.getType());
+//            revenueResponse.setDescription(revenue.getDescription());
+//            revenueResponse.setReceivingDate(revenue.getReceivingDate());
+//            revenueResponse.setValue(revenue.getValue());
+//            revenueResponse.setStatus(revenue.getStatus());
+//            revenueResponse.setUserAuthId(revenue.getUserAuthId());
+//            responseList.add(revenueResponse);
+//        }
+//        response.setData(responseList);
+//        return response;
+//    }
 
     public static RevenueEntity createRevenueFromRevenueRequest(RevenueRequest revenueRequest) {
         RevenueEntity revenueEntity = new RevenueEntity();

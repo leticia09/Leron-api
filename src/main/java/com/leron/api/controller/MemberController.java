@@ -35,8 +35,8 @@ public class MemberController {
     )
     public DataResponse<List<MemberResponse>> create(
             @RequestBody List<MemberRequest> requestCreation,
-            @RequestHeader(name = "locale", required = true) String locale,
-            @RequestHeader(name = "Authorization", required = true) String authorization
+            @RequestHeader(name = "locale", required = false) String locale,
+            @RequestHeader(name = "Authorization", required = false) String authorization
          ) {
 
         DataRequest<List<MemberRequest>> request = new DataRequest<>(requestCreation, locale, authorization);

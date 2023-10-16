@@ -27,6 +27,9 @@ public class GenericEntities {
     @Column(name = "CHANGED_BY")
     private Long changedBy;
 
+    @Column(name = "status")
+    private String status;
+
     @Column(name = "user_auth_id", nullable = false)
     private Long userAuthId;
 }

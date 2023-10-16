@@ -13,5 +13,5 @@ public class UserAuthRequest {
     private String login;
     private String password;
     private String cpf;
-    private String sex;
+    private Long sex;
 }

@@ -6,20 +6,24 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_bank")
-public class BankEntity extends GenericEntities {
+public class Card extends GenericEntities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "name", nullable = false)
     private String name;
+    private String owner;
+    private Long finalNumber;
+    private String modality;
+    private Integer closingDate;
+    private Integer dueDate;
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
 }
