@@ -11,4 +11,5 @@ import java.math.BigDecimal;
 @Data
 public class MacroGroupRequest {
     private String name;
+    private Long userAuthId;
 }

@@ -28,4 +28,5 @@ public class ExpenseResponse {
     private String status;
     private java.util.Date paymentDate;
     private Long installment;
+    private Long userAuthId;
 }

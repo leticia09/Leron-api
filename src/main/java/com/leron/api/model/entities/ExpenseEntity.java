@@ -1,5 +1,6 @@
 package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_expense")
-public class ExpenseEntity {
+public class ExpenseEntity extends GenericEntities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,7 +52,7 @@ public class ExpenseEntity {
     @Column(name = "advance", nullable = false)
     private Boolean advance = Boolean.FALSE;
 
-    @Column(name = "type_payment", nullable = false)
+    @Column(name = "type_payment")
     private String typePayment;
 
     @Column(name = "status", nullable = false)
@@ -63,21 +64,4 @@ public class ExpenseEntity {
     @Column(name = "payment_date")
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date paymentDate;
-
-    @Column(name= "deleted")
-    private Boolean deleted = Boolean.FALSE;
-
-    @Column(name = "CREATED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date createdIn;
-
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
-    @Column(name = "CHANGED_IN")
-    @Temporal(TemporalType.TIMESTAMP)
-    private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
 }

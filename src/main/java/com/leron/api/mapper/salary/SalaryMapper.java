@@ -1,14 +1,9 @@
 package com.leron.api.mapper.salary;
 
-import com.leron.api.model.DTO.card.CardDTO;
-import com.leron.api.model.DTO.card.CardRequest;
-import com.leron.api.model.DTO.card.CardResponse;
 import com.leron.api.model.DTO.salary.SalaryRequest;
 import com.leron.api.model.DTO.salary.SalaryResponse;
-import com.leron.api.model.entities.BankEntity;
-import com.leron.api.model.entities.CardEntity;
 import com.leron.api.model.entities.SalaryEntity;
-import com.leron.api.model.entities.UserEntity;
+import com.leron.api.model.entities.MemberEntity;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +13,7 @@ import java.util.List;
 
 @Component
 public class SalaryMapper {
-    public static DataListResponse<SalaryResponse> salaryEntitiesToDataListResponse(List<SalaryEntity> salaryEntityList, List<UserEntity> userEntityList){
+    public static DataListResponse<SalaryResponse> salaryEntitiesToDataListResponse(List<SalaryEntity> salaryEntityList, List<MemberEntity> userEntityList){
 
         DataListResponse<SalaryResponse> response = new DataListResponse<>();
         List<SalaryResponse> responseList = new ArrayList<>();
@@ -34,7 +29,7 @@ public class SalaryMapper {
             salaryResponse.setId(salary.getId());
             salaryResponse.setStatus(salary.getStatus());
             salaryResponse.setName(salary.getName());
-            salaryResponse.setPrice(salary.getPrice());
+            salaryResponse.setUserAuthId(salary.getUserAuthId());
 
             responseList.add(salaryResponse);
         }
@@ -50,8 +45,8 @@ public class SalaryMapper {
         salary.setStatus(salaryRequest.getStatus());
         salary.setName(salaryRequest.getName());
         salary.setUserId(salaryRequest.getUserId());
-        salary.setPrice(salaryRequest.getPrice());
         salary.setType(salaryRequest.getType());
+        salary.setUserAuthId(salaryRequest.getUserAuthId());
 
         salary.setCreatedIn(new Date());
 
@@ -66,8 +61,8 @@ public class SalaryMapper {
         salaryResponse.setStatus(salary.getStatus());
         salaryResponse.setUserId(salary.getUserId());
         salaryResponse.setId(salary.getId());
-        salaryResponse.setPrice(salary.getPrice());
         salaryResponse.setName(salary.getName());
+        salaryResponse.setUserAuthId(salary.getUserAuthId());
 
         return salaryResponse;
     }

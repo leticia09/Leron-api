@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 public class SalaryRequest {
     private String name;
     private Long userId;
-    private BigDecimal price;
     private String status;
     private String type;
+    private Long userAuthId;
 }
