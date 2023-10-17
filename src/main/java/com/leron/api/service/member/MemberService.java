@@ -33,13 +33,10 @@ public class MemberService {
                                                      String authorization) throws ApplicationBusinessException {
         DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
-        userRequest.getData().forEach(user -> {
-            try {
-                MemberValidator.validateUser(user);
-            } catch (ApplicationBusinessException e) {
-                e.printStackTrace();
-            }
-        });
+        List<MemberEntity> members = memberRepository.findAllByAuthUserId(userRequest.getData().get(0).getUserAuthId());
+
+        MemberValidator.validateUser(userRequest.getData(),members);
+
 
         List<MemberEntity> entities = memberRepository.saveAll(MemeberMapper.createUserFromUserRequest(userRequest.getData()));
         List<MemberResponse> userResponse = MemeberMapper.createUserResponse(entities);

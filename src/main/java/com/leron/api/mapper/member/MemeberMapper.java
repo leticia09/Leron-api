@@ -22,6 +22,7 @@ public class MemeberMapper {
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
             userDTO.setUserAuthId(user.getUserAuthId());
+            userDTO.setStatus(user.getStatus());
 
             responseList.add(userDTO);
         }
@@ -34,6 +35,7 @@ public class MemeberMapper {
         userRequest.forEach( user -> {
             MemberEntity entity = new MemberEntity();
             entity.setName(user.getName());
+            entity.setStatus("ACTIVE");
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
             entities.add(entity);
@@ -49,6 +51,7 @@ public class MemeberMapper {
             MemberResponse userResponse = new MemberResponse();
             userResponse.setName(entity.getName());
             userResponse.setId(userResponse.getId());
+            userResponse.setStatus(entity.getStatus());
             userResponse.setUserAuthId(userResponse.getUserAuthId());
 
             responses.add(userResponse);
