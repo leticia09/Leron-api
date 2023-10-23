@@ -11,8 +11,10 @@ import com.leron.api.model.entities.Card;
 import com.leron.api.repository.AccountRepository;
 import com.leron.api.repository.CardRepository;
 import com.leron.api.repository.RegisterBankRepository;
+import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.validator.registerBank.RegisterBankValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +36,12 @@ public class RegisterBankService {
     @Autowired
     private RegisterBankMapper bankMapper;
 
-    public DataResponse<RegisterBankResponse> createBank(RegisterBankRequest requestDTO, String locale, String authorization) {
-        Bank bank = bankMapper.toEntity(requestDTO);
+    public DataResponse<RegisterBankResponse> createBank(RegisterBankRequest requestDTO, String locale, String authorization) throws ApplicationBusinessException {
 
+        List<Bank> bankData = bankRepository.findByUserAuthId(requestDTO.getUserAuthId());
+        RegisterBankValidator.validate(requestDTO, bankData);
+
+        Bank bank = bankMapper.toEntity(requestDTO);
 
         bank = saveBank(bank);
         for (Account account : bank.getAccounts()) {

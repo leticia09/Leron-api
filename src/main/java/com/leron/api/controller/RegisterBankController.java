@@ -3,6 +3,7 @@ package com.leron.api.controller;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
 import com.leron.api.model.entities.Bank;
+import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.registerBank.RegisterBankService;
@@ -19,8 +20,18 @@ public class RegisterBankController {
     @PostMapping
     public DataResponse<RegisterBankResponse> createBank(@RequestBody RegisterBankRequest requestDTO,
                                                          @RequestHeader(name = "locale", required = false) String locale,
-                                                         @RequestHeader(name = "Authorization", required = false) String authorization) {
-        return bankService.createBank(requestDTO, locale, authorization);
+                                                         @RequestHeader(name = "Authorization", required = false) String authorization) throws ApplicationBusinessException {
+
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        try {
+            response =  bankService.createBank(requestDTO, locale, authorization);
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+
     }
 
     @GetMapping("/{userAuthId}")

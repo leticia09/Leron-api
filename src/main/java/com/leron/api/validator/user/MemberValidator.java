@@ -31,7 +31,7 @@ public class MemberValidator {
         }
 
         if(isSAME.get()) {
-            throw new ApplicationBusinessException("ERROR", "NOME_ALREADY_EXISTS");
+            throw new ApplicationBusinessException("ERROR", "NAME_ALREADY_EXISTS");
         }
     }
 }
