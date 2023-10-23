@@ -42,7 +42,7 @@ public class SalaryMapper {
 
         SalaryEntity salary = new SalaryEntity();
 
-        salary.setStatus(salaryRequest.getStatus());
+        //salary.setStatus(salaryRequest.getStatus());
         salary.setName(salaryRequest.getName());
         salary.setUserId(salaryRequest.getUserId());
         salary.setType(salaryRequest.getType());
