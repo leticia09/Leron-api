@@ -2,6 +2,7 @@ package com.leron.api.validator.registerBank;
 
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.entities.Bank;
+import com.leron.api.model.entities.Card;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,7 @@ public class RegisterBankValidator {
                                 .anyMatch(reqCard -> reqCard.getFinalNumber().equals(card.getFinalNumber()))) {
                             areCardNumbersUnique.set(true);
                         }
+
                     });
                 });
             });
@@ -56,5 +58,11 @@ public class RegisterBankValidator {
             throw new ApplicationBusinessException("ERROR", "DUPLICATE_CARD_NUMBER");
         }
 
+    }
+
+    public static void validateCard(Card card) throws ApplicationBusinessException {
+        if (card == null) {
+            throw new ApplicationBusinessException("ERROR", "CARD_NOT_FIND");
+        }
     }
 }

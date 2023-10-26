@@ -1,5 +1,7 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.registerBank.CardRequest;
+import com.leron.api.model.DTO.registerBank.CardResponse;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
 import com.leron.api.model.entities.Bank;
@@ -45,5 +47,20 @@ public class RegisterBankController {
             @PathVariable("id") Long id
     ) {
         return bankService.getBankByIdAndUserAuthId(userAuthId, id);
+    }
+
+    @PutMapping("/{userAuthId}/cards/{cardId}")
+    public DataResponse<CardResponse> updateCard(@PathVariable("userAuthId") Long userAuthId,
+                                                 @PathVariable("cardId") Long cardId,
+                                                 @RequestBody CardRequest cardRequest) {
+        DataResponse<CardResponse> response = new DataResponse<>();
+
+        try {
+            return bankService.updateCard(userAuthId, cardId, cardRequest);
+        } catch (ApplicationBusinessException error) {
+            response.setResponse(error);
+        }
+        return response;
+
     }
 }

@@ -10,6 +10,8 @@ import com.leron.api.service.points.PointsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/points")
@@ -19,8 +21,7 @@ public class PointsController {
 
     @GetMapping("/{userAuthId}")
     public DataListResponse<PointsResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-       // DataListResponse<PointsResponse> list = pointsService.list(userAuthId);
-        return null;
+        return pointsService.list(userAuthId);
     }
 
     @PostMapping(
@@ -29,12 +30,12 @@ public class PointsController {
             produces = "application/json"
     )
     public DataResponse<PointsResponse> create(
-            @RequestBody PointsRequest requestCreation,
+            @RequestBody List<PointsRequest> requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
 
-        DataRequest<PointsRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataRequest<List<PointsRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
         DataResponse<PointsResponse> response = new DataResponse<>();
 
         try {

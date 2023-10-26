@@ -1,20 +1,42 @@
 package com.leron.api.validator.points;
 
 import com.leron.api.model.DTO.points.PointsRequest;
+import com.leron.api.model.entities.Score;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+
 @Component
 public class PointsValidator {
 
-    public static void validator(DataRequest<PointsRequest> request) throws ApplicationBusinessException {
-        if(request.getData().getProgram() == null || request.getData().getProgram().isEmpty()){
-            throw new ApplicationBusinessException("Lascou", "PROGRAM_IS_EMPTY");
+    public static void validator(List<PointsRequest> request, List<Score> currentPoint) throws ApplicationBusinessException {
+
+        AtomicReference<Boolean> isSameBankName = new AtomicReference<>(false);
+        AtomicReference<Boolean> valueISNull = new AtomicReference<>(false);
+
+        currentPoint.forEach(point -> {
+            request.forEach(res -> {
+                if(point.getProgram().equalsIgnoreCase(res.getProgram())) {
+                    isSameBankName.set(true);
+                }
+
+                if(Objects.isNull(point.getValue())) {
+                    valueISNull.set(true);
+                }
+            });
+
+        });
+
+        if(isSameBankName.get()){
+            throw new ApplicationBusinessException("ERROR", "PROGRAM_ALREADY_EXISTS");
         }
 
-        if(request.getData().getStatus() == null || request.getData().getStatus().isEmpty()){
-            throw new ApplicationBusinessException("Lascou", "STATUS_IS_EMPTY");
+        if(valueISNull.get()){
+            throw new ApplicationBusinessException("ERROR", "VALUE_IS_NULL");
         }
     }
 

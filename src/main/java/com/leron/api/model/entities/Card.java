@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Entity
 @Data
@@ -22,6 +24,10 @@ public class Card extends GenericEntities {
     private String modality;
     private Integer closingDate;
     private Integer dueDate;
+    private BigDecimal point;
+    private String currencyPoint;
+    private BigDecimal value;
+    private Timestamp pointsExpirationDate;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

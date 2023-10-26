@@ -23,18 +23,18 @@ public class PointsService {
         this.pointsRepository = pointsRepository;
     }
 
-//    public DataListResponse<PointsResponse> list(Long userAuthId) {
-//        List<PointsEntity> pointsEntityList = pointsRepository.findAllByAuthUserId(userAuthId);
-//
-//    }
+    public DataListResponse<PointsResponse> list(Long userAuthId) {
+        List<Score> pointsEntityList = pointsRepository.findByUserAuthId(userAuthId);
+        return PointsMapper.pointsEntitiesToDataListResponse(pointsEntityList);
+    }
 
-    public DataResponse<PointsResponse> create(DataRequest<PointsRequest> request) throws ApplicationBusinessException {
+    public DataResponse<PointsResponse> create(DataRequest<List<PointsRequest>> request) throws ApplicationBusinessException {
         DataResponse<PointsResponse> response = new DataResponse<>();
-        PointsValidator.validator(request);
+        List<Score> pointsEntityList = pointsRepository.findByUserAuthId(request.getData().get(0).getUserAuthId());
+        PointsValidator.validator(request.getData(), pointsEntityList);
 
-        PointsEntity entity = PointsMapper.createPointsFromRevenueRequest(request.getData());
-        pointsRepository.save(entity);
-        response.setData(PointsMapper.createPointsResponse(entity));
+        List<Score> entity = PointsMapper.createPointsFromRevenueRequest(request.getData());
+        pointsRepository.saveAll(entity);
         response.setMessage("Sucesso");
         return response;
     }

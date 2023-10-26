@@ -2,6 +2,8 @@ package com.leron.api.service.registerBank;
 
 import com.leron.api.mapper.bank.RegisterBankMapper;
 import com.leron.api.mapper.member.MemeberMapper;
+import com.leron.api.model.DTO.registerBank.CardRequest;
+import com.leron.api.model.DTO.registerBank.CardResponse;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
 import com.leron.api.model.DTO.user.MemberResponse;
@@ -87,5 +89,19 @@ public class RegisterBankService {
         } else {
             return null;
         }
+    }
+
+    public DataResponse<CardResponse> updateCard(Long userAuthId, Long cardId, CardRequest cardRequest) throws ApplicationBusinessException {
+        Card card = cardRepository.findCardByIdAndUserAuthId(cardId, userAuthId);
+
+       RegisterBankValidator.validateCard(card);
+
+        card.setCurrencyPoint(cardRequest.getCurrencyPoint());
+        card.setPoint(cardRequest.getPoint());
+        card.setPointsExpirationDate(cardRequest.getPointsExpirationDate());
+        card.setValue(cardRequest.getValue());
+        cardRepository.save(card);
+
+        return bankMapper.toResponseDTOCard(card);
     }
 }

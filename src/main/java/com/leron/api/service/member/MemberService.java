@@ -25,7 +25,7 @@ public class MemberService {
     }
 
     public DataListResponse<MemberResponse> list(Long userAuthId){
-        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findAllByAuthUserId(userAuthId));
+        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findByUserAuthId(userAuthId));
     }
 
     public DataResponse<List<MemberResponse>> create(DataRequest<List<MemberRequest>> userRequest,
@@ -33,7 +33,7 @@ public class MemberService {
                                                      String authorization) throws ApplicationBusinessException {
         DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
-        List<MemberEntity> members = memberRepository.findAllByAuthUserId(userRequest.getData().get(0).getUserAuthId());
+        List<MemberEntity> members = memberRepository.findByUserAuthId(userRequest.getData().get(0).getUserAuthId());
 
         MemberValidator.validateUser(userRequest.getData(),members);
 

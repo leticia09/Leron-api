@@ -32,7 +32,7 @@ public class ExpenseService {
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId){
         List<ExpenseEntity> expenseEntities = expenseRepository.findAllByAuthUserId(userAuthId);
-        List<MemberEntity> userEntityList =  userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList =  userRepository.findByUserAuthId(userAuthId);
 
         DataListResponse<ExpenseResponse> response  = ExpenseMapper.expenseEntitiesToDataListResponse(expenseEntities, null, userEntityList);
 

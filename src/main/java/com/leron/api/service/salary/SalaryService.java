@@ -28,7 +28,7 @@ public class SalaryService {
     }
 
     public DataListResponse<SalaryResponse> list(Long userAuthId){
-        List<MemberEntity> userEntityList = userRepository.findAllByAuthUserId(userAuthId);
+        List<MemberEntity> userEntityList = userRepository.findByUserAuthId(userAuthId);
         return SalaryMapper.salaryEntitiesToDataListResponse(salaryRepository.findAllByAuthUserId(userAuthId), userEntityList);
     }
 

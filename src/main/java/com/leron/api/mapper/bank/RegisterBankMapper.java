@@ -10,6 +10,7 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -135,4 +136,24 @@ public class RegisterBankMapper {
         return cards;
     }
 
+    public DataResponse<CardResponse> toResponseDTOCard(Card card) {
+        DataResponse<CardResponse> response = new DataResponse<>();
+        CardResponse cardResponse = new CardResponse();
+        cardResponse.setPoint(card.getPoint());
+        cardResponse.setStatus(card.getStatus());
+        cardResponse.setId(card.getId());
+        cardResponse.setFinalNumber(card.getFinalNumber());
+        cardResponse.setModality(card.getModality());
+        cardResponse.setClosingDate(card.getClosingDate());
+        cardResponse.setName(card.getName());
+        cardResponse.setCurrencyPoint(card.getCurrencyPoint());
+        MemberEntity member = new MemberEntity();
+        member.setName(card.getOwner());
+        cardResponse.setOwner(member);
+        cardResponse.setValue(card.getValue());
+        cardResponse.setPointsExpirationDate(card.getPointsExpirationDate());
+        cardResponse.setDueDate(card.getDueDate());
+
+        return response;
+    }
 }

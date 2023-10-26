@@ -7,13 +7,14 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_points")
-public class PointsEntity extends GenericEntities {
+public class Score extends GenericEntities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,18 +22,9 @@ public class PointsEntity extends GenericEntities {
     @Column(name = "program", nullable = false)
     private String program;
 
-    @Column(name = "id_bank")
-    private Long bankId;
+    @Column(name = "value", nullable = false)
+    private BigDecimal value;
 
-    @Column(name = "id_account")
-    private Long accountId;
-
-    @Column(name = "currency")
-    private String currency;
-
-    @Column(name = "point")
-    private BigDecimal point;
-
-    @Column(name = "status", nullable = false)
-    private String status;
+    @Column(name = "points_expiration_date")
+    private Timestamp pointsExpirationDate;
 }
