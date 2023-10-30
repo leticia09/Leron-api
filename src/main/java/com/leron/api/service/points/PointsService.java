@@ -1,26 +1,36 @@
 package com.leron.api.service.points;
 
 import com.leron.api.mapper.PointsMapper;
+import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.points.PointsRequest;
 import com.leron.api.model.DTO.points.PointsResponse;
+import com.leron.api.model.DTO.points.TransferRequest;
+import com.leron.api.model.DTO.points.TypeScoreDTO;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.PointsRepository;
+import com.leron.api.repository.TransferRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.validator.points.PointsValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
+@Transactional()
 public class PointsService {
 
     private final PointsRepository pointsRepository;
-
-    public PointsService(PointsRepository pointsRepository) {
+    private final TransferRepository transferRepository;
+    public PointsService(PointsRepository pointsRepository, TransferRepository transferRepository) {
         this.pointsRepository = pointsRepository;
+        this.transferRepository = transferRepository;
     }
 
     public DataListResponse<PointsResponse> list(Long userAuthId) {
@@ -38,4 +48,91 @@ public class PointsService {
         response.setMessage("Sucesso");
         return response;
     }
+
+    public DataResponse<List<TypeScoreDTO>> getType() {
+        DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
+
+        List<TypeScoreDTO> list = new ArrayList<>();
+        TypeScoreDTO typeScoreDTO = new TypeScoreDTO();
+        typeScoreDTO.setId(1L);
+        typeScoreDTO.setDescription("Milhas");
+
+        list.add(typeScoreDTO);
+
+        TypeScoreDTO typeScoreDTO2 = new TypeScoreDTO();
+        typeScoreDTO2.setId(2L);
+        typeScoreDTO2.setDescription("Pontos");
+
+        list.add(typeScoreDTO2);
+
+        response.setData(list);
+        return response;
+    }
+
+    public DataResponse<List<TypeScoreDTO>> getProgramsById(Long userAuthId) {
+        DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
+        List<Object[]> list = pointsRepository.findIdAndProgramByUserAuthId(userAuthId);
+        response.setData(PointsMapper.mapToObjectList(list));
+        return response;
+    }
+
+    public DataResponse<TransferRequest> transfer(DataRequest<TransferRequest> request) throws ApplicationBusinessException {
+        PointsValidator.validatorTransfer(request.getData());
+        Score currentValueOriginProgram = pointsRepository.findScoreById(request.getData().getOriginProgramId(), request.getData().getUserAuthId());
+        Score currentValueDestinyProgram = pointsRepository.findScoreById(request.getData().getDestinyProgramId(), request.getData().getUserAuthId());
+
+        return doTransfer(request.getData(), currentValueOriginProgram, currentValueDestinyProgram);
+    }
+
+    private DataResponse<TransferRequest> doTransfer(TransferRequest request, Score currentValueOriginProgram, Score currentValueDestinyProgram) throws ApplicationBusinessException {
+        DataResponse<TransferRequest> response = new DataResponse<>();
+
+        transferRepository.save(PointsMapper.TransferRequestToEntity(request));
+
+        BigDecimal saveOriginValue = currentValueOriginProgram.getValue().subtract(request.getQuantity());
+
+        currentValueOriginProgram.setValue(saveOriginValue);
+
+        BigDecimal valueMulti = request.getDestinyValue().multiply(request.getQuantity());
+        BigDecimal quantity = currentValueDestinyProgram.getValue().add(valueMulti);
+
+        if(Objects.nonNull(request.getBonus())) {
+            BigDecimal divides = request.getBonus().divide(BigDecimal.valueOf(100));
+            BigDecimal result = valueMulti.multiply(divides);
+            quantity = quantity.add(result);
+        }
+
+        currentValueDestinyProgram.setValue(quantity);
+
+        pointsRepository.save(currentValueOriginProgram);
+        pointsRepository.save(currentValueDestinyProgram);
+
+        response.setMessage("Sucesso");
+
+        return response;
+    }
+    public DataResponse<GraphicResponse> getProgramsData(Long authId) {
+        DataResponse<GraphicResponse> response = new DataResponse<>();
+        List<Score> programData = pointsRepository.findByUserAuthId(authId);
+
+        GraphicResponse graphicResponse = new GraphicResponse();
+
+        ArrayList<String> labels = new ArrayList<>();
+        ArrayList<BigDecimal> data = new ArrayList<>();
+
+        for (Score result : programData) {
+            String program = result.getProgram();
+            BigDecimal value = result.getValue();
+            labels.add(program);
+            data.add(value);
+        }
+
+        graphicResponse.setLabels(labels);
+        graphicResponse.setData(data);
+
+        response.setData(graphicResponse);
+
+        return response;
+    }
+
 }

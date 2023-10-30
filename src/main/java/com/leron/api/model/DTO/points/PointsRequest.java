@@ -14,4 +14,5 @@ public class PointsRequest {
     private Long userAuthId;
     private BigDecimal value;
     private Timestamp pointsExpirationDate;
+    private String typeOfScore;
 }

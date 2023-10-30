@@ -27,4 +27,7 @@ public class Score extends GenericEntities {
 
     @Column(name = "points_expiration_date")
     private Timestamp pointsExpirationDate;
+
+    @Column(name = "type_of_score")
+    private String typeOfScore;
 }

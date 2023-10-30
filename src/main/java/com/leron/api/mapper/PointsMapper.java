@@ -2,11 +2,15 @@ package com.leron.api.mapper;
 
 import com.leron.api.model.DTO.points.PointsRequest;
 import com.leron.api.model.DTO.points.PointsResponse;
+import com.leron.api.model.DTO.points.TransferRequest;
+import com.leron.api.model.DTO.points.TypeScoreDTO;
 import com.leron.api.model.entities.Score;
+import com.leron.api.model.entities.Transfer;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,6 +29,7 @@ public class PointsMapper {
             responses.setUserAuthId(entity.getUserAuthId());
             responses.setValue(entity.getValue());
             responses.setPointsExpirationDate(entity.getPointsExpirationDate());
+            responses.setTypeOfScore(entity.getTypeOfScore());
             responseList.add(responses);
 
         }
@@ -40,6 +45,7 @@ public class PointsMapper {
             entity.setProgram(res.getProgram());
             entity.setStatus("ACTIVE");
             entity.setValue(res.getValue());
+            entity.setTypeOfScore(res.getTypeOfScore());
             if(Objects.nonNull(res.getPointsExpirationDate())) {
                 entity.setPointsExpirationDate(res.getPointsExpirationDate());
             } else {
@@ -53,13 +59,43 @@ public class PointsMapper {
         return scoreList;
     }
 
-    public static PointsResponse createPointsResponse (Score entity) {
+    public static Transfer TransferRequestToEntity(TransferRequest request) {
+        Transfer transfer = new Transfer();
+        transfer.setOriginProgramId(request.getOriginProgramId());
+        transfer.setDestinyProgramId(request.getDestinyProgramId());
+        transfer.setQuantity(request.getQuantity());
+        transfer.setOriginValue(request.getOriginValue());
+        transfer.setDestinyValue(request.getDestinyValue());
+        if(Objects.nonNull(request.getBonus())) {
+            transfer.setOriginProgramId(request.getOriginProgramId());
+        }
 
-        PointsResponse response = new PointsResponse();
-        response.setProgram(entity.getProgram());
-        response.setId(entity.getId());
-        response.setStatus(entity.getStatus());
+        if(Objects.nonNull(request.getPointsExpirationDate())) {
+            transfer.setPointsExpirationDate(request.getPointsExpirationDate());
+        }
 
-        return response;
+        transfer.setUserAuthId(request.getUserAuthId());
+        transfer.setCreatedIn(new Date());
+
+        return transfer;
     }
+
+    public static List<TypeScoreDTO> mapToObjectList(List<Object[]> data) {
+        List<TypeScoreDTO> resultList = new ArrayList<>();
+
+        for (Object[] row : data) {
+            if (row.length >= 2) {
+                Long id = (Long) row[0];
+                String description = (String) row[1];
+                TypeScoreDTO typeScore = new TypeScoreDTO();
+                typeScore.setId(id);
+                typeScore.setDescription(description);
+                resultList.add(typeScore);
+            }
+        }
+
+        return resultList;
+    }
+
+
 }

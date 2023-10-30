@@ -1,14 +1,17 @@
 package com.leron.api.validator.points;
 
 import com.leron.api.model.DTO.points.PointsRequest;
+import com.leron.api.model.DTO.points.TransferRequest;
 import com.leron.api.model.entities.Score;
 import com.leron.api.responses.ApplicationBusinessException;
-import com.leron.api.responses.DataRequest;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.sql.Timestamp;
 
 @Component
 public class PointsValidator {
@@ -20,24 +23,57 @@ public class PointsValidator {
 
         currentPoint.forEach(point -> {
             request.forEach(res -> {
-                if(point.getProgram().equalsIgnoreCase(res.getProgram())) {
+                if (point.getProgram().equalsIgnoreCase(res.getProgram())) {
                     isSameBankName.set(true);
                 }
 
-                if(Objects.isNull(point.getValue())) {
+                if (Objects.isNull(point.getValue())) {
                     valueISNull.set(true);
                 }
             });
 
         });
 
-        if(isSameBankName.get()){
+        if (isSameBankName.get()) {
             throw new ApplicationBusinessException("ERROR", "PROGRAM_ALREADY_EXISTS");
         }
 
-        if(valueISNull.get()){
+        if (valueISNull.get()) {
             throw new ApplicationBusinessException("ERROR", "VALUE_IS_NULL");
         }
+    }
+
+    public static void validatorTransfer(TransferRequest request) throws ApplicationBusinessException {
+        if (Objects.isNull(request.getOriginProgramId())) {
+            throw new ApplicationBusinessException("ERROR", "ORIGIN_PROGRAM_ID_IS_NULL");
+        }
+
+        if (Objects.isNull(request.getDestinyProgramId())) {
+            throw new ApplicationBusinessException("ERROR", "DESTINY_PROGRAM_ID_IS_NULL");
+        }
+
+        if (Objects.isNull(request.getQuantity())) {
+            throw new ApplicationBusinessException("ERROR", "INVALID_QUANTITY");
+        }
+
+        if (Objects.nonNull(request.getPointsExpirationDate()) && isExpirationDateInvalid(request.getPointsExpirationDate())) {
+            throw new ApplicationBusinessException("ERROR", "INVALID_EXPIRATION_DATE");
+        }
+
+        if (Objects.isNull(request.getOriginValue())) {
+            throw new ApplicationBusinessException("ERROR", "INVALID_ORIGIN_VALUE");
+        }
+
+        if (Objects.isNull(request.getDestinyValue())) {
+            throw new ApplicationBusinessException("ERROR", "INVALID_DESTINY_VALUE");
+        }
+
+    }
+
+    private static boolean isExpirationDateInvalid(Timestamp expirationDate) {
+        LocalDate currentDate = LocalDate.now();
+        LocalDate expiration = expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return currentDate.isAfter(expiration);
     }
 
 }
