@@ -20,6 +20,7 @@ public class PointsValidator {
 
         AtomicReference<Boolean> isSameBankName = new AtomicReference<>(false);
         AtomicReference<Boolean> valueISNull = new AtomicReference<>(false);
+        AtomicReference<Boolean> invalidDate = new AtomicReference<>(false);
 
         currentPoint.forEach(point -> {
             request.forEach(res -> {
@@ -30,9 +31,17 @@ public class PointsValidator {
                 if (Objects.isNull(point.getValue())) {
                     valueISNull.set(true);
                 }
+
+                if (Objects.nonNull(point.getPointsExpirationDate()) && isExpirationDateInvalid(point.getPointsExpirationDate())) {
+                    invalidDate.set(true);
+                }
             });
 
         });
+
+        if (invalidDate.get()) {
+            throw new ApplicationBusinessException("ERROR", "INVALID_EXPIRATION_DATE");
+        }
 
         if (isSameBankName.get()) {
             throw new ApplicationBusinessException("ERROR", "PROGRAM_ALREADY_EXISTS");
