@@ -1,11 +1,13 @@
 package com.leron.api.validator.points;
 
 import com.leron.api.model.DTO.points.PointsRequest;
+import com.leron.api.model.DTO.points.StatusRequest;
 import com.leron.api.model.DTO.points.TransferRequest;
 import com.leron.api.model.entities.Score;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;
 
+import javax.print.attribute.standard.JobKOctets;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -86,7 +88,7 @@ public class PointsValidator {
         return expiration.isBefore(currentDate) || expiration.isEqual(currentDate);
     }
 
-    public static void validatorValueTransfer (Score valueOrigin, Score valueDestiny) throws ApplicationBusinessException {
+    public static void validatorValueTransfer(Score valueOrigin, Score valueDestiny) throws ApplicationBusinessException {
         if (valueOrigin.getValue().compareTo(BigDecimal.ZERO) < 0) {
             throw new ApplicationBusinessException("ERROR", "INSUFFICIENT_ORIGIN_BALANCE");
         }
@@ -95,8 +97,25 @@ public class PointsValidator {
             throw new ApplicationBusinessException("ERROR", "INSUFFICIENT_DESTINY_BALANCE");
         }
 
-        if(valueOrigin.getId().equals(valueDestiny.getId()))
+        if (valueOrigin.getId().equals(valueDestiny.getId()))
             throw new ApplicationBusinessException("ERROR", "PROGRAM_IS_EQUAL");
+    }
+
+    public static void validateStatus(StatusRequest request) throws ApplicationBusinessException {
+        if (Objects.isNull(request.getStatus())) {
+            throw new ApplicationBusinessException("ERROR", "STATUS_IS_EMPTY");
+        }
+
+        if (Objects.isNull(request.getProgramId())) {
+            throw new ApplicationBusinessException("ERROR", "PROGRAM_IS_EMPTY");
+
+        }
+    }
+
+    public static void validateValue(BigDecimal request) throws ApplicationBusinessException {
+        if (request.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApplicationBusinessException("ERROR", "INSUFFICIENT_BALANCE");
+        }
     }
 
 }

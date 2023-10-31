@@ -2,10 +2,7 @@ package com.leron.api.service.points;
 
 import com.leron.api.mapper.PointsMapper;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
-import com.leron.api.model.DTO.points.PointsRequest;
-import com.leron.api.model.DTO.points.PointsResponse;
-import com.leron.api.model.DTO.points.TransferRequest;
-import com.leron.api.model.DTO.points.TypeScoreDTO;
+import com.leron.api.model.DTO.points.*;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.PointsRepository;
 import com.leron.api.repository.TransferRepository;
@@ -19,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,6 +61,26 @@ public class PointsService {
         TypeScoreDTO typeScoreDTO2 = new TypeScoreDTO();
         typeScoreDTO2.setId(2L);
         typeScoreDTO2.setDescription("Pontos");
+
+        list.add(typeScoreDTO2);
+
+        response.setData(list);
+        return response;
+    }
+
+    public DataResponse<List<TypeScoreDTO>> getStatus() {
+        DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
+
+        List<TypeScoreDTO> list = new ArrayList<>();
+        TypeScoreDTO typeScoreDTO = new TypeScoreDTO();
+        typeScoreDTO.setId(1L);
+        typeScoreDTO.setDescription("Ativo");
+
+        list.add(typeScoreDTO);
+
+        TypeScoreDTO typeScoreDTO2 = new TypeScoreDTO();
+        typeScoreDTO2.setId(2L);
+        typeScoreDTO2.setDescription("Inativo");
 
         list.add(typeScoreDTO2);
 
@@ -135,11 +153,11 @@ public class PointsService {
             labels.add(program);
             data.add(value);
 
-            if(Objects.equals(result.getTypeOfScore(), "Milhas")) {
+            if(Objects.equals(result.getTypeOfScore(), "Pontos")) {
                 totalPoints = result.getValue().add(totalPoints);
             }
 
-            if(Objects.equals(result.getTypeOfScore(), "Pontos")) {
+            if(Objects.equals(result.getTypeOfScore(), "Milhas")) {
                 totalMiles = result.getValue().add(totalMiles);
             }
 
@@ -161,6 +179,50 @@ public class PointsService {
         graphicResponse.setTotalProgramActive(totalProgramActive);
 
         response.setData(graphicResponse);
+
+        return response;
+    }
+
+    public DataResponse<StatusRequest> updateStatus(DataRequest<StatusRequest> request) throws ApplicationBusinessException {
+        DataResponse<StatusRequest> response = new DataResponse<>();
+
+        PointsValidator.validateStatus(request.getData());
+
+        Score program = pointsRepository.findScoreById(request.getData().getProgramId(), request.getData().getUserAuthId());
+
+        if(request.getData().getStatus().equals("Ativo")) {
+            program.setStatus("ACTIVE");
+        }
+
+        if(request.getData().getStatus().equals("Inativo")) {
+            program.setValue(BigDecimal.ZERO);
+            program.setPointsExpirationDate(null);
+            program.setStatus("INACTIVE");
+        }
+
+        pointsRepository.save(program);
+
+        response.setMessage("Sucesso");
+
+        return response;
+    }
+
+    public DataResponse<UseRequest> usePoints(DataRequest<UseRequest> request) throws ApplicationBusinessException {
+        DataResponse<UseRequest> response = new DataResponse<>();
+
+        Score program = pointsRepository.findScoreById(request.getData().getProgramId(), request.getData().getUserAuthId());
+
+        BigDecimal valueActual = program.getValue().subtract(request.getData().getValue());
+
+        PointsValidator.validateValue(valueActual);
+
+
+        program.setValue(valueActual);
+        program.setChangedIn(new Date());
+
+        pointsRepository.save(program);
+
+        response.setMessage("Sucesso");
 
         return response;
     }
