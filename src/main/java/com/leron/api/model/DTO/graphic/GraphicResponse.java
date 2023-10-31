@@ -11,4 +11,8 @@ import java.util.ArrayList;
 public class GraphicResponse {
     private ArrayList<String> labels;
     private ArrayList<BigDecimal> data;
+    private BigDecimal totalMiles;
+    private BigDecimal totalPoints;
+    private BigDecimal totalProgramActive;
+    private BigDecimal totalProgramInactive;
 }

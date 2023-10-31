@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
-@Transactional()
+@Transactional(rollbackFor = Exception.class)
 public class PointsService {
 
     private final PointsRepository pointsRepository;
     private final TransferRepository transferRepository;
+
     public PointsService(PointsRepository pointsRepository, TransferRepository transferRepository) {
         this.pointsRepository = pointsRepository;
         this.transferRepository = transferRepository;
@@ -87,8 +88,6 @@ public class PointsService {
     private DataResponse<TransferRequest> doTransfer(TransferRequest request, Score currentValueOriginProgram, Score currentValueDestinyProgram) throws ApplicationBusinessException {
         DataResponse<TransferRequest> response = new DataResponse<>();
 
-        transferRepository.save(PointsMapper.TransferRequestToEntity(request));
-
         BigDecimal saveOriginValue = currentValueOriginProgram.getValue().subtract(request.getQuantity());
 
         currentValueOriginProgram.setValue(saveOriginValue);
@@ -96,7 +95,7 @@ public class PointsService {
         BigDecimal valueMulti = request.getDestinyValue().multiply(request.getQuantity());
         BigDecimal quantity = currentValueDestinyProgram.getValue().add(valueMulti);
 
-        if(Objects.nonNull(request.getBonus())) {
+        if (Objects.nonNull(request.getBonus())) {
             BigDecimal divides = request.getBonus().divide(BigDecimal.valueOf(100));
             BigDecimal result = valueMulti.multiply(divides);
             quantity = quantity.add(result);
@@ -104,16 +103,26 @@ public class PointsService {
 
         currentValueDestinyProgram.setValue(quantity);
 
+        PointsValidator.validatorValueTransfer(currentValueOriginProgram, currentValueDestinyProgram);
+
         pointsRepository.save(currentValueOriginProgram);
         pointsRepository.save(currentValueDestinyProgram);
+        transferRepository.save(PointsMapper.TransferRequestToEntity(request));
 
         response.setMessage("Sucesso");
 
+
         return response;
     }
+
     public DataResponse<GraphicResponse> getProgramsData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
         List<Score> programData = pointsRepository.findByUserAuthId(authId);
+
+        BigDecimal totalMiles = new BigDecimal(0);
+        BigDecimal totalPoints = new BigDecimal(0);
+        BigDecimal totalProgramActive = new BigDecimal(0);
+        BigDecimal totalProgramInactive = new BigDecimal(0);
 
         GraphicResponse graphicResponse = new GraphicResponse();
 
@@ -125,10 +134,31 @@ public class PointsService {
             BigDecimal value = result.getValue();
             labels.add(program);
             data.add(value);
+
+            if(Objects.equals(result.getTypeOfScore(), "Milhas")) {
+                totalPoints = result.getValue().add(totalPoints);
+            }
+
+            if(Objects.equals(result.getTypeOfScore(), "Pontos")) {
+                totalMiles = result.getValue().add(totalMiles);
+            }
+
+            if(result.getStatus().equals("ACTIVE")) {
+                totalProgramActive = totalProgramActive.add(BigDecimal.ONE);
+            }
+
+            if(result.getStatus().equals("INACTIVE")) {
+                totalProgramInactive = totalProgramInactive.add(BigDecimal.ONE);
+            }
         }
 
         graphicResponse.setLabels(labels);
         graphicResponse.setData(data);
+
+        graphicResponse.setTotalPoints(totalPoints);
+        graphicResponse.setTotalMiles(totalMiles);
+        graphicResponse.setTotalProgramInactive(totalProgramInactive);
+        graphicResponse.setTotalProgramActive(totalProgramActive);
 
         response.setData(graphicResponse);
 

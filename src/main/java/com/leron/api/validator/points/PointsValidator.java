@@ -6,6 +6,7 @@ import com.leron.api.model.entities.Score;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -82,7 +83,20 @@ public class PointsValidator {
     private static boolean isExpirationDateInvalid(Timestamp expirationDate) {
         LocalDate currentDate = LocalDate.now();
         LocalDate expiration = expirationDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return currentDate.isAfter(expiration);
+        return expiration.isBefore(currentDate) || expiration.isEqual(currentDate);
+    }
+
+    public static void validatorValueTransfer (Score valueOrigin, Score valueDestiny) throws ApplicationBusinessException {
+        if (valueOrigin.getValue().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApplicationBusinessException("ERROR", "INSUFFICIENT_ORIGIN_BALANCE");
+        }
+
+        if (valueDestiny.getValue().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApplicationBusinessException("ERROR", "INSUFFICIENT_DESTINY_BALANCE");
+        }
+
+        if(valueOrigin.getId().equals(valueDestiny.getId()))
+            throw new ApplicationBusinessException("ERROR", "PROGRAM_IS_EQUAL");
     }
 
 }
