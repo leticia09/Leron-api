@@ -32,7 +32,7 @@ public class PointsValidator {
                     valueISNull.set(true);
                 }
 
-                if (Objects.nonNull(point.getPointsExpirationDate()) && isExpirationDateInvalid(point.getPointsExpirationDate())) {
+                if (Objects.nonNull(res.getPointsExpirationDate()) && isExpirationDateInvalid(res.getPointsExpirationDate())) {
                     invalidDate.set(true);
                 }
             });
