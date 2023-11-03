@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/macro-group")
+@RequestMapping("/group")
 public class MacroGroupController {
 
     @Autowired

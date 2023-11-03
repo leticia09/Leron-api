@@ -1,5 +1,6 @@
 package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_user_auth")
-public class UserAuthEntity {
+public class UserAuthEntity extends GenericEntities {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

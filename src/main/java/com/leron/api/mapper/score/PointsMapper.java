@@ -1,4 +1,4 @@
-package com.leron.api.mapper;
+package com.leron.api.mapper.score;
 
 import com.leron.api.model.DTO.points.PointsRequest;
 import com.leron.api.model.DTO.points.PointsResponse;
@@ -51,7 +51,8 @@ public class PointsMapper {
             } else {
                 entity.setPointsExpirationDate(null);
             }
-
+            entity.setCreatedIn(new Date());
+            entity.setDeleted(false);
 
             scoreList.add(entity);
         });

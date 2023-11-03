@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -102,6 +103,8 @@ public class RegisterBankMapper {
         Bank bank = new Bank();
         bank.setName(requestDTO.getName());
         bank.setUserAuthId(requestDTO.getUserAuthId());
+        bank.setDeleted(false);
+        bank.setCreatedIn(new Date());
 
         List<Account> accounts = new ArrayList<>();
         for (AccountRequest accountRequest : requestDTO.getAccounts()) {
@@ -110,6 +113,8 @@ public class RegisterBankMapper {
             account.setAccountNumber(accountRequest.getAccountNumber());
             account.setOwner(accountRequest.getOwner());
             account.setUserAuthId(bank.getUserAuthId());
+            account.setDeleted(false);
+            account.setCreatedIn(new Date());
 
             List<Card> cards = getCards(accountRequest, bank.getUserAuthId());
             account.setCards(cards);
@@ -131,7 +136,10 @@ public class RegisterBankMapper {
             card.setModality(cardRequest.getModality());
             card.setClosingDate(cardRequest.getClosingDate());
             card.setDueDate(cardRequest.getDueDate());
+            card.setCreatedIn(new Date());
+            card.setDeleted(false);
             cards.add(card);
+
         }
         return cards;
     }

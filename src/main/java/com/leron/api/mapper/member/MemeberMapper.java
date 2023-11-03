@@ -38,6 +38,7 @@ public class MemeberMapper {
             entity.setStatus("ACTIVE");
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
+            entity.setDeleted(false);
             entities.add(entity);
         });
 

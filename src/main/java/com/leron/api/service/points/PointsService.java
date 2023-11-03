@@ -1,6 +1,6 @@
 package com.leron.api.service.points;
 
-import com.leron.api.mapper.PointsMapper;
+import com.leron.api.mapper.score.PointsMapper;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.points.*;
 import com.leron.api.model.entities.*;
