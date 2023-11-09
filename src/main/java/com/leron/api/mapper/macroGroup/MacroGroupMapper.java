@@ -1,5 +1,6 @@
 package com.leron.api.mapper.macroGroup;
 
+import com.leron.api.model.DTO.macroGroup.MacroGroupEditRequest;
 import com.leron.api.model.DTO.macroGroup.MacroGroupRequest;
 import com.leron.api.model.DTO.macroGroup.MacroGroupResponse;
 import com.leron.api.model.entities.MacroGroup;
@@ -43,6 +44,22 @@ public class MacroGroupMapper {
         macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
         macro.setStatus("ACTIVE");
         macro.setCreatedIn(new Date());
+        macro.setDeleted(false);
+
+        return macro;
+    }
+
+    public static MacroGroup createMacroGroupFromMacroGroupEditRequest(MacroGroupEditRequest macroGroupRequest) {
+
+        MacroGroup macro = new MacroGroup();
+
+        macro.setId(macroGroupRequest.getId());
+        macro.setName(macroGroupRequest.getName());
+        macro.setUserAuthId(macroGroupRequest.getUserAuthId());
+        macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
+        macro.setStatus(macroGroupRequest.getStatus());
+
+        macro.setChangedIn(new Date());
         macro.setDeleted(false);
 
         return macro;

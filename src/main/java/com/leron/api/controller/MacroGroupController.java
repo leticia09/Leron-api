@@ -1,5 +1,6 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.macroGroup.MacroGroupEditRequest;
 import com.leron.api.model.DTO.macroGroup.MacroGroupRequest;
 import com.leron.api.model.DTO.macroGroup.MacroGroupResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -40,6 +41,30 @@ public class MacroGroupController {
 
         try {
             response = macroGroupService.create(request);
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
+
+    @PatchMapping(
+            value = "",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<MacroGroupResponse> edit(
+            @RequestBody MacroGroupEditRequest requestCreation,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+
+        DataRequest<MacroGroupEditRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<MacroGroupResponse> response = new DataResponse<>();
+
+        try {
+            response = macroGroupService.edit(request);
             return response;
 
         } catch (ApplicationBusinessException error){

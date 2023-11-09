@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.List;
@@ -27,5 +28,6 @@ public class Account extends GenericEntities {
     private Bank bank;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    @Where(clause = "deleted = false")
     private List<Card> cards;
 }

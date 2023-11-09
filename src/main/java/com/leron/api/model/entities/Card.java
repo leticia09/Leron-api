@@ -4,6 +4,7 @@ import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -31,5 +32,6 @@ public class Card extends GenericEntities {
 
     @ManyToOne
     @JoinColumn(name = "account_id")
+    @Where(clause = "deleted = false")
     private Account account;
 }

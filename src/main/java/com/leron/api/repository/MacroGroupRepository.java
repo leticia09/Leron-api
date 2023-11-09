@@ -11,6 +11,6 @@ import java.util.List;
 
 @Repository
 public interface MacroGroupRepository extends JpaRepository<MacroGroup, Long> {
-    List<MacroGroup> findAllGroupByUserAuthId(Long userAuthId);
+    List<MacroGroup> findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(Long userAuthId);
 
 }
