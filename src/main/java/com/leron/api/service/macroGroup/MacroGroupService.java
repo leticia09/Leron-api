@@ -70,11 +70,12 @@ public class MacroGroupService {
 
 
         for (MacroGroup groups : macroGroupList) {
-            if(groups.getId().equals(request.getData().getId())) {
+            if (groups.getId().equals(request.getData().getId())) {
                 specificGroupList.addAll(groups.getSpecificGroups());
             }
         }
 
+        // Delete
         for (SpecificGroup specificGroup : specificGroupList) {
             boolean existsInRequest = false;
 
@@ -88,6 +89,7 @@ public class MacroGroupService {
             specificGroup.setDeleted(!existsInRequest);
         }
 
+        //Create
         request.getData().getSpecificGroups().stream()
                 .filter(group -> specificGroupList.stream().noneMatch(specificGroup -> Objects.equals(specificGroup.getId(), group.getId())))
                 .forEach(newSpecificGroup -> {
@@ -95,6 +97,15 @@ public class MacroGroupService {
                     specificGroupList.add(newSpecificGroup);
                 });
 
+        //Edit
+        request.getData().getSpecificGroups().forEach(newSpecificGroup -> {
+            specificGroupList.stream()
+                    .filter(existingGroup -> Objects.equals(existingGroup.getId(), newSpecificGroup.getId()))
+                    .findFirst()
+                    .ifPresent(existingGroup -> {
+                        existingGroup.setName(newSpecificGroup.getName());
+                    });
+        });
 
         macroGroup.setSpecificGroups(specificGroupList);
         saveMacroGroup(macroGroup);
@@ -109,6 +120,23 @@ public class MacroGroupService {
         MacroGroupResponse userResponse = MacroGroupMapper.createSalaryResponse(macroGroup);
         response.setData(userResponse);
         response.setMessage("success");
+        return response;
+    }
+
+    public DataResponse<MacroGroupResponse> deleteMacroGroup(Long macroGroupId) {
+        DataResponse<MacroGroupResponse> response = new DataResponse<>();
+        MacroGroup macroGroup = macroGroupRepository.findById(macroGroupId).orElse(null);
+        if (macroGroup != null) {
+            macroGroup.setDeleted(true);
+            saveMacroGroup(macroGroup);
+
+            macroGroup.getSpecificGroups().forEach(specificGroup -> specificGroup.setDeleted(true));
+            specificGroupRepository.saveAll(macroGroup.getSpecificGroups());
+
+        }
+
+        response.setMessage("success");
+
         return response;
     }
 

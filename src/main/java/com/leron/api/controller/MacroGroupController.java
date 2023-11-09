@@ -72,4 +72,9 @@ public class MacroGroupController {
         }
         return response;
     }
+
+    @DeleteMapping("/{macroGroupId}")
+    public DataResponse<MacroGroupResponse> deleteMacroGroup(@PathVariable Long macroGroupId) {
+        return macroGroupService.deleteMacroGroup(macroGroupId);
+    }
 }

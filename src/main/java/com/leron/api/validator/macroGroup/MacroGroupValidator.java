@@ -21,11 +21,14 @@ public class MacroGroupValidator {
                 macroGroupNameExists.set(true);
             }
 
-            macroCurrent.getSpecificGroups().forEach(specificGroup -> {
-                if (request.getData().getSpecificGroups().stream().anyMatch(specificGroup1 -> specificGroup.getName().equals(specificGroup1.getName()))) {
-                    specificGroupNameExists.set(true);
-                }
-            });
+//            if(request.getData().getSpecificGroups() != null) {
+//                macroCurrent.getSpecificGroups().forEach(specificGroup -> {
+//                    if (request.getData().getSpecificGroups().stream().anyMatch(specificGroup1 -> specificGroup.getName().equals(specificGroup1.getName()))) {
+//                        specificGroupNameExists.set(true);
+//                    }
+//                });
+//            }
+
         });
 
         if(request.getData().getName() == null || request.getData().getName().isEmpty()){
