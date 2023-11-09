@@ -16,19 +16,19 @@ public class UserAuthValidator {
     public static void validatorUser(DataRequest<UserAuthRequest> userRequest, List<UserAuthEntity> userList) throws ApplicationBusinessException {
 
         if(userRequest.getData().getSex() == null){
-            throw new ApplicationBusinessException("400", "SEX_IS_EMPTY");
+            throw new ApplicationBusinessException("error", "SEX_IS_EMPTY");
         }
 
         if(userRequest.getData().getPassword() == null){
-            throw new ApplicationBusinessException("400", "PASSWORD_IS_EMPTY");
+            throw new ApplicationBusinessException("error", "PASSWORD_IS_EMPTY");
         }
 
         if(userRequest.getData().getCpf() == null){
-            throw new ApplicationBusinessException("400", "CPF_IS_EMPTY");
+            throw new ApplicationBusinessException("error", "CPF_IS_EMPTY");
         }
 
         if(userRequest.getData().getName() == null){
-            throw new ApplicationBusinessException("400", "NAME_IS_EMPTY");
+            throw new ApplicationBusinessException("error", "NAME_IS_EMPTY");
         }
 
         AtomicBoolean exists = new AtomicBoolean(false);

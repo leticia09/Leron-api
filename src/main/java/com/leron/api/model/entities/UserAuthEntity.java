@@ -12,7 +12,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_user_auth")
-public class UserAuthEntity extends GenericEntities {
+public class UserAuthEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +32,24 @@ public class UserAuthEntity extends GenericEntities {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name= "deleted")
+    private Boolean deleted = Boolean.FALSE;
+
+    @Column(name = "CREATED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdIn;
+
+    @Column(name = "CREATED_BY")
+    private Long createdBy;
+
+    @Column(name = "CHANGED_IN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date changedIn;
+
+    @Column(name = "CHANGED_BY")
+    private Long changedBy;
+
+    @Column(name = "status")
+    private String status;
 }
