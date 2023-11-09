@@ -13,6 +13,7 @@ import com.leron.api.validator.user.MemberValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -25,7 +26,7 @@ public class MemberService {
     }
 
     public DataListResponse<MemberResponse> list(Long userAuthId){
-        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findByUserAuthId(userAuthId));
+        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId));
     }
 
     public DataResponse<List<MemberResponse>> create(DataRequest<List<MemberRequest>> userRequest,
@@ -33,7 +34,7 @@ public class MemberService {
                                                      String authorization) throws ApplicationBusinessException {
         DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
-        List<MemberEntity> members = memberRepository.findByUserAuthId(userRequest.getData().get(0).getUserAuthId());
+        List<MemberEntity> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userRequest.getData().get(0).getUserAuthId());
 
         MemberValidator.validateUser(userRequest.getData(),members);
 
@@ -45,4 +46,27 @@ public class MemberService {
         return response;
     }
 
+    public DataResponse<MemberResponse> edit(MemberResponse request) throws ApplicationBusinessException {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+
+        //MemberValidator.validateUser(userRequest.getData(),members);
+
+        Optional<MemberEntity> currentMember = memberRepository.findById(request.getId());
+        MemberEntity entities = memberRepository.save(MemeberMapper.createUserFromMemberEditRequest(request, currentMember.get()));
+        MemberResponse userResponse = MemeberMapper.createMemberResponse(entities);
+        response.setData(userResponse);
+        response.setMessage("success");
+        return response;
+    }
+
+    public DataResponse<MemberResponse> delete(Long id, Long userAuthId) throws ApplicationBusinessException {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+        MemberEntity currentMember = memberRepository.findMemberByIdAndUserAuthId(id, userAuthId);
+        currentMember.setDeleted(true);
+        MemberEntity entities = memberRepository.save(currentMember);
+        MemberResponse userResponse = MemeberMapper.createMemberResponse(entities);
+        response.setData(userResponse);
+        response.setMessage("success");
+        return response;
+    }
 }

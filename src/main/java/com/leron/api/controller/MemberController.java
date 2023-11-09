@@ -20,11 +20,11 @@ import java.util.List;
 public class MemberController {
 
     @Autowired
-    MemberService userService;
+    MemberService service;
 
     @GetMapping("/{userAuthId}")
     public DataListResponse<MemberResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        DataListResponse<MemberResponse> list = userService.list(userAuthId);
+        DataListResponse<MemberResponse> list = service.list(userAuthId);
         return list;
     }
 
@@ -43,8 +43,33 @@ public class MemberController {
         DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
         try {
-            response = userService.create(request, locale, authorization);
+            response = service.create(request, locale, authorization);
             return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
+
+    @PatchMapping("")
+    public  DataResponse<MemberResponse> edit(
+            @RequestBody MemberResponse memberRequest) {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+        try {
+            response = service.edit(memberRequest);
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+
+        return response;
+    }
+
+    @DeleteMapping("/{userAuthId}/{memberId}")
+    public DataResponse<MemberResponse> delete(@PathVariable Long memberId, @PathVariable Long userAuthId)  {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+        try {
+            response = service.delete(memberId,userAuthId);
 
         } catch (ApplicationBusinessException error){
             response.setResponse(error);

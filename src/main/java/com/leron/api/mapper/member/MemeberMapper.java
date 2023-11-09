@@ -12,7 +12,7 @@ import java.util.List;
 
 @Component
 public class MemeberMapper {
-    public static DataListResponse<MemberResponse> userEntitiesToDataListResponse(List<MemberEntity> userEntities){
+    public static DataListResponse<MemberResponse> userEntitiesToDataListResponse(List<MemberEntity> userEntities) {
         DataListResponse<MemberResponse> response = new DataListResponse<>();
         List<MemberResponse> responseList = new ArrayList<>();
 
@@ -32,7 +32,7 @@ public class MemeberMapper {
 
     public static List<MemberEntity> createUserFromUserRequest(List<MemberRequest> userRequest) {
         List<MemberEntity> entities = new ArrayList<>();
-        userRequest.forEach( user -> {
+        userRequest.forEach(user -> {
             MemberEntity entity = new MemberEntity();
             entity.setName(user.getName());
             entity.setStatus("ACTIVE");
@@ -46,7 +46,14 @@ public class MemeberMapper {
         return entities;
     }
 
-    public static List<MemberResponse> createUserResponse  (List<MemberEntity> entities) {
+    public static MemberEntity createUserFromMemberEditRequest(MemberResponse request, MemberEntity currentMember) {
+        currentMember.setName(request.getName());
+        currentMember.setChangedIn(new Date());
+        return currentMember;
+    }
+
+
+    public static List<MemberResponse> createUserResponse(List<MemberEntity> entities) {
         List<MemberResponse> responses = new ArrayList<>();
         entities.forEach(entity -> {
             MemberResponse userResponse = new MemberResponse();
@@ -60,5 +67,14 @@ public class MemeberMapper {
 
 
         return responses;
+    }
+
+    public static MemberResponse createMemberResponse(MemberEntity entity) {
+        MemberResponse response = new MemberResponse();
+        response.setName(entity.getName());
+        response.setId(entity.getId());
+        response.setStatus(entity.getStatus());
+        response.setUserAuthId(entity.getUserAuthId());
+        return response;
     }
 }

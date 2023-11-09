@@ -13,20 +13,20 @@ import java.util.List;
 
 @Repository
 public interface PointsRepository extends JpaRepository<Score, Long> {
-    @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId GROUP BY b.typeOfScore, b.id ORDER BY b.typeOfScore, b.program")
+    @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND b.deleted = false GROUP BY b.typeOfScore, b.id ORDER BY b.typeOfScore, b.program")
     List<Score> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
-    @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND id = :id")
+    @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND id = :id AND b.deleted = false")
     Score findScoreById(@Param("id") Long id, @Param("userAuthId") Long userAuthId);
 
-    @Query("SELECT s.value FROM Score s WHERE s.id = :id AND s.userAuthId = :userAuthId")
+    @Query("SELECT s.value FROM Score s WHERE s.id = :id AND s.userAuthId = :userAuthId AND s.deleted = false")
     BigDecimal findValueByIdAndUserAuthId(@Param("id") Long id, @Param("userAuthId") Long userAuthId);
 
     @Modifying
-    @Query("UPDATE Score s SET s.value = :value WHERE s.id = :id AND s.userAuthId = :userAuthId")
+    @Query("UPDATE Score s SET s.value = :value WHERE s.id = :id AND s.userAuthId = :userAuthId AND s.deleted = false")
     void updateValueByIdAndUserAuthId(@Param("id") Long id, @Param("userAuthId") Long userAuthId, @Param("value") BigDecimal value);
 
-    @Query("SELECT s.id, s.program FROM Score s WHERE s.userAuthId = :userAuthId AND s.status != 'INACTIVE'")
+    @Query("SELECT s.id, s.program FROM Score s WHERE s.userAuthId = :userAuthId AND s.status != 'INACTIVE' AND s.deleted = false")
     List<Object[]> findIdAndProgramByUserAuthId(@Param("userAuthId") Long userAuthId);
 
 }

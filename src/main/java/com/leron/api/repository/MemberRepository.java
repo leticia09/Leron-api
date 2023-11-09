@@ -12,6 +12,7 @@ import java.util.List;
 
 @Repository
 public interface MemberRepository extends JpaRepository<MemberEntity, Long> {
-    @Query("SELECT b FROM MemberEntity b WHERE b.userAuthId = :userAuthId")
-    List<MemberEntity> findByUserAuthId(@Param("userAuthId") Long userAuthId);
+    List<MemberEntity> findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(@Param("userAuthId") Long userAuthId);
+
+    MemberEntity findMemberByIdAndUserAuthId(Long userAuthId, Long id);
 }

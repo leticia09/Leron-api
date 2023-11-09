@@ -10,7 +10,6 @@ import com.leron.api.service.points.PointsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 @RestController
@@ -140,5 +139,15 @@ public class PointsController {
         }
         return response;
     }
+    @DeleteMapping("{scoreId}")
+    public DataResponse<PointsResponse> delete(@PathVariable Long scoreId)  {
+        DataResponse<PointsResponse> response = new DataResponse<>();
+        try {
+            response = pointsService.delete(scoreId);
 
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
 }

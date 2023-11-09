@@ -1,8 +1,10 @@
 package com.leron.api.service.points;
 
+import com.leron.api.mapper.member.MemeberMapper;
 import com.leron.api.mapper.score.PointsMapper;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.points.*;
+import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.PointsRepository;
 import com.leron.api.repository.TransferRepository;
@@ -15,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -44,7 +43,7 @@ public class PointsService {
 
         List<Score> entity = PointsMapper.createPointsFromRevenueRequest(request.getData());
         pointsRepository.saveAll(entity);
-        response.setMessage("Sucesso");
+        response.setMessage("success");
         return response;
     }
 
@@ -127,7 +126,7 @@ public class PointsService {
         pointsRepository.save(currentValueDestinyProgram);
         transferRepository.save(PointsMapper.TransferRequestToEntity(request));
 
-        response.setMessage("Sucesso");
+        response.setMessage("success");
 
 
         return response;
@@ -202,7 +201,7 @@ public class PointsService {
 
         pointsRepository.save(program);
 
-        response.setMessage("Sucesso");
+        response.setMessage("success");
 
         return response;
     }
@@ -222,8 +221,20 @@ public class PointsService {
 
         pointsRepository.save(program);
 
-        response.setMessage("Sucesso");
+        response.setMessage("success");
 
+        return response;
+    }
+
+    public DataResponse<PointsResponse> delete( Long id) throws ApplicationBusinessException {
+        DataResponse<PointsResponse> response = new DataResponse<>();
+        Optional<Score> current = pointsRepository.findById(id);
+        if(current.isPresent()) {
+            current.get().setDeleted(true);
+            pointsRepository.save(current.get());
+        }
+
+        response.setMessage("success");
         return response;
     }
 
