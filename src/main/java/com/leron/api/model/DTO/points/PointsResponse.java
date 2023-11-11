@@ -1,5 +1,6 @@
 package com.leron.api.model.DTO.points;
 
+import com.leron.api.model.entities.Member;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
@@ -16,4 +17,5 @@ public class PointsResponse {
     private BigDecimal value;
     private Timestamp pointsExpirationDate;
     private String typeOfScore;
+    private Member owner;
 }

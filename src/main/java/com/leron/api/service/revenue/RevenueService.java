@@ -45,7 +45,7 @@ public class RevenueService {
         revenueRepository.save(entity);
         RevenueResponse revenueResponse = RevenueMapper.createRevenueResponse(entity);
         response.setData(revenueResponse);
-        response.setMessage("Sucesso");
+        response.setMessage("success");
         return response;
     }
 }

@@ -1,7 +1,7 @@
 package com.leron.api.validator.user;
 
 import com.leron.api.model.DTO.user.MemberRequest;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class MemberValidator {
-    public static void validateUser(List<MemberRequest> userRequest, List<MemberEntity> members) throws ApplicationBusinessException {
+    public static void validateUser(List<MemberRequest> userRequest, List<Member> members) throws ApplicationBusinessException {
         AtomicReference<Boolean> isEmpty = new AtomicReference<>(Boolean.FALSE);
         AtomicReference<Boolean> isSAME = new AtomicReference<>(Boolean.FALSE);
 

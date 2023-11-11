@@ -9,5 +9,6 @@ public class StatusRequest {
     private Long programId;
     private String status;
     private Long userAuthId;
+    private Long ownerId;
 
 }

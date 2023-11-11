@@ -1,6 +1,5 @@
 package com.leron.api.model.DTO.registerBank;
 
-import com.leron.api.model.entities.MemberEntity;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 

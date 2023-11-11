@@ -59,10 +59,14 @@ public class PointsController {
     }
 
     @GetMapping("programs/{userAuthId}")
-    public DataResponse<List<TypeScoreDTO>> getProgramsById(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        return pointsService.getProgramsById(userAuthId);
+    public DataResponse<List<TypeScoreDTO>> getProgramsByAuth(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        return pointsService.getProgramsByAuth(userAuthId);
     }
 
+    @GetMapping("program/{id}")
+    public DataResponse<List<TypeScoreDTO>> getProgramsById(@PathVariable(value = "id", required = true) Long id){
+        return pointsService.getProgramsById(id);
+    }
     @PostMapping(
             value = "transfer",
             consumes = "application/json",

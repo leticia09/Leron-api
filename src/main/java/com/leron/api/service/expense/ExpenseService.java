@@ -4,7 +4,7 @@ import com.leron.api.mapper.expense.ExpenseMapper;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
 import com.leron.api.model.entities.ExpenseEntity;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.repository.CardRepository;
 import com.leron.api.repository.ExpenseRepository;
 import com.leron.api.repository.MemberRepository;
@@ -32,7 +32,7 @@ public class ExpenseService {
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId){
         List<ExpenseEntity> expenseEntities = expenseRepository.findAllByAuthUserId(userAuthId);
-        List<MemberEntity> userEntityList =  userRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Member> userEntityList =  userRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
 
         DataListResponse<ExpenseResponse> response  = ExpenseMapper.expenseEntitiesToDataListResponse(expenseEntities, null, userEntityList);
 
@@ -47,7 +47,7 @@ public class ExpenseService {
         expenseRepository.save(expense);
         ExpenseResponse expenseResponse = ExpenseMapper.createExpenseResponse(expense);
         response.setData(expenseResponse);
-        response.setMessage("Sucesso");
+        response.setMessage("success");
         return response;
     }
 }

@@ -1,16 +1,14 @@
 package com.leron.api.mapper.bank;
 
 import com.leron.api.model.DTO.registerBank.*;
-import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.Account;
 import com.leron.api.model.entities.Bank;
 import com.leron.api.model.entities.Card;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -101,7 +99,7 @@ public class RegisterBankMapper {
 
     public Bank toEntity(RegisterBankRequest requestDTO) {
         Bank bank = new Bank();
-        bank.setName(requestDTO.getName());
+        bank.setName(requestDTO.getName().substring(0, 1).toUpperCase() + requestDTO.getName().substring(1).toLowerCase());
         bank.setUserAuthId(requestDTO.getUserAuthId());
         bank.setDeleted(false);
         bank.setCreatedIn(new Date());
@@ -131,7 +129,7 @@ public class RegisterBankMapper {
             Card card = new Card();
             card.setStatus("ACTIVE");
             card.setUserAuthId(authId);
-            card.setName(cardRequest.getName());
+            card.setName(cardRequest.getName().substring(0, 1).toUpperCase() + cardRequest.getName().substring(1).toLowerCase());
             card.setFinalNumber(cardRequest.getFinalNumber());
             card.setModality(cardRequest.getModality());
             card.setClosingDate(cardRequest.getClosingDate());
@@ -155,7 +153,7 @@ public class RegisterBankMapper {
         cardResponse.setClosingDate(card.getClosingDate());
         cardResponse.setName(card.getName());
         cardResponse.setCurrencyPoint(card.getCurrencyPoint());
-        MemberEntity member = new MemberEntity();
+        Member member = new Member();
         member.setName(card.getOwner());
         cardResponse.setOwner(member);
         cardResponse.setValue(card.getValue());

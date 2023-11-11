@@ -39,7 +39,7 @@ public class MacroGroupMapper {
 
         MacroGroup macro = new MacroGroup();
 
-        macro.setName(macroGroupRequest.getName());
+        macro.setName(macroGroupRequest.getName().substring(0, 1).toUpperCase() + macroGroupRequest.getName().substring(1).toLowerCase());
         macro.setUserAuthId(macroGroupRequest.getUserAuthId());
         macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
         macro.setStatus("ACTIVE");
@@ -54,7 +54,7 @@ public class MacroGroupMapper {
         MacroGroup macro = new MacroGroup();
 
         macro.setId(macroGroupRequest.getId());
-        macro.setName(macroGroupRequest.getName());
+        macro.setName(macroGroupRequest.getName().substring(0, 1).toUpperCase() + macroGroupRequest.getName().substring(1).toLowerCase());
         macro.setUserAuthId(macroGroupRequest.getUserAuthId());
         macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
         macro.setStatus(macroGroupRequest.getStatus());

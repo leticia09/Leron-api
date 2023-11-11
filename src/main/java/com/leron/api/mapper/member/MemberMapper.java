@@ -2,7 +2,7 @@ package com.leron.api.mapper.member;
 
 import com.leron.api.model.DTO.user.MemberRequest;
 import com.leron.api.model.DTO.user.MemberResponse;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
@@ -11,14 +11,14 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class MemeberMapper {
-    public static DataListResponse<MemberResponse> userEntitiesToDataListResponse(List<MemberEntity> userEntities) {
+public class MemberMapper {
+    public static DataListResponse<MemberResponse> userEntitiesToDataListResponse(List<Member> userEntities) {
         DataListResponse<MemberResponse> response = new DataListResponse<>();
         List<MemberResponse> responseList = new ArrayList<>();
 
-        for (MemberEntity user : userEntities) {
+        for (Member user : userEntities) {
             MemberResponse userDTO = new MemberResponse();
-
+            userDTO.setColor(user.getColor());
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
             userDTO.setUserAuthId(user.getUserAuthId());
@@ -30,11 +30,12 @@ public class MemeberMapper {
         return response;
     }
 
-    public static List<MemberEntity> createUserFromUserRequest(List<MemberRequest> userRequest) {
-        List<MemberEntity> entities = new ArrayList<>();
+    public static List<Member> createUserFromUserRequest(List<MemberRequest> userRequest) {
+        List<Member> entities = new ArrayList<>();
         userRequest.forEach(user -> {
-            MemberEntity entity = new MemberEntity();
-            entity.setName(user.getName());
+            Member entity = new Member();
+            entity.setColor(user.getColor());
+            entity.setName(user.getName().substring(0, 1).toUpperCase() + user.getName().substring(1).toLowerCase());
             entity.setStatus("ACTIVE");
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
@@ -46,14 +47,15 @@ public class MemeberMapper {
         return entities;
     }
 
-    public static MemberEntity createUserFromMemberEditRequest(MemberResponse request, MemberEntity currentMember) {
-        currentMember.setName(request.getName());
+    public static Member createUserFromMemberEditRequest(MemberResponse request, Member currentMember) {
+        currentMember.setName(request.getName().substring(0, 1).toUpperCase() + request.getName().substring(1).toLowerCase());
         currentMember.setChangedIn(new Date());
+        currentMember.setColor(request.getColor());
         return currentMember;
     }
 
 
-    public static List<MemberResponse> createUserResponse(List<MemberEntity> entities) {
+    public static List<MemberResponse> createUserResponse(List<Member> entities) {
         List<MemberResponse> responses = new ArrayList<>();
         entities.forEach(entity -> {
             MemberResponse userResponse = new MemberResponse();
@@ -61,7 +63,7 @@ public class MemeberMapper {
             userResponse.setId(userResponse.getId());
             userResponse.setStatus(entity.getStatus());
             userResponse.setUserAuthId(userResponse.getUserAuthId());
-
+            userResponse.setColor(entity.getColor());
             responses.add(userResponse);
         });
 
@@ -69,7 +71,7 @@ public class MemeberMapper {
         return responses;
     }
 
-    public static MemberResponse createMemberResponse(MemberEntity entity) {
+    public static MemberResponse createMemberResponse(Member entity) {
         MemberResponse response = new MemberResponse();
         response.setName(entity.getName());
         response.setId(entity.getId());

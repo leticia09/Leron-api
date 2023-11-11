@@ -5,12 +5,13 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Data
 public class GraphicResponse {
+    private List<DataSet> dataSet;
     private ArrayList<String> labels;
-    private ArrayList<BigDecimal> data;
     private BigDecimal totalMiles;
     private BigDecimal totalPoints;
     private BigDecimal totalProgramActive;

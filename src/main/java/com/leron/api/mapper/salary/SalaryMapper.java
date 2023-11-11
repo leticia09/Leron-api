@@ -3,7 +3,7 @@ package com.leron.api.mapper.salary;
 import com.leron.api.model.DTO.salary.SalaryRequest;
 import com.leron.api.model.DTO.salary.SalaryResponse;
 import com.leron.api.model.entities.SalaryEntity;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 public class SalaryMapper {
-    public static DataListResponse<SalaryResponse> salaryEntitiesToDataListResponse(List<SalaryEntity> salaryEntityList, List<MemberEntity> userEntityList){
+    public static DataListResponse<SalaryResponse> salaryEntitiesToDataListResponse(List<SalaryEntity> salaryEntityList, List<Member> userEntityList){
 
         DataListResponse<SalaryResponse> response = new DataListResponse<>();
         List<SalaryResponse> responseList = new ArrayList<>();

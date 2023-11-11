@@ -4,7 +4,7 @@ import com.leron.api.mapper.salary.SalaryMapper;
 import com.leron.api.model.DTO.salary.SalaryRequest;
 import com.leron.api.model.DTO.salary.SalaryResponse;
 import com.leron.api.model.entities.SalaryEntity;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.repository.SalaryRepository;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -28,7 +28,7 @@ public class SalaryService {
     }
 
     public DataListResponse<SalaryResponse> list(Long userAuthId){
-        List<MemberEntity> userEntityList = userRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Member> userEntityList = userRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         return SalaryMapper.salaryEntitiesToDataListResponse(salaryRepository.findAllByAuthUserId(userAuthId), userEntityList);
     }
 
@@ -40,7 +40,7 @@ public class SalaryService {
         salaryRepository.save(salary);
         SalaryResponse userResponse = SalaryMapper.createSalaryResponse(salary);
         response.setData(userResponse);
-        response.setMessage("Sucesso");
+        response.setMessage("success");
         return response;
     }
 

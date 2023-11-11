@@ -12,4 +12,5 @@ public class MemberResponse {
     private String name;
     private String status;
     private Long userAuthId;
+    private String color;
 }

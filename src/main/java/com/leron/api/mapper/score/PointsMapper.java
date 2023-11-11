@@ -4,19 +4,17 @@ import com.leron.api.model.DTO.points.PointsRequest;
 import com.leron.api.model.DTO.points.PointsResponse;
 import com.leron.api.model.DTO.points.TransferRequest;
 import com.leron.api.model.DTO.points.TypeScoreDTO;
+import com.leron.api.model.entities.Member;
 import com.leron.api.model.entities.Score;
 import com.leron.api.model.entities.Transfer;
 import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class PointsMapper {
-    public static DataListResponse<PointsResponse> pointsEntitiesToDataListResponse(List<Score> entityList){
+    public static DataListResponse<PointsResponse> pointsEntitiesToDataListResponse(List<Score> entityList, List<Member> memberEntities){
         DataListResponse<PointsResponse> response = new DataListResponse<>();
         List<PointsResponse> responseList = new ArrayList<>();
 
@@ -30,6 +28,13 @@ public class PointsMapper {
             responses.setValue(entity.getValue());
             responses.setPointsExpirationDate(entity.getPointsExpirationDate());
             responses.setTypeOfScore(entity.getTypeOfScore());
+
+            Optional<Member> ownerMember = memberEntities.stream()
+                    .filter(member -> member.getId().equals(entity.getOwnerId()))
+                    .findFirst();
+
+            ownerMember.ifPresent(responses::setOwner);
+
             responseList.add(responses);
 
         }
@@ -42,7 +47,7 @@ public class PointsMapper {
         request.forEach(res -> {
             Score entity = new Score();
             entity.setUserAuthId(res.getUserAuthId());
-            entity.setProgram(res.getProgram());
+            entity.setProgram(res.getProgram().substring(0, 1).toUpperCase() + res.getProgram().substring(1).toLowerCase());
             entity.setStatus("ACTIVE");
             entity.setValue(res.getValue());
             entity.setTypeOfScore(res.getTypeOfScore());
@@ -53,6 +58,7 @@ public class PointsMapper {
             }
             entity.setCreatedIn(new Date());
             entity.setDeleted(false);
+            entity.setOwnerId(res.getOwnerId());
 
             scoreList.add(entity);
         });
@@ -93,6 +99,21 @@ public class PointsMapper {
                 typeScore.setDescription(description);
                 resultList.add(typeScore);
             }
+        }
+
+        return resultList;
+    }
+
+    public static List<TypeScoreDTO> mapScoreToObjectList(List<Score> data) {
+        List<TypeScoreDTO> resultList = new ArrayList<>();
+
+        for (Score row : data) {
+            TypeScoreDTO typeScoreDTO = new TypeScoreDTO();
+            typeScoreDTO.setId(row.getId());
+            typeScoreDTO.setDescription(row.getProgram());
+
+
+            resultList.add(typeScoreDTO);
         }
 
         return resultList;

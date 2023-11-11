@@ -15,4 +15,5 @@ public class PointsRequest {
     private BigDecimal value;
     private Timestamp pointsExpirationDate;
     private String typeOfScore;
+    private Long ownerId;
 }

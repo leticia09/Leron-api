@@ -11,4 +11,5 @@ public class MemberRequest {
     private String name;
     private Long userAuthId;
     private Long index;
+    private String color;
 }

@@ -1,12 +1,10 @@
 package com.leron.api.service.registerBank;
 
 import com.leron.api.mapper.bank.RegisterBankMapper;
-import com.leron.api.mapper.member.MemeberMapper;
 import com.leron.api.model.DTO.registerBank.CardRequest;
 import com.leron.api.model.DTO.registerBank.CardResponse;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
-import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.Account;
 import com.leron.api.model.entities.Bank;
 import com.leron.api.model.entities.Card;
@@ -20,9 +18,7 @@ import com.leron.api.validator.registerBank.RegisterBankValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.catalog.Catalog;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RegisterBankService {

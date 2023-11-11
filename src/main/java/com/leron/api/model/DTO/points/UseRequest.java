@@ -11,4 +11,5 @@ public class UseRequest {
     private Long programId;
     private BigDecimal value;
     private Long userAuthId;
+    private Long ownerId;
 }

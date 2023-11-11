@@ -16,8 +16,11 @@ public interface PointsRepository extends JpaRepository<Score, Long> {
     @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND b.deleted = false GROUP BY b.typeOfScore, b.id ORDER BY b.typeOfScore, b.program")
     List<Score> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
+    @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND id = :id AND b.ownerId = :ownerId AND b.deleted = false")
+    Score findScoreById(@Param("id") Long id, @Param("userAuthId") Long userAuthId, @Param("ownerId") Long ownerId);
+
     @Query("SELECT b FROM Score b WHERE b.userAuthId = :userAuthId AND id = :id AND b.deleted = false")
-    Score findScoreById(@Param("id") Long id, @Param("userAuthId") Long userAuthId);
+    Score findScoreByIdWithoutOwner(@Param("id") Long id, @Param("userAuthId") Long userAuthId);
 
     @Query("SELECT s.value FROM Score s WHERE s.id = :id AND s.userAuthId = :userAuthId AND s.deleted = false")
     BigDecimal findValueByIdAndUserAuthId(@Param("id") Long id, @Param("userAuthId") Long userAuthId);
@@ -28,5 +31,7 @@ public interface PointsRepository extends JpaRepository<Score, Long> {
 
     @Query("SELECT s.id, s.program FROM Score s WHERE s.userAuthId = :userAuthId AND s.status != 'INACTIVE' AND s.deleted = false")
     List<Object[]> findIdAndProgramByUserAuthId(@Param("userAuthId") Long userAuthId);
+
+    List<Score> findAllByOwnerId(Long ownerId);
 
 }

@@ -46,9 +46,9 @@ public class PointsValidator {
             throw new ApplicationBusinessException("ERROR", "INVALID_EXPIRATION_DATE");
         }
 
-        if (isSameBankName.get()) {
-            throw new ApplicationBusinessException("ERROR", "PROGRAM_ALREADY_EXISTS");
-        }
+//        if (isSameBankName.get()) {
+//            throw new ApplicationBusinessException("ERROR", "PROGRAM_ALREADY_EXISTS");
+//        }
 
         if (valueISNull.get()) {
             throw new ApplicationBusinessException("ERROR", "VALUE_IS_NULL");
