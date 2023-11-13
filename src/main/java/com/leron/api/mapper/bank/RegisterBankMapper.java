@@ -34,6 +34,7 @@ public class RegisterBankMapper {
         registerBankResponse.setAccounts(accountResponses);
 
         response.setData(registerBankResponse);
+        response.setSeverity("success");
         response.setMessage("success");
 
         return response;

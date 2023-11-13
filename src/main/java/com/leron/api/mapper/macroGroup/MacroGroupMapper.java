@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 public class MacroGroupMapper {
-    public static DataListResponse<MacroGroupResponse> macroGroupEntitiesToDataListResponse(List<MacroGroup> macroGroupEntityList){
+    public static DataListResponse<MacroGroupResponse> macroGroupEntitiesToDataListResponse(List<MacroGroup> macroGroupEntityList) {
 
         DataListResponse<MacroGroupResponse> response = new DataListResponse<>();
         List<MacroGroupResponse> responseList = new ArrayList<>();
@@ -57,7 +57,13 @@ public class MacroGroupMapper {
         macro.setName(macroGroupRequest.getName().substring(0, 1).toUpperCase() + macroGroupRequest.getName().substring(1).toLowerCase());
         macro.setUserAuthId(macroGroupRequest.getUserAuthId());
         macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
-        macro.setStatus(macroGroupRequest.getStatus());
+        if (macroGroupRequest.getStatus().equals("1")) {
+            macro.setStatus("ACTIVE");
+        }
+        if (macroGroupRequest.getStatus().equals("2")) {
+            macro.setStatus("INACTIVE");
+        }
+
 
         macro.setChangedIn(new Date());
         macro.setDeleted(false);
@@ -65,7 +71,7 @@ public class MacroGroupMapper {
         return macro;
     }
 
-    public static MacroGroupResponse createSalaryResponse  (MacroGroup entity) {
+    public static MacroGroupResponse createSalaryResponse(MacroGroup entity) {
 
         MacroGroupResponse response = new MacroGroupResponse();
 

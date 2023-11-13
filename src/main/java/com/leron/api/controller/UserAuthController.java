@@ -73,7 +73,8 @@ public class UserAuthController {
             userAuthResponse.setSex(user.getSex());
             userAuthResponse.setAuth(true);
             response.setData(userAuthResponse);
-            response.setMessage("SUCCESS");
+            response.setSeverity("success");
+            response.setMessage("success");
         }
 
         return response;

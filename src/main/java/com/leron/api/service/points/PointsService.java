@@ -145,6 +145,7 @@ public class PointsService {
         pointsRepository.save(currentValueDestinyProgram);
         transferRepository.save(PointsMapper.TransferRequestToEntity(request));
 
+        response.setSeverity("success");
         response.setMessage("success");
 
 
@@ -236,6 +237,7 @@ public class PointsService {
 
         pointsRepository.save(program);
 
+        response.setSeverity("success");
         response.setMessage("success");
 
         return response;
@@ -260,6 +262,7 @@ public class PointsService {
 
         pointsRepository.save(program);
 
+        response.setSeverity("success");
         response.setMessage("success");
 
         return response;
@@ -273,6 +276,7 @@ public class PointsService {
             pointsRepository.save(current.get());
         }
 
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }

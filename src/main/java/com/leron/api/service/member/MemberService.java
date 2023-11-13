@@ -42,6 +42,7 @@ public class MemberService {
         List<Member> entities = memberRepository.saveAll(MemberMapper.createUserFromUserRequest(userRequest.getData()));
         List<MemberResponse> userResponse = MemberMapper.createUserResponse(entities);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }
@@ -52,6 +53,7 @@ public class MemberService {
         Member entities = memberRepository.save(MemberMapper.createUserFromMemberEditRequest(request, currentMember.get()));
         MemberResponse userResponse = MemberMapper.createMemberResponse(entities);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }
@@ -63,6 +65,7 @@ public class MemberService {
         Member entities = memberRepository.save(currentMember);
         MemberResponse userResponse = MemberMapper.createMemberResponse(entities);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }

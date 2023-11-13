@@ -35,6 +35,7 @@ public class UserAuthService {
         userAuthRepository.save(user);
         UserAuthResponse userResponse = UserAuthMapper.createUserResponse(user);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }

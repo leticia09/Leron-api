@@ -54,6 +54,7 @@ public class MacroGroupService {
 
         MacroGroupResponse userResponse = MacroGroupMapper.createSalaryResponse(macroGroup);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }
@@ -119,6 +120,7 @@ public class MacroGroupService {
 
         MacroGroupResponse userResponse = MacroGroupMapper.createSalaryResponse(macroGroup);
         response.setData(userResponse);
+        response.setSeverity("success");
         response.setMessage("success");
         return response;
     }
@@ -135,6 +137,7 @@ public class MacroGroupService {
 
         }
 
+        response.setSeverity("success");
         response.setMessage("success");
 
         return response;

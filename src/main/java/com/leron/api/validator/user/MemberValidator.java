@@ -20,7 +20,9 @@ public class MemberValidator {
             }
 
             members.forEach(member -> {
-                if(member.getName().equalsIgnoreCase(user.getName())){
+                String userName = user.getName().replace(" ", "");
+                String memberName = member.getName().replace(" ", "");
+                if(memberName.equalsIgnoreCase(userName)){
                     isSAME.set(Boolean.TRUE);
                 }
             });
