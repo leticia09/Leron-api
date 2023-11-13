@@ -225,15 +225,19 @@ public class PointsService {
                 request.getData().getUserAuthId()
         );
 
-        if (request.getData().getStatus().equals("Ativo")) {
+        if (request.getData().getStatus() == 1L) {
             program.setStatus("ACTIVE");
+            program.setValue(request.getData().getValue());
         }
 
-        if (request.getData().getStatus().equals("Inativo")) {
+        if (request.getData().getStatus() == 2L) {
             program.setValue(BigDecimal.ZERO);
             program.setPointsExpirationDate(null);
             program.setStatus("INACTIVE");
         }
+
+
+        program.setChangedIn(new Date());
 
         pointsRepository.save(program);
 

@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 public class PointsResponse {
     private Long id;
     private String program;
-    private String status;
+    private Long status;
     private Long userAuthId;
     private BigDecimal value;
     private Timestamp pointsExpirationDate;

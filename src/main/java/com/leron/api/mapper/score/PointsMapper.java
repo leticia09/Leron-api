@@ -23,7 +23,12 @@ public class PointsMapper {
 
             responses.setId(entity.getId());
             responses.setProgram(entity.getProgram());
-            responses.setStatus(entity.getStatus());
+            if(entity.getStatus().equals("ACTIVE")) {
+                responses.setStatus(1L);
+            }
+            if(entity.getStatus().equals("INACTIVE")) {
+                responses.setStatus(2L);
+            }
             responses.setUserAuthId(entity.getUserAuthId());
             responses.setValue(entity.getValue());
             responses.setPointsExpirationDate(entity.getPointsExpirationDate());
