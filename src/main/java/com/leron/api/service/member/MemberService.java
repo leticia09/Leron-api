@@ -29,6 +29,10 @@ public class MemberService {
         return MemberMapper.userEntitiesToDataListResponse(memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId));
     }
 
+    public DataListResponse<MemberResponse> get(Long userAuthId){
+        return MemberMapper.userEntitiesToDataListResponse(memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(userAuthId, "ACTIVE"));
+    }
+
     public DataResponse<List<MemberResponse>> create(DataRequest<List<MemberRequest>> userRequest,
                                                      String locale,
                                                      String authorization) throws ApplicationBusinessException {

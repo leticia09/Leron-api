@@ -36,7 +36,7 @@ public class PointsService {
 
     public DataListResponse<PointsResponse> list(Long userAuthId) {
         List<Score> pointsEntityList = pointsRepository.findByUserAuthId(userAuthId);
-        List<Member> entities = memberRepository.findAll();
+        List<Member> entities = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         return PointsMapper.pointsEntitiesToDataListResponse(pointsEntityList, entities);
     }
 
@@ -100,7 +100,7 @@ public class PointsService {
 
     public DataResponse<List<TypeScoreDTO>> getProgramsById(Long id) {
         DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
-        List<Score> list = pointsRepository.findAllByOwnerId(id);
+        List<Score> list = pointsRepository.findAllByOwnerIdAndDeletedFalse(id);
         response.setData(PointsMapper.mapScoreToObjectList(list));
         return response;
     }

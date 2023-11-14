@@ -12,5 +12,7 @@ import java.util.List;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(@Param("userAuthId") Long userAuthId);
 
+    List<Member> findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(@Param("userAuthId") Long userAuthId, @Param("status") String status);
+
     Member findMemberByIdAndUserAuthId(Long userAuthId, Long id);
 }

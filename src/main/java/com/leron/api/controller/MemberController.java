@@ -28,6 +28,13 @@ public class MemberController {
         return list;
     }
 
+    @GetMapping("dropdown/{userAuthId}")
+    public DataListResponse<MemberResponse> get(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        DataListResponse<MemberResponse> response = service.get(userAuthId);
+        return response;
+    }
+
+
     @PostMapping(
             value = "",
             consumes = "application/json",

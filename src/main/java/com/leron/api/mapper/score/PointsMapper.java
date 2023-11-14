@@ -38,10 +38,10 @@ public class PointsMapper {
                     .filter(member -> member.getId().equals(entity.getOwnerId()))
                     .findFirst();
 
-            ownerMember.ifPresent(responses::setOwner);
-
-            responseList.add(responses);
-
+            if(ownerMember.isPresent()) {
+                responses.setOwner(ownerMember.get());
+                responseList.add(responses);
+            }
         }
         response.setData(responseList);
         return response;

@@ -32,6 +32,6 @@ public interface PointsRepository extends JpaRepository<Score, Long> {
     @Query("SELECT s.id, s.program FROM Score s WHERE s.userAuthId = :userAuthId AND s.status != 'INACTIVE' AND s.deleted = false")
     List<Object[]> findIdAndProgramByUserAuthId(@Param("userAuthId") Long userAuthId);
 
-    List<Score> findAllByOwnerId(Long ownerId);
+    List<Score> findAllByOwnerIdAndDeletedFalse(Long ownerId);
 
 }

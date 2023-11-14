@@ -22,7 +22,12 @@ public class MemberMapper {
             userDTO.setId(user.getId());
             userDTO.setName(user.getName());
             userDTO.setUserAuthId(user.getUserAuthId());
-            userDTO.setStatus(user.getStatus());
+            if(user.getStatus().equals("ACTIVE")) {
+                userDTO.setStatus(1L);
+            }
+            if(user.getStatus().equals("INACTIVE")) {
+                userDTO.setStatus(2L);
+            }
 
             responseList.add(userDTO);
         }
@@ -51,6 +56,13 @@ public class MemberMapper {
         currentMember.setName(request.getName().substring(0, 1).toUpperCase() + request.getName().substring(1).toLowerCase());
         currentMember.setChangedIn(new Date());
         currentMember.setColor(request.getColor());
+        if(request.getStatus() == 1L) {
+            currentMember.setStatus("ACTIVE");
+        }
+        if(request.getStatus() == 2L) {
+            currentMember.setStatus("INACTIVE");
+        }
+
         return currentMember;
     }
 
@@ -61,7 +73,12 @@ public class MemberMapper {
             MemberResponse userResponse = new MemberResponse();
             userResponse.setName(entity.getName());
             userResponse.setId(userResponse.getId());
-            userResponse.setStatus(entity.getStatus());
+            if(entity.getStatus().equals("ACTIVE")) {
+                userResponse.setStatus(1L);
+            }
+            if(entity.getStatus().equals("INACTIVE")) {
+                userResponse.setStatus(2L);
+            }
             userResponse.setUserAuthId(userResponse.getUserAuthId());
             userResponse.setColor(entity.getColor());
             responses.add(userResponse);
@@ -75,7 +92,12 @@ public class MemberMapper {
         MemberResponse response = new MemberResponse();
         response.setName(entity.getName());
         response.setId(entity.getId());
-        response.setStatus(entity.getStatus());
+        if(entity.getStatus().equals("ACTIVE")) {
+            response.setStatus(1L);
+        }
+        if(entity.getStatus().equals("INACTIVE")) {
+            response.setStatus(2L);
+        }
         response.setUserAuthId(entity.getUserAuthId());
         return response;
     }
