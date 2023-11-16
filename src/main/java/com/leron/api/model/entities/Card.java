@@ -20,15 +20,14 @@ public class Card extends GenericEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String owner;
+    private Long owner;
     private Long finalNumber;
     private String modality;
     private Integer closingDate;
     private Integer dueDate;
     private BigDecimal point;
-    private String currencyPoint;
-    private BigDecimal value;
-    private Timestamp pointsExpirationDate;
+    private String currency;
+    private Long program;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

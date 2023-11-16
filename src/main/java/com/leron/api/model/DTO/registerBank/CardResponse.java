@@ -1,11 +1,11 @@
 package com.leron.api.model.DTO.registerBank;
 
 import com.leron.api.model.entities.Member;
+import com.leron.api.model.entities.Score;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 @Component
 @Data
@@ -19,7 +19,6 @@ public class CardResponse {
     private Integer closingDate;
     private Integer dueDate;
     private BigDecimal point;
-    private String currencyPoint;
-    private BigDecimal value;
-    private Timestamp pointsExpirationDate;
+    private String currency;
+    private Score program;
 }

@@ -34,4 +34,6 @@ public interface PointsRepository extends JpaRepository<Score, Long> {
 
     List<Score> findAllByOwnerIdAndDeletedFalse(Long ownerId);
 
+    List<Score> findAllByUserAuthIdAndDeletedFalse(Long userAuthId);
+
 }

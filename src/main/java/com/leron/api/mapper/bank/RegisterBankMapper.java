@@ -1,23 +1,17 @@
 package com.leron.api.mapper.bank;
 
 import com.leron.api.model.DTO.registerBank.*;
-import com.leron.api.model.entities.Account;
-import com.leron.api.model.entities.Bank;
-import com.leron.api.model.entities.Card;
-import com.leron.api.model.entities.Member;
+import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class RegisterBankMapper {
 
-    public DataResponse<RegisterBankResponse> toResponseDTO(Bank bank) {
+    public DataResponse<RegisterBankResponse> toResponseDTO(Bank bank, List<Member> members, List<Score> programs) {
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         RegisterBankResponse registerBankResponse = new RegisterBankResponse();
 
@@ -28,7 +22,7 @@ public class RegisterBankMapper {
         List<Account> accounts = bank.getAccounts();
         List<AccountResponse> accountResponses = new ArrayList<>();
         for (Account account : accounts) {
-            AccountResponse accountResponse = mapAccountToResponse(account);
+            AccountResponse accountResponse = mapAccountToResponse(account, members, programs);
             accountResponses.add(accountResponse);
         }
         registerBankResponse.setAccounts(accountResponses);
@@ -40,7 +34,7 @@ public class RegisterBankMapper {
         return response;
     }
 
-    public AccountResponse mapAccountToResponse(Account account) {
+    public AccountResponse mapAccountToResponse(Account account, List<Member> members, List<Score> programs) {
         AccountResponse accountResponse = new AccountResponse();
         if(Objects.nonNull(account.getId())) {
             accountResponse.setId(account.getId());
@@ -50,12 +44,12 @@ public class RegisterBankMapper {
         accountResponse.setOwner(account.getOwner());
 
         List<Card> cards = account.getCards();
-        List<CardResponse> cardResponses = getCardResponses(cards);
+        List<CardResponse> cardResponses = getCardResponses(cards, members, programs);
         accountResponse.setCards(cardResponses);
         return accountResponse;
     }
 
-    private static List<CardResponse> getCardResponses(List<Card> cards) {
+    private static List<CardResponse> getCardResponses(List<Card> cards, List<Member> members, List<Score> programs) {
         List<CardResponse> cardResponses = new ArrayList<>();
         for (Card card : cards) {
             CardResponse cardResponse = new CardResponse();
@@ -68,12 +62,25 @@ public class RegisterBankMapper {
             cardResponse.setModality(card.getModality());
             cardResponse.setClosingDate(card.getClosingDate());
             cardResponse.setDueDate(card.getDueDate());
+            cardResponse.setPoint(card.getPoint());
+            cardResponse.setCurrency(card.getCurrency());
+
+            Optional<Member> ownerMember = members.stream()
+                    .filter(member -> member.getId().equals(card.getOwner()))
+                    .findFirst();
+            ownerMember.ifPresent(cardResponse::setOwner);
+
+            Optional<Score> ownerScore = programs.stream()
+                    .filter(program -> program.getId().equals(card.getProgram()))
+                    .findFirst();
+            ownerScore.ifPresent(cardResponse::setProgram);
+
             cardResponses.add(cardResponse);
         }
         return cardResponses;
     }
 
-    public DataListResponse<RegisterBankResponse> toResponseDTOList(List<Bank> banks) {
+    public DataListResponse<RegisterBankResponse> toResponseDTOList(List<Bank> banks, List<Member> members, List<Score> programs) {
         DataListResponse<RegisterBankResponse> response = new DataListResponse<>();
         List<RegisterBankResponse> responseList = new ArrayList<>();
 
@@ -87,7 +94,7 @@ public class RegisterBankMapper {
             List<Account> accounts = bank.getAccounts();
             List<AccountResponse> accountResponses = new ArrayList<>();
             for (Account account : accounts) {
-                AccountResponse accountResponse = mapAccountToResponse(account);
+                AccountResponse accountResponse = mapAccountToResponse(account, members, programs);
                 accountResponses.add(accountResponse);
             }
             dto.setAccounts(accountResponses);
@@ -135,6 +142,10 @@ public class RegisterBankMapper {
             card.setModality(cardRequest.getModality());
             card.setClosingDate(cardRequest.getClosingDate());
             card.setDueDate(cardRequest.getDueDate());
+            card.setOwner(cardRequest.getOwner());
+            card.setPoint(cardRequest.getPoints());
+            card.setProgram(cardRequest.getProgram());
+            card.setCurrency(cardRequest.getCurrency());
             card.setCreatedIn(new Date());
             card.setDeleted(false);
             cards.add(card);
@@ -143,7 +154,7 @@ public class RegisterBankMapper {
         return cards;
     }
 
-    public DataResponse<CardResponse> toResponseDTOCard(Card card) {
+    public DataResponse<CardResponse> toResponseDTOCard(Card card, List<Member> members) {
         DataResponse<CardResponse> response = new DataResponse<>();
         CardResponse cardResponse = new CardResponse();
         cardResponse.setPoint(card.getPoint());
@@ -153,12 +164,14 @@ public class RegisterBankMapper {
         cardResponse.setModality(card.getModality());
         cardResponse.setClosingDate(card.getClosingDate());
         cardResponse.setName(card.getName());
-        cardResponse.setCurrencyPoint(card.getCurrencyPoint());
-        Member member = new Member();
-        member.setName(card.getOwner());
-        cardResponse.setOwner(member);
-        cardResponse.setValue(card.getValue());
-        cardResponse.setPointsExpirationDate(card.getPointsExpirationDate());
+        cardResponse.setCurrency(card.getCurrency());
+
+        Optional<Member> ownerMember = members.stream()
+                .filter(member -> member.getId().equals(card.getOwner()))
+                .findFirst();
+        ownerMember.ifPresent(cardResponse::setOwner);
+
+        cardResponse.setPoint(card.getPoint());
         cardResponse.setDueDate(card.getDueDate());
 
         return response;
