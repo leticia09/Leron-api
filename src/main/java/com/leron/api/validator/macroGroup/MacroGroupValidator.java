@@ -17,7 +17,7 @@ public class MacroGroupValidator {
         AtomicReference<Boolean> specificGroupNameExists = new AtomicReference<>(false);
 
         current.forEach(macroCurrent -> {
-            if(request.getData().getName().equals(macroCurrent.getName())) {
+            if(request.getData().getName().equalsIgnoreCase(macroCurrent.getName())) {
                 macroGroupNameExists.set(true);
             }
 
@@ -49,7 +49,7 @@ public class MacroGroupValidator {
         AtomicReference<Boolean> specificGroupNameExists = new AtomicReference<>(false);
 
         current.forEach(macroCurrent -> {
-            if(request.getData().getName().equals(macroCurrent.getName())) {
+            if(request.getData().getName().equalsIgnoreCase(macroCurrent.getName())) {
                 macroGroupNameExists.set(true);
             }
 

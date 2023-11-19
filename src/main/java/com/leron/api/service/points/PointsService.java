@@ -155,7 +155,7 @@ public class PointsService {
     public DataResponse<GraphicResponse> getProgramsData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
         List<Score> programData = pointsRepository.findByUserAuthId(authId);
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(authId);
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
 
         BigDecimal totalMiles = BigDecimal.ZERO;
         BigDecimal totalPoints = BigDecimal.ZERO;

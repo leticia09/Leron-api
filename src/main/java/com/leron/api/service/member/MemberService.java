@@ -54,6 +54,8 @@ public class MemberService {
     public DataResponse<MemberResponse> edit(MemberResponse request) throws ApplicationBusinessException {
         DataResponse<MemberResponse> response = new DataResponse<>();
         Optional<Member> currentMember = memberRepository.findById(request.getId());
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(request.getUserAuthId());
+        MemberValidator.validateMember(request, members, currentMember.get());
         Member entities = memberRepository.save(MemberMapper.createUserFromMemberEditRequest(request, currentMember.get()));
         MemberResponse userResponse = MemberMapper.createMemberResponse(entities);
         response.setData(userResponse);

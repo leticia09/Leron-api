@@ -55,7 +55,13 @@ public class PointsMapper {
             entity.setProgram(res.getProgram().substring(0, 1).toUpperCase() + res.getProgram().substring(1).toLowerCase());
             entity.setStatus("ACTIVE");
             entity.setValue(res.getValue());
-            entity.setTypeOfScore(res.getTypeOfScore());
+            if(res.getTypeOfScore().equals("1")) {
+                entity.setTypeOfScore("Milhas");
+            }
+            if(res.getTypeOfScore().equals("2")) {
+                entity.setTypeOfScore("Pontos");
+            }
+
             if(Objects.nonNull(res.getPointsExpirationDate())) {
                 entity.setPointsExpirationDate(res.getPointsExpirationDate());
             } else {
