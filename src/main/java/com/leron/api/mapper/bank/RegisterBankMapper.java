@@ -119,6 +119,8 @@ public class RegisterBankMapper {
             account.setAccountNumber(accountRequest.getAccountNumber());
             account.setOwner(accountRequest.getOwner());
             account.setUserAuthId(bank.getUserAuthId());
+            account.setValue(accountRequest.getValue());
+            account.setCurrency(accountRequest.getCurrency());
             account.setDeleted(false);
             account.setCreatedIn(new Date());
 

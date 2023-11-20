@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -20,6 +21,8 @@ public class Account extends GenericEntities {
     private Long id;
     private String accountNumber;
     private String owner;
+    private BigDecimal value;
+    private String currency;
 
     @ManyToOne
     @JsonIgnore
@@ -30,4 +33,5 @@ public class Account extends GenericEntities {
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     @Where(clause = "deleted = false")
     private List<Card> cards;
+
 }

@@ -4,10 +4,10 @@ import com.leron.api.model.DTO.registerBank.CardRequest;
 import com.leron.api.model.DTO.registerBank.CardResponse;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
 import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
-import com.leron.api.model.entities.Bank;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.service.dolar.DollarService;
 import com.leron.api.service.registerBank.RegisterBankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +61,10 @@ public class RegisterBankController {
             response.setResponse(error);
         }
         return response;
+    }
 
+    @DeleteMapping("/{bankId}")
+    public DataResponse<RegisterBankResponse> delete(@PathVariable Long bankId) {
+        return bankService.delete(bankId);
     }
 }

@@ -107,7 +107,7 @@ public class RegisterBankService {
         Card card = cardRepository.findCardByIdAndUserAuthId(cardId, userAuthId);
         List<Member> entities = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
 
-       RegisterBankValidator.validateCard(card);
+        RegisterBankValidator.validateCard(card);
 
         card.setCurrency(cardRequest.getCurrency());
         card.setPoint(cardRequest.getPoints());
@@ -115,5 +115,27 @@ public class RegisterBankService {
         cardRepository.save(card);
 
         return bankMapper.toResponseDTOCard(card, entities);
+    }
+
+    public DataResponse<RegisterBankResponse> delete(Long bankId) {
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        Bank bank = bankRepository.findById(bankId).orElse(null);
+        if (bank != null) {
+            bank.setDeleted(true);
+            bank.getAccounts().forEach(account -> {
+                account.setDeleted(true);
+                account.getCards().forEach(card -> {
+                    card.setDeleted(true);
+                });
+                cardRepository.saveAll(account.getCards());
+            });
+            accountRepository.saveAll(bank.getAccounts());
+            bankRepository.save(bank);
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
     }
 }

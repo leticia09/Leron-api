@@ -21,14 +21,6 @@ public class MacroGroupValidator {
                 macroGroupNameExists.set(true);
             }
 
-//            if(request.getData().getSpecificGroups() != null) {
-//                macroCurrent.getSpecificGroups().forEach(specificGroup -> {
-//                    if (request.getData().getSpecificGroups().stream().anyMatch(specificGroup1 -> specificGroup.getName().equals(specificGroup1.getName()))) {
-//                        specificGroupNameExists.set(true);
-//                    }
-//                });
-//            }
-
         });
 
         if(request.getData().getName() == null || request.getData().getName().isEmpty()){
@@ -63,14 +55,6 @@ public class MacroGroupValidator {
         if(request.getData().getName() == null || request.getData().getName().isEmpty()){
             throw new ApplicationBusinessException("ERROR", "NAME_IS_EMPTY");
         }
-
-//        if(macroGroupNameExists.get()) {
-//            throw new ApplicationBusinessException("ERROR", "MACRO_GROUP_NAME_ALREADY_EXISTS");
-//        }
-
-//        if(specificGroupNameExists.get()) {
-//            throw new ApplicationBusinessException("ERROR", "SPECIFIC_GROUP_NAME_ALREADY_EXISTS");
-//        }
 
     }
 }

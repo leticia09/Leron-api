@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface CardRepository extends JpaRepository<Card, Long> {
-    @Query("SELECT b FROM Card b WHERE b.userAuthId = :userAuthId")
+    @Query("SELECT b FROM Card b WHERE b.userAuthId = :userAuthId AND b.deleted = false")
     List<Card> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
     Card findCardByIdAndUserAuthId(Long userAuthId, Long id);
