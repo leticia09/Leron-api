@@ -20,7 +20,7 @@ public class Account extends GenericEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String accountNumber;
-    private String owner;
+    private Long memberId;
     private BigDecimal value;
     private String currency;
 

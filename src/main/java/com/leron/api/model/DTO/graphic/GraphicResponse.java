@@ -12,8 +12,8 @@ import java.util.List;
 public class GraphicResponse {
     private List<DataSet> dataSet;
     private ArrayList<String> labels;
-    private BigDecimal totalMiles;
-    private BigDecimal totalPoints;
-    private BigDecimal totalProgramActive;
-    private BigDecimal totalProgramInactive;
+    private BigDecimal total1;
+    private BigDecimal total2;
+    private BigDecimal total3;
+    private BigDecimal total4;
 }

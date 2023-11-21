@@ -204,10 +204,10 @@ public class PointsService {
 
         graphicResponse.setDataSet(dataSets);
         graphicResponse.setLabels(labels);
-        graphicResponse.setTotalPoints(totalPoints);
-        graphicResponse.setTotalMiles(totalMiles);
-        graphicResponse.setTotalProgramInactive(totalProgramInactive);
-        graphicResponse.setTotalProgramActive(totalProgramActive);
+        graphicResponse.setTotal1(totalMiles);
+        graphicResponse.setTotal2(totalPoints);
+        graphicResponse.setTotal3(totalProgramActive);
+        graphicResponse.setTotal4(totalProgramInactive);
 
         response.setData(graphicResponse);
 

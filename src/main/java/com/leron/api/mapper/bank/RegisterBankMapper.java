@@ -41,7 +41,7 @@ public class RegisterBankMapper {
         }
         accountResponse.setStatus(account.getStatus());
         accountResponse.setAccountNumber(account.getAccountNumber());
-        accountResponse.setOwner(account.getOwner());
+        accountResponse.setOwner(account.getMemberId());
 
         List<Card> cards = account.getCards();
         List<CardResponse> cardResponses = getCardResponses(cards, members, programs);
@@ -117,7 +117,7 @@ public class RegisterBankMapper {
             Account account = new Account();
             account.setStatus("ACTIVE");
             account.setAccountNumber(accountRequest.getAccountNumber());
-            account.setOwner(accountRequest.getOwner());
+            account.setMemberId(accountRequest.getOwner());
             account.setUserAuthId(bank.getUserAuthId());
             account.setValue(accountRequest.getValue());
             account.setCurrency(accountRequest.getCurrency());

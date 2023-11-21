@@ -11,7 +11,7 @@ import java.util.List;
 public class AccountRequest {
     private String accountNumber;
     private String label;
-    private String owner;
+    private Long owner;
     private BigDecimal value;
     private String currency;
     private List<CardRequest> cards;

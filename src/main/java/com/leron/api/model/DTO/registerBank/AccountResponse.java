@@ -11,7 +11,7 @@ import java.util.List;
 public class AccountResponse {
     private Long id;
     private String accountNumber;
-    private String owner;
+    private Long owner;
     private String status;
     private BigDecimal value;
     private String currency;
