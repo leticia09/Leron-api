@@ -138,4 +138,37 @@ public class RegisterBankService {
 
         return response;
     }
+
+    public DataResponse<RegisterBankResponse> deleteAccount(Long accountId) {
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account != null) {
+            account.setDeleted(true);
+            account.getCards().forEach(card -> {
+                card.setDeleted(true);
+
+            });
+            cardRepository.saveAll(account.getCards());
+            accountRepository.save(account);
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+    public DataResponse<RegisterBankResponse> deleteCard(Long cardId) {
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        Card card = cardRepository.findById(cardId).orElse(null);
+        if (card != null) {
+            card.setDeleted(true);
+            cardRepository.save(card);
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
 }

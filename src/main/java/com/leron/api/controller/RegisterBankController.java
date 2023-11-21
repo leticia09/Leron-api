@@ -67,4 +67,14 @@ public class RegisterBankController {
     public DataResponse<RegisterBankResponse> delete(@PathVariable Long bankId) {
         return bankService.delete(bankId);
     }
+
+    @DeleteMapping("account/{accountId}")
+    public DataResponse<RegisterBankResponse> deleteAccount(@PathVariable Long accountId) {
+        return bankService.deleteAccount(accountId);
+    }
+
+    @DeleteMapping("card/{cardId}")
+    public DataResponse<RegisterBankResponse> deleteCard(@PathVariable Long cardId) {
+        return bankService.deleteCard(cardId);
+    }
 }

@@ -42,6 +42,8 @@ public class RegisterBankMapper {
         accountResponse.setStatus(account.getStatus());
         accountResponse.setAccountNumber(account.getAccountNumber());
         accountResponse.setOwner(account.getMemberId());
+        accountResponse.setCurrency(account.getCurrency());
+        accountResponse.setValue(account.getValue());
 
         List<Card> cards = account.getCards();
         List<CardResponse> cardResponses = getCardResponses(cards, members, programs);
@@ -70,10 +72,16 @@ public class RegisterBankMapper {
                     .findFirst();
             ownerMember.ifPresent(cardResponse::setOwner);
 
+
             Optional<Score> ownerScore = programs.stream()
+                    .filter(program -> program.getOwnerId().equals(card.getOwner()))
+                    .findFirst();
+
+
+            Optional<Score> score = ownerScore.stream()
                     .filter(program -> program.getId().equals(card.getProgram()))
                     .findFirst();
-            ownerScore.ifPresent(cardResponse::setProgram);
+            score.ifPresent(cardResponse::setProgram);
 
             cardResponses.add(cardResponse);
         }
