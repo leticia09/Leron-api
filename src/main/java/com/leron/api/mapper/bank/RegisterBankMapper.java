@@ -73,12 +73,7 @@ public class RegisterBankMapper {
             ownerMember.ifPresent(cardResponse::setOwner);
 
 
-            Optional<Score> ownerScore = programs.stream()
-                    .filter(program -> program.getOwnerId().equals(card.getOwner()))
-                    .findFirst();
-
-
-            Optional<Score> score = ownerScore.stream()
+            Optional<Score> score = programs.stream()
                     .filter(program -> program.getId().equals(card.getProgram()))
                     .findFirst();
             score.ifPresent(cardResponse::setProgram);

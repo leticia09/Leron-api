@@ -143,6 +143,7 @@ public class PointsController {
         }
         return response;
     }
+
     @DeleteMapping("{scoreId}")
     public DataResponse<PointsResponse> delete(@PathVariable Long scoreId)  {
         DataResponse<PointsResponse> response = new DataResponse<>();

@@ -60,7 +60,7 @@ public class MacroGroupController {
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
 
-        DataRequest<MacroGroupEditRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataRequest<MacroGroupEditRequest> request = new DataRequest<>(requestCreation);
         DataResponse<MacroGroupResponse> response = new DataResponse<>();
 
         try {

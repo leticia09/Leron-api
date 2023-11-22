@@ -7,9 +7,8 @@ public class DataRequest<T> extends Request {
     public DataRequest() {
     }
 
-    public DataRequest(T object, String locale) {
+    public DataRequest(T object) {
         this.data = object;
-        this.setLocale(locale);
     }
 
     public DataRequest(T object, String locale, String authorization) {

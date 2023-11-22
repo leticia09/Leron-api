@@ -1,11 +1,10 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.registerBank.CardRequest;
-import com.leron.api.model.DTO.registerBank.CardResponse;
-import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
-import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
+import com.leron.api.model.DTO.registerBank.*;
+import com.leron.api.model.entities.Bank;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
+import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.dolar.DollarService;
 import com.leron.api.service.registerBank.RegisterBankService;
@@ -26,10 +25,10 @@ public class RegisterBankController {
 
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         try {
-            response =  bankService.createBank(requestDTO, locale, authorization);
+            response = bankService.createBank(requestDTO, locale, authorization);
             return response;
 
-        } catch (ApplicationBusinessException error){
+        } catch (ApplicationBusinessException error) {
             response.setResponse(error);
         }
         return response;
@@ -37,7 +36,7 @@ public class RegisterBankController {
     }
 
     @GetMapping("/{userAuthId}")
-    public DataListResponse<RegisterBankResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+    public DataListResponse<RegisterBankResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
         return bankService.list(userAuthId);
     }
 
@@ -77,4 +76,75 @@ public class RegisterBankController {
     public DataResponse<RegisterBankResponse> deleteCard(@PathVariable Long cardId) {
         return bankService.deleteCard(cardId);
     }
+
+    @PatchMapping(
+            value = "/bank",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<RegisterBankResponse> editBank(
+            @RequestBody Bank request,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+        DataRequest<Bank> requestData = new DataRequest<>(request);
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        try {
+            response = bankService.editBank(requestData.getData());
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+
+    }
+
+    @PatchMapping(
+            value = "/account",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<AccountResponse> editAccount(
+            @RequestBody AccountResponse request,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+        DataRequest<AccountResponse> requestData = new DataRequest<>(request);
+        DataResponse<AccountResponse> response = new DataResponse<>();
+        try {
+            response = bankService.editAccount(requestData.getData());
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+
+    }
+
+    @PatchMapping(
+            value = "/card",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<CardResponse> editAccount(
+            @RequestBody CardResponse request,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+        DataRequest<CardResponse> requestData = new DataRequest<>(request);
+        DataResponse<CardResponse> response = new DataResponse<>();
+        try {
+            response = bankService.editCard(requestData.getData());
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+
+    }
+
+
 }

@@ -1,10 +1,7 @@
 package com.leron.api.service.registerBank;
 
 import com.leron.api.mapper.bank.RegisterBankMapper;
-import com.leron.api.model.DTO.registerBank.CardRequest;
-import com.leron.api.model.DTO.registerBank.CardResponse;
-import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
-import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
+import com.leron.api.model.DTO.registerBank.*;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class RegisterBankService {
@@ -163,6 +161,110 @@ public class RegisterBankService {
         Card card = cardRepository.findById(cardId).orElse(null);
         if (card != null) {
             card.setDeleted(true);
+            cardRepository.save(card);
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+
+    public DataResponse<RegisterBankResponse> editBank(Bank registerBankRequest) throws ApplicationBusinessException {
+        DataResponse<RegisterBankResponse> response = new DataResponse<>();
+        Bank bank = bankRepository.findById(registerBankRequest.getId()).orElse(null);
+
+        RegisterBankValidator.validateEditBank(registerBankRequest, bank);
+
+        bank.setName(registerBankRequest.getName());
+        bank.setAccounts(registerBankRequest.getAccounts());
+
+        Bank bankSave = saveBank(bank);
+        for (Account account : bank.getAccounts()) {
+            Bank bankCopy = new Bank();
+            bankCopy.setId(bankSave.getId());
+            bankCopy.setName(bankSave.getName());
+            bankCopy.setUserAuthId(bankSave.getUserAuthId());
+            account.setBank(bankCopy);
+        }
+
+        bank.setAccounts(saveAccount(bankSave.getAccounts()));
+        for (Account account : bank.getAccounts()) {
+            for (Card card : account.getCards()) {
+                card.setAccount(account);
+            }
+            saveCard(account.getCards());
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+    public DataResponse<AccountResponse> editAccount(AccountResponse accountRequest) throws ApplicationBusinessException {
+        DataResponse<AccountResponse> response = new DataResponse<>();
+        Account account = accountRepository.findById(accountRequest.getId()).orElse(null);
+
+        RegisterBankValidator.validateEditAccount(accountRequest, account);
+        if (account != null) {
+            account.setMemberId(accountRequest.getOwner());
+            account.setValue(accountRequest.getValue());
+            if (accountRequest.getStatus().equalsIgnoreCase("1")) {
+                account.setStatus("ACTIVE");
+            }
+
+            if (accountRequest.getStatus().equalsIgnoreCase("2")) {
+                account.setStatus("INACTIVE");
+
+                for (Card card : account.getCards()) {
+                    card.setStatus("INACTIVE");
+                }
+                saveCard(account.getCards());
+
+            }
+
+            account.setAccountNumber(accountRequest.getAccountNumber());
+            accountRepository.save(account);
+        }
+
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+    public DataResponse<CardResponse> editCard(CardResponse cardRequest) throws ApplicationBusinessException {
+        DataResponse<CardResponse> response = new DataResponse<>();
+        Card card = cardRepository.findById(cardRequest.getId()).orElse(null);
+
+        RegisterBankValidator.validateEditCard(cardRequest, card);
+
+        if (card != null) {
+            card.setName(cardRequest.getName());
+            card.setStatus(cardRequest.getStatus());
+            if (Objects.nonNull(cardRequest.getDueDate())) {
+                card.setDueDate(cardRequest.getDueDate());
+            }
+
+            if (Objects.nonNull(cardRequest.getClosingDate())) {
+                card.setDueDate(cardRequest.getClosingDate());
+            }
+
+            if (Objects.nonNull(cardRequest.getProgram().getId())) {
+                card.setProgram(cardRequest.getProgram().getId());
+            }
+
+            if (Objects.nonNull(cardRequest.getPoint())) {
+                card.setPoint(cardRequest.getPoint());
+            }
+
+            if (Objects.nonNull(cardRequest.getCurrency())) {
+                card.setCurrency(cardRequest.getCurrency());
+            }
+
             cardRepository.save(card);
         }
 
