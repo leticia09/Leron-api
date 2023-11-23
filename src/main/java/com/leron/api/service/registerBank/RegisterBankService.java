@@ -177,8 +177,9 @@ public class RegisterBankService {
 
         RegisterBankValidator.validateEditBank(registerBankRequest, bank);
 
+        Bank bankMap = bankMapper.entityToEntity(registerBankRequest);
         bank.setName(registerBankRequest.getName());
-        bank.setAccounts(registerBankRequest.getAccounts());
+        bank.setAccounts(bankMap.getAccounts());
 
         Bank bankSave = saveBank(bank);
         for (Account account : bank.getAccounts()) {
@@ -244,7 +245,14 @@ public class RegisterBankService {
 
         if (card != null) {
             card.setName(cardRequest.getName());
-            card.setStatus(cardRequest.getStatus());
+            if (cardRequest.getStatus().equalsIgnoreCase("1")) {
+                card.setStatus("ACTIVE");
+            }
+
+            if (cardRequest.getStatus().equalsIgnoreCase("2")) {
+                card.setStatus("INACTIVE");
+            }
+
             if (Objects.nonNull(cardRequest.getDueDate())) {
                 card.setDueDate(cardRequest.getDueDate());
             }

@@ -75,22 +75,22 @@ public class RegisterBankValidator {
         AtomicReference<Boolean> areAccountNumbersUnique = new AtomicReference<>(false);
         AtomicReference<Boolean> areCardNumbersUnique = new AtomicReference<>(false);
 
-        current.getAccounts().forEach(account -> {
-            if (request.getAccounts().stream()
-                    .anyMatch(reqAccount -> reqAccount.getAccountNumber().equals(account.getAccountNumber()))) {
-                areAccountNumbersUnique.set(true);
-            }
-
-            account.getCards().forEach(card -> {
-                request.getAccounts().forEach(reqAccount -> {
-                    if (reqAccount.getCards().stream()
-                            .anyMatch(reqCard -> reqCard.getFinalNumber().equals(card.getFinalNumber()))) {
-                        areCardNumbersUnique.set(true);
-                    }
-
-                });
-            });
-        });
+//        request.getAccounts().forEach(account -> {
+//            if (request.getAccounts().stream()
+//                    .anyMatch(reqAccount -> reqAccount.getAccountNumber().equals(account.getAccountNumber()))) {
+//                areAccountNumbersUnique.set(true);
+//            }
+//
+//            account.getCards().forEach(card -> {
+//                request.getAccounts().forEach(reqAccount -> {
+//                    if (reqAccount.getCards().stream()
+//                            .anyMatch(reqCard -> reqCard.getFinalNumber().equals(card.getFinalNumber()))) {
+//                        areCardNumbersUnique.set(true);
+//                    }
+//
+//                });
+//            });
+//        });
 
 
         if (areAccountNumbersUnique.get()) {

@@ -136,6 +136,35 @@ public class RegisterBankMapper {
         return bank;
     }
 
+    public Bank entityToEntity(Bank requestDTO) {
+        Bank bank = new Bank();
+        bank.setName(requestDTO.getName().substring(0, 1).toUpperCase() + requestDTO.getName().substring(1).toLowerCase());
+        bank.setUserAuthId(requestDTO.getUserAuthId());
+        bank.setDeleted(false);
+        bank.setCreatedIn(new Date());
+
+        List<Account> accounts = new ArrayList<>();
+        for (Account accountRequest : requestDTO.getAccounts()) {
+            Account account = new Account();
+            account.setId(accountRequest.getId());
+            account.setStatus("ACTIVE");
+            account.setAccountNumber(accountRequest.getAccountNumber());
+            account.setMemberId(accountRequest.getMemberId());
+            account.setUserAuthId(bank.getUserAuthId());
+            account.setValue(accountRequest.getValue());
+            account.setCurrency(accountRequest.getCurrency());
+            account.setDeleted(false);
+            account.setChangedIn(new Date());
+
+            List<Card> cards = getCardsEntity(accountRequest, bank.getUserAuthId());
+            account.setCards(cards);
+            accounts.add(account);
+        }
+        bank.setAccounts(accounts);
+
+        return bank;
+    }
+
     private static List<Card> getCards(AccountRequest accountRequest, Long authId) {
         List<Card> cards = new ArrayList<>();
         for (CardRequest cardRequest : accountRequest.getCards()) {
@@ -152,6 +181,30 @@ public class RegisterBankMapper {
             card.setProgram(cardRequest.getProgram());
             card.setCurrency(cardRequest.getCurrency());
             card.setCreatedIn(new Date());
+            card.setDeleted(false);
+            cards.add(card);
+
+        }
+        return cards;
+    }
+
+    private static List<Card> getCardsEntity(Account accountRequest, Long authId) {
+        List<Card> cards = new ArrayList<>();
+        for (Card cardRequest : accountRequest.getCards()) {
+            Card card = new Card();
+            card.setId(cardRequest.getId());
+            card.setStatus("ACTIVE");
+            card.setUserAuthId(authId);
+            card.setName(cardRequest.getName().substring(0, 1).toUpperCase() + cardRequest.getName().substring(1).toLowerCase());
+            card.setFinalNumber(cardRequest.getFinalNumber());
+            card.setModality(cardRequest.getModality());
+            card.setClosingDate(cardRequest.getClosingDate());
+            card.setDueDate(cardRequest.getDueDate());
+            card.setOwner(cardRequest.getOwner());
+            card.setPoint(cardRequest.getPoint());
+            card.setProgram(cardRequest.getProgram());
+            card.setCurrency(cardRequest.getCurrency());
+            card.setChangedIn(new Date());
             card.setDeleted(false);
             cards.add(card);
 
