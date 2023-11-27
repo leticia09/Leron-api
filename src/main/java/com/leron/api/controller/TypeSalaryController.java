@@ -1,26 +1,29 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
+import com.leron.api.model.DTO.points.UseRequest;
+import com.leron.api.model.DTO.typeSalary.TypeSalaryRequest;
+import com.leron.api.model.entities.TypeSalary;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.service.expense.ExpenseService;
+import com.leron.api.service.typeSalary.TypeSalaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/expense")
-public class ExpenseController {
-
+@RequestMapping("/type-salary")
+public class TypeSalaryController {
     @Autowired
-    ExpenseService expenseService;
+    TypeSalaryService service;
 
     @GetMapping("/{userAuthId}")
-    public DataListResponse<ExpenseResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        return expenseService.list(userAuthId);
+    public List<TypeSalary> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
+        return service.list(userAuthId);
     }
 
     @PostMapping(
@@ -28,17 +31,15 @@ public class ExpenseController {
             consumes = "application/json",
             produces = "application/json"
     )
-    public DataResponse<ExpenseResponse> create(
-            @RequestBody ExpenseRequest requestCreation,
+    public DataResponse<TypeSalary> edit(
+            @RequestBody List<TypeSalaryRequest> requestCreation,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
-
-        DataRequest<ExpenseRequest> request = new DataRequest<>(requestCreation, locale, authorization);
-        DataResponse<ExpenseResponse> response = new DataResponse<>();
-
+        DataRequest<List<TypeSalaryRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<TypeSalary> response = new DataResponse<>();
         try {
-            response = expenseService.create(request);
+            service.edit(request);
             return response;
 
         } catch (ApplicationBusinessException error){
