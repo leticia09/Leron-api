@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 public class TypeSalaryRequest {
     private Long id;
     private String description;
-    private Long status;
     private Long userAuthId;
     private Boolean deleted;
 }

@@ -1,11 +1,8 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.expense.ExpenseResponse;
-import com.leron.api.model.DTO.points.UseRequest;
 import com.leron.api.model.DTO.typeSalary.TypeSalaryRequest;
 import com.leron.api.model.entities.TypeSalary;
 import com.leron.api.responses.ApplicationBusinessException;
-import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.typeSalary.TypeSalaryService;
@@ -39,7 +36,7 @@ public class TypeSalaryController {
         DataRequest<List<TypeSalaryRequest>> request = new DataRequest<>(requestCreation, locale, authorization);
         DataResponse<TypeSalary> response = new DataResponse<>();
         try {
-            service.edit(request);
+            response = service.edit(request);
             return response;
 
         } catch (ApplicationBusinessException error){

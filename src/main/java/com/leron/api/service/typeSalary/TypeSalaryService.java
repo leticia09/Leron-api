@@ -6,7 +6,6 @@ import com.leron.api.model.entities.TypeSalary;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataRequest;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.validator.TypeSalary.TypeSalaryValidator;
 import org.springframework.stereotype.Service;
 import com.leron.api.repository.TypeSalaryRepository;
 import java.util.List;
@@ -25,7 +24,7 @@ public class TypeSalaryService {
 
     public DataResponse<TypeSalary> edit(DataRequest<List<TypeSalaryRequest>> request) throws ApplicationBusinessException {
         DataResponse<TypeSalary> response = new DataResponse<>();
-        //TypeSalaryValidator.validator(request.getData());
+        typeSalaryRepository.deleteAll();
         List<TypeSalary> typeSalaries = TypeSalaryMapper.requestToEntity(request.getData());
 
         typeSalaryRepository.saveAll(typeSalaries);

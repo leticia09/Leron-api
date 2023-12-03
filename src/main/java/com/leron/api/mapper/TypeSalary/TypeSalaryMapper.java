@@ -21,17 +21,6 @@ public class TypeSalaryMapper {
             typeSalary.setDescription(request.getDescription());
             typeSalary.setDeleted(request.getDeleted());
             typeSalary.setUserAuthId(request.getUserAuthId());
-            if (Objects.nonNull(request.getStatus())) {
-                if (request.getStatus() == 1) {
-                    typeSalary.setStatus("ACTIVE");
-                }
-                if (request.getStatus() == 2) {
-                    typeSalary.setStatus("INACTIVE");
-                }
-            } else {
-                typeSalary.setStatus("ACTIVE");
-            }
-
 
             list.add(typeSalary);
         });
