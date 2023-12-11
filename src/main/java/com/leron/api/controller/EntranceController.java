@@ -2,12 +2,16 @@ package com.leron.api.controller;
 
 import com.leron.api.model.DTO.entrance.EntranceRequest;
 import com.leron.api.model.DTO.entrance.EntranceResponse;
+import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.responses.ApplicationBusinessException;
+import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 
 import com.leron.api.service.entrance.EntranceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -17,13 +21,27 @@ public class EntranceController {
     private EntranceService service;
 
     @PostMapping
-    public DataResponse<EntranceResponse> createBank(@RequestBody EntranceRequest requestDTO,
+    public DataResponse<EntranceResponse> createBank(@RequestBody List<EntranceRequest> requestDTO,
                                                          @RequestHeader(name = "locale", required = false) String locale,
                                                          @RequestHeader(name = "Authorization", required = false) String authorization) throws ApplicationBusinessException {
 
         DataResponse<EntranceResponse> response = new DataResponse<>();
-        response = service.create(requestDTO, locale, authorization);
+        try {
+            response = service.create(requestDTO, locale, authorization);
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
         return response;
 
+    }
+
+    @GetMapping("data/{userAuthId}")
+    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        return service.getData(userAuthId);
+    }
+
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<EntranceResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        return service.list(userAuthId);
     }
 }

@@ -1,9 +1,12 @@
 package com.leron.api.model.DTO.entrance;
 
+import com.leron.api.model.entities.Bank;
+import com.leron.api.model.entities.Member;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Component
 @Data
@@ -11,9 +14,15 @@ public class EntranceResponse {
     private Long id;
     private String source;
     private String type;
-    private Long ownerId;
+    private Member owner;
     private BigDecimal salary;
-    private Long bankId;
+    private String bankName;
     private String accountNumber;
     private Boolean paymentDone;
+    private String frequency;
+    private Timestamp initialDate;
+    private Timestamp finalDate;
+    private Long monthReceive;
+    private Long dayReceive;
+    private String status;
 }

@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Entity
 @Data
@@ -27,5 +28,10 @@ public class Entrance extends GenericEntities {
     private Long bankId;
     private String accountNumber;
     private Boolean paymentDone;
+    private String frequency;
+    private Timestamp initialDate;
+    private Timestamp finalDate;
+    private Long monthReceive;
+    private Long dayReceive;
 
 }
