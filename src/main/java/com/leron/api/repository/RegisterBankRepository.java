@@ -15,4 +15,6 @@ public interface RegisterBankRepository extends JpaRepository<Bank, Long> {
     List<Bank> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
     Bank findBankByUserAuthIdAndId(Long userAuthId, Long id);
+
+    List<Bank> findAllBankByUserAuthIdAndId(Long userAuthId, Long id);
 }

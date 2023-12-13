@@ -18,11 +18,11 @@ public class EntranceResponse {
     private BigDecimal salary;
     private String bankName;
     private String accountNumber;
-    private Boolean paymentDone;
     private String frequency;
     private Timestamp initialDate;
     private Timestamp finalDate;
     private Long monthReceive;
     private Long dayReceive;
     private String status;
+    private String currency;
 }

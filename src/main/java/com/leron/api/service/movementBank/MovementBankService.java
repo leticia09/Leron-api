@@ -1,12 +1,13 @@
 package com.leron.api.service.movementBank;
 
+import com.leron.api.mapper.bankMovement.BankMovementMapper;
+import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
-import com.leron.api.model.entities.Account;
-import com.leron.api.model.entities.Bank;
-import com.leron.api.model.entities.Member;
-import com.leron.api.repository.MemberRepository;
-import com.leron.api.repository.RegisterBankRepository;
+import com.leron.api.model.entities.*;
+import com.leron.api.repository.*;
+import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataResponse;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +20,16 @@ import java.util.List;
 public class MovementBankService {
     private final MemberRepository memberRepository;
     private final RegisterBankRepository bankRepository;
+    private final EntranceRepository entranceRepository;
+    private final BankMovementRepository bankMovementRepository;
+    private final AccountRepository accountRepository;
 
-    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository) {
+    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository) {
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
+        this.entranceRepository = entranceRepository;
+        this.bankMovementRepository = bankMovementRepository;
+        this.accountRepository = accountRepository;
     }
 
     public DataResponse<GraphicResponse> getData(Long authId) {
@@ -87,6 +94,22 @@ public class MovementBankService {
 
         response.setData(graphicResponse);
 
+        return response;
+    }
+
+    public DataResponse<BankMovementResponse> createReceive(List<ReceiveRequest> request, Long userAuthId) throws ApplicationBusinessException {
+        DataResponse<BankMovementResponse> response = new DataResponse<>();
+        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId);
+        List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Account> accountList = BankMovementMapper.receiveToAccount(request, accounts, entrances);
+       //List<Entrance> entranceList = BankMovement.receiveToEntrance(request, entrances);
+
+        bankMovementRepository.saveAll(bankMovements);
+        accountRepository.saveAll(accountList);
+
+        response.setSeverity("success");
+        response.setMessage("success");
         return response;
     }
 }

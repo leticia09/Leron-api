@@ -6,6 +6,7 @@ import com.leron.api.model.DTO.entrance.EntranceResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.entities.*;
+import com.leron.api.repository.BankMovementRepository;
 import com.leron.api.repository.EntranceRepository;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.repository.RegisterBankRepository;
@@ -28,10 +29,13 @@ public class EntranceService {
 
     final RegisterBankRepository bankRepository;
 
-    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository) {
+    final BankMovementRepository bankMovementRepository;
+
+    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository) {
         this.entranceRepository = entranceRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
+        this.bankMovementRepository = bankMovementRepository;
     }
 
     public DataResponse<EntranceResponse> create(List<EntranceRequest> requestDTO, String locale, String authorization) throws ApplicationBusinessException {
@@ -112,6 +116,14 @@ public class EntranceService {
         response.setData(graphicResponse);
 
         return response;
+    }
+
+    public DataListResponse<EntranceResponse> list(Long userAuthId, int month, int year) {
+        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return EntranceMapper.entityToResponse(entrances, members, banks, bankMovements,month, year);
     }
 
     public DataListResponse<EntranceResponse> list(Long userAuthId) {

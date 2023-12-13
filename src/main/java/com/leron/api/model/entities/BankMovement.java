@@ -16,21 +16,18 @@ import java.sql.Timestamp;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Entrance extends GenericEntities {
-
+public class BankMovement extends GenericEntities {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String source;
     private String type;
+    private BigDecimal value;
     private Long ownerId;
-    private BigDecimal salary;
     private Long bankId;
     private Long accountId;
-    private String frequency;
-    private Timestamp initialDate;
-    private Timestamp finalDate;
-    private Long monthReceive;
-    private Long dayReceive;
-
+    private Timestamp dateMovement;
+    private String obs;
+    private Long entranceId;
+    private Long expenseId;
+    private String referencePeriod;
 }
