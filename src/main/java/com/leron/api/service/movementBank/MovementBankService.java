@@ -71,11 +71,11 @@ public class MovementBankService {
                             data.set(labelIndex, data.get(labelIndex).add(account.getValue()));
                         }
 
-                        if(account.getCurrency().equalsIgnoreCase("Real (R$)")) {
+                        if(account.getCurrency().equalsIgnoreCase("R$")) {
                             totalMoney = totalMoney.add(account.getValue());
                         }
 
-                        if(account.getCurrency().equalsIgnoreCase("Dólar ($)")) {
+                        if(account.getCurrency().equalsIgnoreCase("US$")) {
                             totalDollar = totalDollar.add(account.getValue());
                         }
 
