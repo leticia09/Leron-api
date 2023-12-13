@@ -8,9 +8,13 @@ import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
+import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.validator.BankMovementValidator;
+import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +36,10 @@ public class MovementBankService {
         this.accountRepository = accountRepository;
     }
 
+    public DataListResponse<BankMovementResponse> list(Long userAuthId) {
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return BankMovementMapper.entitiesToResponse(bankMovements);
+    }
     public DataResponse<GraphicResponse> getData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
@@ -100,13 +108,18 @@ public class MovementBankService {
     public DataResponse<BankMovementResponse> createReceive(List<ReceiveRequest> request, Long userAuthId) throws ApplicationBusinessException {
         DataResponse<BankMovementResponse> response = new DataResponse<>();
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId);
+        List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accountList = BankMovementMapper.receiveToAccount(request, accounts, entrances);
-       //List<Entrance> entranceList = BankMovement.receiveToEntrance(request, entrances);
+        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts);
 
-        bankMovementRepository.saveAll(bankMovements);
-        accountRepository.saveAll(accountList);
+        BankMovementValidator.validate(request, entrances, bankMovementList);
+
+
+        if(!bankMovements.isEmpty() && !accountList.isEmpty()) {
+            bankMovementRepository.saveAll(bankMovements);
+            accountRepository.saveAll(accountList);
+        }
 
         response.setSeverity("success");
         response.setMessage("success");

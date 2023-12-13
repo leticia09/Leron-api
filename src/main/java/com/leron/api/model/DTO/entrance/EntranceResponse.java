@@ -25,4 +25,5 @@ public class EntranceResponse {
     private Long dayReceive;
     private String status;
     private String currency;
+    private BigDecimal valueReceived;
 }

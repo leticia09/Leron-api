@@ -17,4 +17,8 @@ public class BankMovementResponse {
     private Long accountId;
     private Timestamp dateMovement;
     private String obs;
+    private Long entranceId;
+    private Long expenseId;
+    private String referencePeriod;
+    private String currency;
 }

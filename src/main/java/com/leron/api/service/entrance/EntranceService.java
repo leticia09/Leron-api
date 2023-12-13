@@ -13,13 +13,17 @@ import com.leron.api.repository.RegisterBankRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class EntranceService {
@@ -53,16 +57,17 @@ public class EntranceService {
         return response;
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId) {
+    public DataResponse<GraphicResponse> getData(Long authId, int month, int year) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
-        BigDecimal totalMoney = BigDecimal.ZERO;
-        BigDecimal totalAvailable = BigDecimal.ZERO;
-        BigDecimal totalGoal = BigDecimal.ZERO;
-        BigDecimal totalDollar = BigDecimal.ZERO;
+        BigDecimal receiveTotal = BigDecimal.ZERO;
+        BigDecimal receiveOk = BigDecimal.ZERO;
+        BigDecimal receiveHoldOn = BigDecimal.ZERO;
+        BigDecimal receiveNotOk = BigDecimal.ZERO;
 
         GraphicResponse graphicResponse = new GraphicResponse();
 
@@ -74,28 +79,51 @@ public class EntranceService {
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
             for (Entrance entrance : entrances) {
+                AtomicInteger movementMonth = new AtomicInteger();
+                AtomicInteger movementYear = new AtomicInteger();
+                final BigDecimal[] valueReceived = {BigDecimal.ZERO};
+
+                String period = month + "/" + year;
+
+                List<BankMovement> bankMovementList = bankMovements.stream()
+                        .filter(bm -> Objects.equals(
+                                bm.getEntranceId(), entrance.getId()) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(period)
+                        ).collect(Collectors.toList());
+
+
+                BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+
                 if (member.getId().equals(entrance.getOwnerId())) {
                     int labelIndex = labels.indexOf(entrance.getType());
                     if (labelIndex == -1) {
                         labels.add(entrance.getType());
-                        //quanto eu recebi, caso não tenha recebido, quanto está previso
-                        data.add(entrance.getSalary());
+                        data.add(value);
                     } else {
-                        data.set(labelIndex, data.get(labelIndex).add(entrance.getSalary()));
+                        data.set(labelIndex, data.get(labelIndex).add(value));
                     }
-                        //Recebido Anual, Recebido Mensal, Quantidade Confirmado, Quantidade Pendente
 
-//                    if (account.getCurrency().equalsIgnoreCase("Real (R$)")) {
-//                        totalMoney = totalMoney.add(account.getValue());
-//                    }
-//
-//                    if (account.getCurrency().equalsIgnoreCase("Dólar ($)")) {
-//                        totalDollar = totalDollar.add(account.getValue());
-//                    }
+                    if(!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                        receiveTotal = receiveTotal.add(entrance.getSalary());
+                    }
+                    receiveOk = receiveOk.add(value);
 
+
+                    if (bankMovementList.isEmpty()) {
+                        String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
+
+                        if (status.equalsIgnoreCase("Aguardando")) {
+                            receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
+                        }
+
+                        if (status.equalsIgnoreCase("pendente")) {
+                            receiveNotOk = receiveNotOk.add(entrance.getSalary());
+                        }
+                    }
                 }
 
             }
+
             if (!data.isEmpty()) {
                 dataSet.setLabel(member.getName());
                 dataSet.setBackgroundColor(member.getColor());
@@ -108,10 +136,10 @@ public class EntranceService {
 
         graphicResponse.setDataSet(dataSets);
         graphicResponse.setLabels(labels);
-        graphicResponse.setTotal1(new BigDecimal(100));
-        graphicResponse.setTotal2(new BigDecimal(200));
-        graphicResponse.setTotal3(new BigDecimal(300));
-        graphicResponse.setTotal4(new BigDecimal(400));
+        graphicResponse.setTotal1(receiveTotal);
+        graphicResponse.setTotal2(receiveOk);
+        graphicResponse.setTotal3(receiveHoldOn);
+        graphicResponse.setTotal4(receiveNotOk);
 
         response.setData(graphicResponse);
 
@@ -123,7 +151,7 @@ public class EntranceService {
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return EntranceMapper.entityToResponse(entrances, members, banks, bankMovements,month, year);
+        return EntranceMapper.entityToResponse(entrances, members, banks, bankMovements, month, year);
     }
 
     public DataListResponse<EntranceResponse> list(Long userAuthId) {
@@ -132,4 +160,5 @@ public class EntranceService {
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         return EntranceMapper.entityToResponse(entrances, members, banks);
     }
+
 }

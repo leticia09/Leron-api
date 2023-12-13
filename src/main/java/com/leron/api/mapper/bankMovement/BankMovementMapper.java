@@ -1,27 +1,54 @@
 package com.leron.api.mapper.bankMovement;
 
+import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.entities.Account;
 import com.leron.api.model.entities.BankMovement;
 import com.leron.api.model.entities.Entrance;
+import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class BankMovementMapper {
 
-    public static List<BankMovement> receiveToBankMovement(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuth) {
+    public static DataListResponse<BankMovementResponse> entitiesToResponse(List<BankMovement> request) {
+        DataListResponse<BankMovementResponse> response = new DataListResponse<>();
+        List<BankMovementResponse> responses = new ArrayList<>();
+
+        request.forEach(res -> {
+            BankMovementResponse bankMovementResponse = new BankMovementResponse();
+            bankMovementResponse.setId(res.getId());
+            bankMovementResponse.setBankId(res.getBankId());
+            bankMovementResponse.setDateMovement(res.getDateMovement());
+            bankMovementResponse.setObs(res.getObs());
+            bankMovementResponse.setExpenseId(res.getExpenseId());
+            bankMovementResponse.setReferencePeriod(res.getReferencePeriod());
+            bankMovementResponse.setValue(res.getValue());
+            bankMovementResponse.setType(res.getType());
+            bankMovementResponse.setAccountId(res.getAccountId());
+            bankMovementResponse.setOwnerId(res.getOwnerId());
+            bankMovementResponse.setEntranceId(res.getEntranceId());
+            bankMovementResponse.setCurrency(res.getCurrency());
+            responses.add(bankMovementResponse);
+        });
+        response.setData(responses);
+        return response;
+    }
+
+    public static List<BankMovement> receiveToBankMovement(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuth, List<Account> accounts) {
         List<BankMovement> response = new ArrayList<>();
         requests.forEach(request -> {
+
             Optional<Entrance> entrance = entrances.stream()
                     .filter(entrance1 -> entrance1.getId().toString().equals(request.getEntrance()))
                     .findFirst();
+
+
+
             BankMovement bankMovement = new BankMovement();
             bankMovement.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
             bankMovement.setOwnerId(request.getOwnerId());
@@ -41,10 +68,15 @@ public class BankMovementMapper {
             bankMovement.setObs(request.getObs());
 
             if (entrance.isPresent()) {
+                Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), entrance.get().getAccountId())).findFirst();
                 bankMovement.setEntranceId(entrance.get().getId());
                 bankMovement.setAccountId(entrance.get().getAccountId());
                 bankMovement.setBankId(entrance.get().getBankId());
-                response.add(bankMovement);
+                if(account.isPresent()) {
+                    bankMovement.setCurrency(account.get().getCurrency());
+                    response.add(bankMovement);
+                }
+
             }
         });
 

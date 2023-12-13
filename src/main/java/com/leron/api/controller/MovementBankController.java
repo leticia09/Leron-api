@@ -41,9 +41,9 @@ public class MovementBankController {
 
     }
 
-//    @GetMapping("/{userAuthId}")
-//    public DataListResponse<BankMovementResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-//        return movementBankService.list(userAuthId);
-//    }
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<BankMovementResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        return movementBankService.list(userAuthId);
+    }
 
 }

@@ -35,9 +35,11 @@ public class EntranceController {
 
     }
 
-    @GetMapping("data/{userAuthId}")
-    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
-        return service.getData(userAuthId);
+    @GetMapping("data/{userAuthId}/{month}/{year}")
+    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                         @PathVariable(value = "month", required = true) int month,
+                                                         @PathVariable(value = "year", required = true) int year) {
+        return service.getData(userAuthId, month, year);
     }
 
     @GetMapping("/{userAuthId}/{month}/{year}")
