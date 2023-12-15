@@ -12,7 +12,7 @@ public class AccountRequest {
     private String accountNumber;
     private String label;
     private Long owner;
-    private BigDecimal value;
+    private String value;
     private String currency;
     private List<CardRequest> cards;
 }

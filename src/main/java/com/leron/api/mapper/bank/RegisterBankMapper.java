@@ -6,6 +6,7 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Component
@@ -122,7 +123,7 @@ public class RegisterBankMapper {
             account.setAccountNumber(accountRequest.getAccountNumber());
             account.setMemberId(accountRequest.getOwner());
             account.setUserAuthId(bank.getUserAuthId());
-            account.setValue(accountRequest.getValue());
+            account.setValue(new BigDecimal(accountRequest.getValue()));
             account.setCurrency(accountRequest.getCurrency());
             account.setDeleted(false);
             account.setCreatedIn(new Date());

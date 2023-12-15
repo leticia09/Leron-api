@@ -1,16 +1,24 @@
-package com.leron.api.model.DTO.expense;
+package com.leron.api.model.entities;
 
+import com.leron.api.model.GenericEntities;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Data
-public class ExpenseResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Expense extends GenericEntities {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String local;
     private String macroGroup;

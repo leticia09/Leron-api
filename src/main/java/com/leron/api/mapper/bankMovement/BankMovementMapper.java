@@ -47,8 +47,6 @@ public class BankMovementMapper {
                     .filter(entrance1 -> entrance1.getId().toString().equals(request.getEntrance()))
                     .findFirst();
 
-
-
             BankMovement bankMovement = new BankMovement();
             bankMovement.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
             bankMovement.setOwnerId(request.getOwnerId());

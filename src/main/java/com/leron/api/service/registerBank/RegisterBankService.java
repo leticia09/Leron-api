@@ -174,6 +174,7 @@ public class RegisterBankService {
     public DataResponse<RegisterBankResponse> editBank(Bank registerBankRequest) throws ApplicationBusinessException {
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         Bank bank = bankRepository.findById(registerBankRequest.getId()).orElse(null);
+        Long userId = registerBankRequest.getUserAuthId();
 
         RegisterBankValidator.validateEditBank(registerBankRequest, bank);
 
@@ -186,7 +187,7 @@ public class RegisterBankService {
             Bank bankCopy = new Bank();
             bankCopy.setId(bankSave.getId());
             bankCopy.setName(bankSave.getName());
-            bankCopy.setUserAuthId(bankSave.getUserAuthId());
+            bankCopy.setUserAuthId(userId);
             account.setBank(bankCopy);
         }
 
@@ -194,6 +195,7 @@ public class RegisterBankService {
         for (Account account : bank.getAccounts()) {
             for (Card card : account.getCards()) {
                 card.setAccount(account);
+                card.setUserAuthId(userId);
             }
             saveCard(account.getCards());
         }
