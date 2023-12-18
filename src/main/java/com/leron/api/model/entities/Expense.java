@@ -25,7 +25,7 @@ public class Expense extends GenericEntities {
     private String specificGroup;
     private Long ownerId;
     private String paymentForm;
-    private Long cardId;
+    private Long finalCard;
     private Long quantityPart;
     private Boolean hasFixed;
     private Timestamp dateBuy;

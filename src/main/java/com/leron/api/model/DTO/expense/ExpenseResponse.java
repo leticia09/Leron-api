@@ -17,10 +17,11 @@ public class ExpenseResponse {
     private String specificGroup;
     private Long ownerId;
     private String paymentForm;
-    private Long cardId;
+    private String finalCard;
     private Long quantityPart;
     private Boolean hasFixed;
     private Timestamp dateBuy;
     private String obs;
     private BigDecimal value;
+    private String status;
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,15 +56,23 @@ public class MovementBankService {
 
         ArrayList<DataSet> dataSets = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
+        ArrayList<List<String>> tooltips = new ArrayList<>();
 
         for (Member member : members) {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
             for(Bank bank: banks) {
+                ArrayList<String> tooltipLabel = new ArrayList<>();
+                tooltipLabel.add("");
+                BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                String currency = "";
                 for(Account account: bank.getAccounts()) {
                     if(member.getId().equals(account.getMemberId())) {
                         int labelIndex = labels.indexOf(bank.getName());
+                        tooltipLabel.add(account.getAccountNumber() + ": " + account.getCurrency() + " " + account.getValue());
+                        totalAccount = totalAccount.add(account.getValue());
+                        currency = account.getCurrency();
                         if (labelIndex == -1) {
                             labels.add(bank.getName());
                             data.add(account.getValue());
@@ -81,7 +90,8 @@ public class MovementBankService {
 
                     }
                 }
-
+                tooltipLabel.add("Total: " + currency +" "+totalAccount);
+                tooltips.add(tooltipLabel);
             }
             if(!data.isEmpty()) {
                 dataSet.setLabel(member.getName());
@@ -90,7 +100,6 @@ public class MovementBankService {
                 dataSet.setData(data);
                 dataSets.add(dataSet);
             }
-
         }
 
         graphicResponse.setDataSet(dataSets);
@@ -99,6 +108,7 @@ public class MovementBankService {
         graphicResponse.setTotal2(totalAvailable);
         graphicResponse.setTotal3(totalGoal);
         graphicResponse.setTotal4(totalDollar);
+        graphicResponse.setTooltipLabel(tooltips);
 
         response.setData(graphicResponse);
 

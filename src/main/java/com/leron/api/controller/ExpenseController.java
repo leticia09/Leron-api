@@ -2,6 +2,7 @@ package com.leron.api.controller;
 
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
+import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
@@ -44,5 +45,12 @@ public class ExpenseController {
     @GetMapping("/{userAuthId}")
     public DataListResponse<ExpenseResponse> listWithoutFilters(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
         return service.list(userAuthId);
+    }
+
+    @GetMapping("data/{userAuthId}/{month}/{year}")
+    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                         @PathVariable(value = "month", required = true) int month,
+                                                         @PathVariable(value = "year", required = true) int year) {
+        return service.getData(userAuthId, month, year);
     }
 }
