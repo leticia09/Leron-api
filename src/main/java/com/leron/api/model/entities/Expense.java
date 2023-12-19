@@ -25,10 +25,13 @@ public class Expense extends GenericEntities {
     private String specificGroup;
     private Long ownerId;
     private String paymentForm;
+    private Long bankId;
+    private Long accountId;
     private Long finalCard;
     private Long quantityPart;
     private Boolean hasFixed;
     private Timestamp dateBuy;
     private String obs;
     private BigDecimal value;
+    private Long financialEntityId;
 }

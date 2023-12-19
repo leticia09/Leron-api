@@ -11,10 +11,8 @@ import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.validator.BankMovementValidator;
-import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,12 +27,15 @@ public class MovementBankService {
     private final BankMovementRepository bankMovementRepository;
     private final AccountRepository accountRepository;
 
-    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository) {
+    private final FinancialEntityRepository financialEntityRepository;
+
+    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository) {
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.entranceRepository = entranceRepository;
         this.bankMovementRepository = bankMovementRepository;
         this.accountRepository = accountRepository;
+        this.financialEntityRepository = financialEntityRepository;
     }
 
     public DataListResponse<BankMovementResponse> list(Long userAuthId) {
@@ -46,6 +47,7 @@ public class MovementBankService {
 
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
         List<Bank> banks = bankRepository.findByUserAuthId(authId);
+        List<FinancialEntity> financialEntities = financialEntityRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
         BigDecimal totalMoney = BigDecimal.ZERO;
         BigDecimal totalAvailable = BigDecimal.ZERO;
@@ -93,6 +95,39 @@ public class MovementBankService {
                 tooltipLabel.add("Total: " + currency +" "+totalAccount);
                 tooltips.add(tooltipLabel);
             }
+
+            for(FinancialEntity financialEntity: financialEntities) {
+                ArrayList<String> tooltipLabel = new ArrayList<>();
+                tooltipLabel.add("");
+                BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                String currency = "";
+                for(CardFinancialEntity card: financialEntity.getCardFinancialEntityList()) {
+                    if(member.getId().equals(card.getOwnerId())) {
+                        int labelIndex = labels.indexOf(financialEntity.getName());
+                        tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
+                        totalAccount = totalAccount.add(card.getBalance());
+                        currency = card.getCurrency();
+                        if (labelIndex == -1) {
+                            labels.add(financialEntity.getName());
+                            data.add(card.getBalance());
+                        } else {
+                            data.set(labelIndex, data.get(labelIndex).add(card.getBalance()));
+                        }
+
+                        if(card.getCurrency().equalsIgnoreCase("R$")) {
+                            totalMoney = totalMoney.add(card.getBalance());
+                        }
+
+                        if(card.getCurrency().equalsIgnoreCase("US$")) {
+                            totalDollar = totalDollar.add(card.getBalance());
+                        }
+
+                    }
+                }
+                tooltipLabel.add("Total: " + currency +" "+totalAccount);
+                tooltips.add(tooltipLabel);
+            }
+
             if(!data.isEmpty()) {
                 dataSet.setLabel(member.getName());
                 dataSet.setBackgroundColor(member.getColor());

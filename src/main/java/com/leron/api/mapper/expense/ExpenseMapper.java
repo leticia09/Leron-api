@@ -14,12 +14,13 @@ import java.util.*;
 @Component
 public class ExpenseMapper {
 
-    public static List<Expense> requestToEntity(List<ExpenseRequest> requestList) {
+    public static List<Expense> requestToEntity(List<ExpenseRequest> requestList, Account account) {
         List<Expense> response = new ArrayList<>();
 
         requestList.forEach(res -> {
             Expense expense = new Expense();
-
+            expense.setAccountId(account.getId());
+            expense.setBankId(account.getBank().getId());
             expense.setLocal(res.getLocal());
             expense.setMacroGroup(res.getMacroGroup());
             expense.setOwnerId(res.getOwnerId());
@@ -45,9 +46,10 @@ public class ExpenseMapper {
 
         return response;
     }
-    public static Expense requestToEntity(ExpenseRequest res) {
+    public static Expense requestToEntity(ExpenseRequest res,  Account account) {
             Expense expense = new Expense();
-
+            expense.setAccountId(account.getId());
+            expense.setBankId(account.getBank().getId());
             expense.setLocal(res.getLocal());
             expense.setMacroGroup(res.getMacroGroup());
             expense.setOwnerId(res.getOwnerId());

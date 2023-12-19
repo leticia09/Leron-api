@@ -32,5 +32,5 @@ public class Entrance extends GenericEntities {
     private Timestamp finalDate;
     private Long monthReceive;
     private Long dayReceive;
-
+    private Long financialEntityId;
 }

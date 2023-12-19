@@ -45,21 +45,19 @@ public class ExpenseService {
         List<Card> cards = cardRepository.findByUserAuthId(request.get(0).getUserAuthId());
         ValidatorExpense.validatorCreation(request, expenses);
         request.forEach(res -> {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
-            if(res.getPaymentForm().equalsIgnoreCase("Débito")) {
+            Optional<Card> cardOptional = cards.stream().filter(card -> card.getFinalNumber().equals(res.getFinalCard())).findFirst();
+            if (cardOptional.isPresent()) {
+                Optional<Account> account = accounts.stream().filter(ac -> ac.getId().equals(cardOptional.get().getAccount().getId())).findFirst();
+                if (account.isPresent()) {
+                    Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, account.get()));
 
-                Optional<Card> cardOptional = cards.stream().filter(card -> card.getFinalNumber().equals(res.getFinalCard())).findFirst();
-
-                if(cardOptional.isPresent()) {
-                    Optional<Account> account = accounts.stream().filter(ac -> ac.getId().equals(cardOptional.get().getAccount().getId())).findFirst();
-
-                    if(account.isPresent()) {
-                        BigDecimal valueUpdated =  account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",",".")));
+                    if (res.getPaymentForm().equalsIgnoreCase("Débito")) {
+                        BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
                         account.get().setValue(valueUpdated);
                         accountRepository.save(account.get());
                         BankMovement bankMovement = new BankMovement();
                         bankMovement.setType("Saída");
-                        bankMovement.setValue(new BigDecimal(res.getValue().replace(",",".")));
+                        bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
                         bankMovement.setOwnerId(res.getOwnerId());
                         bankMovement.setBankId(account.get().getBank().getId());
                         bankMovement.setAccountId(account.get().getId());
@@ -75,8 +73,8 @@ public class ExpenseService {
                 }
 
             }
-        });
 
+        });
 
 
         response.setSeverity("success");

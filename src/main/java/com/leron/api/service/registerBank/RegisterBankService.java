@@ -32,13 +32,22 @@ public class RegisterBankService {
 
     private final PointsRepository pointsRepository;
 
-    public RegisterBankService(RegisterBankRepository bankRepository, AccountRepository accountRepository, CardRepository cardRepository, RegisterBankMapper bankMapper, MemberRepository memberRepository, PointsRepository pointsRepository) {
+    private final BankMovementRepository bankMovementRepository;
+
+    private final EntranceRepository entranceRepository;
+
+    private final ExpenseRepository expenseRepository;
+
+    public RegisterBankService(RegisterBankRepository bankRepository, AccountRepository accountRepository, CardRepository cardRepository, RegisterBankMapper bankMapper, MemberRepository memberRepository, PointsRepository pointsRepository, BankMovementRepository bankMovementRepository, EntranceRepository entranceRepository, ExpenseRepository expenseRepository) {
         this.bankRepository = bankRepository;
         this.accountRepository = accountRepository;
         this.cardRepository = cardRepository;
         this.bankMapper = bankMapper;
         this.memberRepository = memberRepository;
         this.pointsRepository = pointsRepository;
+        this.bankMovementRepository = bankMovementRepository;
+        this.entranceRepository = entranceRepository;
+        this.expenseRepository = expenseRepository;
     }
 
     public DataResponse<RegisterBankResponse> createBank(RegisterBankRequest requestDTO, String locale, String authorization) throws ApplicationBusinessException {
@@ -119,6 +128,32 @@ public class RegisterBankService {
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         Bank bank = bankRepository.findById(bankId).orElse(null);
         if (bank != null) {
+
+            List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(),bankId);
+            if(!bankMovementList.isEmpty()) {
+                bankMovementList.forEach(bankMovement -> {
+                    bankMovement.setDeleted(true);
+                });
+                bankMovementRepository.saveAll(bankMovementList);
+            }
+
+            List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(),bankId);
+            if(!entrances.isEmpty()) {
+                entrances.forEach(entrance -> {
+                    entrance.setDeleted(true);
+                });
+                entranceRepository.saveAll(entrances);
+            }
+
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(), bankId);
+            if(!expenses.isEmpty()) {
+                expenses.forEach(expense -> {
+                    expense.setDeleted(true);
+                });
+                expenseRepository.saveAll(expenses);
+            }
+
+
             bank.setDeleted(true);
             bank.getAccounts().forEach(account -> {
                 account.setDeleted(true);

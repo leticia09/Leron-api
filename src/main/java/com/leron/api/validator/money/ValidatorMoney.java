@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Component
 public class ValidatorMoney {
@@ -25,12 +26,16 @@ public class ValidatorMoney {
             });
         });
 
+        List<MoneyRequest> moneyRequests = request.stream().filter(re -> re.getCurrency().equalsIgnoreCase("R$")).collect(Collectors.toList());
+        List<MoneyRequest> moneyRequests1 = request.stream().filter(re -> re.getCurrency().equalsIgnoreCase("US$")).collect(Collectors.toList());
+        List<MoneyRequest> moneyRequests2 = request.stream().filter(re -> re.getCurrency().equalsIgnoreCase("€")).collect(Collectors.toList());
+
         if (invalidDate.get()) {
             throw new ApplicationBusinessException("ERROR", "INVALID_EXPIRATION_DATE");
         }
 
 
-        if (moneyExists.get()) {
+        if (moneyExists.get() || moneyRequests.size() > 1 || moneyRequests1.size() > 1 || moneyRequests2.size() > 1) {
             throw new ApplicationBusinessException("ERROR", "MONEY_ALREADY_EXISTS");
         }
     }
