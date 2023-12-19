@@ -40,6 +40,7 @@ public class MoneyMapper {
 
         entity.forEach(request -> {
             MoneyResponse money = new MoneyResponse();
+            money.setId(request.getId());
             money.setOwnerId(request.getOwnerId());
             money.setCurrency(request.getCurrency());
             money.setValue(request.getValue());

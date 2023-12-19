@@ -12,6 +12,7 @@ import com.leron.api.validator.money.ValidatorMoney;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MoneyService {
@@ -38,5 +39,40 @@ public class MoneyService {
     public DataListResponse<MoneyResponse> list(Long userId) {
         List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userId);
         return MoneyMapper.entityToResponse(moneyList);
+    }
+
+    public DataResponse<MoneyResponse> delete(Long moneyId) {
+        DataResponse<MoneyResponse> response = new DataResponse<>();
+
+        Optional<Money> money = moneyRepository.findById(moneyId);
+
+        money.ifPresent(value -> {
+            value.setDeleted(true);
+            moneyRepository.save(value);
+        });
+
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
+    }
+
+    public DataResponse<MoneyResponse> edit(MoneyResponse request) throws ApplicationBusinessException {
+        DataResponse<MoneyResponse> response = new DataResponse<>();
+
+        Optional<Money> money = moneyRepository.findById(request.getId());
+        List<Money> currentMoneys = moneyRepository.findAllByUserAuthIdAndDeletedFalse(money.get().getUserAuthId());
+
+        ValidatorMoney.validateEdit(currentMoneys, request);
+
+        money.ifPresent(value -> {
+            value.setValue(request.getValue());
+            value.setCurrency(request.getCurrency());
+            value.setOwnerId(request.getOwnerId());
+            moneyRepository.save(value);
+        });
+
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
     }
 }

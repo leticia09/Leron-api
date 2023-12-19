@@ -38,4 +38,24 @@ public class MoneyController {
     public DataListResponse<MoneyResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
         return service.list(userAuthId);
     }
+
+    @PatchMapping("")
+    public  DataResponse<MoneyResponse> edit(@RequestBody MoneyResponse memberRequest) {
+        DataResponse<MoneyResponse> response = new DataResponse<>();
+        try {
+            response = service.edit(memberRequest);
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+
+        return response;
+    }
+
+    @DeleteMapping("/{moneyId}")
+    public DataResponse<MoneyResponse> delete(@PathVariable Long moneyId)  {
+        DataResponse<MoneyResponse> response = new DataResponse<>();
+        response = service.delete(moneyId);
+
+        return response;
+    }
 }
