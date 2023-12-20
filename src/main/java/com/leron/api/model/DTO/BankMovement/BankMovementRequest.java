@@ -18,4 +18,5 @@ public class BankMovementRequest {
     private Long accountId;
     private Timestamp dateMovement;
     private String obs;
+    private Long financialEntityCardId;
 }

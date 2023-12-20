@@ -21,7 +21,7 @@ public class EntranceController {
     private EntranceService service;
 
     @PostMapping
-    public DataResponse<EntranceResponse> createBank(@RequestBody List<EntranceRequest> requestDTO,
+    public DataResponse<EntranceResponse> create(@RequestBody List<EntranceRequest> requestDTO,
                                                      @RequestHeader(name = "locale", required = false) String locale,
                                                      @RequestHeader(name = "Authorization", required = false) String authorization) throws ApplicationBusinessException {
 
@@ -52,5 +52,10 @@ public class EntranceController {
     @GetMapping("/{userAuthId}")
     public DataListResponse<EntranceResponse> listWithFilters(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
         return service.list(userAuthId);
+    }
+
+    @DeleteMapping("/{id}")
+    public DataResponse<EntranceResponse> delete(@PathVariable Long id)  {
+        return service.delete(id);
     }
 }

@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -23,8 +24,7 @@ public class EntranceMapper {
 
         requests.forEach(request -> {
             Entrance entrance = new Entrance();
-            entrance.setAccountId(Long.valueOf(request.getAccountNumber()));
-            entrance.setBankId(request.getBankId());
+
             entrance.setSalary(request.getSalary());
             entrance.setType(request.getType());
             entrance.setSource(request.getSource());
@@ -33,6 +33,19 @@ public class EntranceMapper {
             entrance.setDeleted(false);
             entrance.setUserAuthId(request.getUserAuthId());
             entrance.setFrequency(request.getFrequency());
+            if(Objects.nonNull(request.getMoneyId())) {
+                entrance.setMoneyId(request.getMoneyId());
+            }
+            if(Objects.nonNull(request.getCardId())) {
+                entrance.setFinancialEntityCardId(request.getCardId());
+                entrance.setFinancialEntityId(request.getTicketId());
+            }
+            if(Objects.nonNull(request.getAccountNumber())) {
+                entrance.setAccountId(Long.valueOf(request.getAccountNumber()));
+            }
+            if(Objects.nonNull(request.getBankId())) {
+                entrance.setBankId(request.getBankId());
+            }
             if (request.getFrequency().equalsIgnoreCase("ÚNICO")) {
                 entrance.setInitialDate(FormatDate.formatDate(request.getInitialDate()));
             } else if (request.getFrequency().equalsIgnoreCase("MENSAL")) {
@@ -58,7 +71,7 @@ public class EntranceMapper {
     }
 
 
-    public static DataListResponse<EntranceResponse> entityToResponse(List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
+    public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial,List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
         DataListResponse<EntranceResponse> response = new DataListResponse<>();
         List<EntranceResponse> entranceList = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
@@ -76,10 +89,6 @@ public class EntranceMapper {
             entranceResponse.setSource(entrance.getSource());
             entranceResponse.setType(entrance.getType());
             entranceResponse.setAccountNumber(String.valueOf(entrance.getAccountId()));
-
-//            Optional<BankMovement> bankMovement = bankMovements.stream()
-//                    .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId()))
-//                    .max(Comparator.comparing(BankMovement::getDateMovement));
 
             List<BankMovement> bankMovementList = bankMovements.stream()
                     .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId())).collect(Collectors.toList());
@@ -224,15 +233,27 @@ public class EntranceMapper {
                     .filter(bank1 -> bank1.getId().equals(entrance.getBankId()))
                     .findFirst();
 
+            Optional<CardFinancialEntity> card = cardFinancial.stream().filter(c -> c.getId().equals(entrance.getFinancialEntityCardId())).findFirst();
+            Optional<Money> money = moneyList.stream().filter(m -> m.getId().equals(entrance.getMoneyId())).findFirst();
 
-            if (ownerMember.isPresent() && bank.isPresent()) {
-                Optional<Account> account = bank.get().getAccounts().stream()
-                        .filter(account1 -> account1.getId().toString().equals(entrance.getAccountId().toString()))
-                        .findFirst();
+            if (ownerMember.isPresent() ) {
+
+                if( bank.isPresent()) {
+                    Optional<Account> account = bank.get().getAccounts().stream()
+                            .filter(account1 -> account1.getId().toString().equals(entrance.getAccountId().toString()))
+                            .findFirst();
+                    account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
+                    entranceResponse.setBankName(bank.get().getName());
+                }
+
+
+                card.ifPresent(cardFinancialEntity -> entranceResponse.setFinancialCardName(cardFinancialEntity.getCardName()));
+                card.ifPresent(cardFinancialEntity -> entranceResponse.setCurrency(cardFinancialEntity.getCurrency()));
+                money.ifPresent(mo -> entranceResponse.setMoney(mo.getCurrency()));
 
                 entranceResponse.setOwner(ownerMember.get());
-                entranceResponse.setBankName(bank.get().getName());
-                account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
+
+
                 entranceList.add(entranceResponse);
             }
         }

@@ -22,4 +22,7 @@ public class EntranceRequest {
     private Long dayReceive;
     private Long userAuthId;
     private Long index;
+    private Long cardId;
+    private Long ticketId;
+    private Long moneyId;
 }

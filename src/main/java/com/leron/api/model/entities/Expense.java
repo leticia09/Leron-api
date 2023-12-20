@@ -34,4 +34,6 @@ public class Expense extends GenericEntities {
     private String obs;
     private BigDecimal value;
     private Long financialEntityId;
+    private Long financialEntityCardId;
+    private Long moneyId;
 }

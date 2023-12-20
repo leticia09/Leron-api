@@ -24,4 +24,5 @@ public class ExpenseRequest {
     private String value;
     private Long userAuthId;
     private Long index;
+    private Long cardId;
 }

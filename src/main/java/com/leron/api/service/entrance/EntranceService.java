@@ -6,10 +6,7 @@ import com.leron.api.model.DTO.entrance.EntranceResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.entities.*;
-import com.leron.api.repository.BankMovementRepository;
-import com.leron.api.repository.EntranceRepository;
-import com.leron.api.repository.MemberRepository;
-import com.leron.api.repository.RegisterBankRepository;
+import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
@@ -32,11 +29,17 @@ public class EntranceService {
 
     final BankMovementRepository bankMovementRepository;
 
-    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository) {
+    final CardFinancialEntityRepository cardFinancialEntityRepository;
+
+    final MoneyRepository moneyRepository;
+
+    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
         this.entranceRepository = entranceRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.bankMovementRepository = bankMovementRepository;
+        this.cardFinancialEntityRepository = cardFinancialEntityRepository;
+        this.moneyRepository = moneyRepository;
     }
 
     public DataResponse<EntranceResponse> create(List<EntranceRequest> requestDTO, String locale, String authorization) throws ApplicationBusinessException {
@@ -148,7 +151,9 @@ public class EntranceService {
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return EntranceMapper.entityToResponse(entrances, members, banks, bankMovements, month, year);
+        List<CardFinancialEntity> cardFinancial = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return EntranceMapper.entityToResponse(moneyList,cardFinancial, entrances, members, banks, bankMovements, month, year);
     }
 
     public DataListResponse<EntranceResponse> list(Long userAuthId) {
@@ -156,6 +161,24 @@ public class EntranceService {
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         return EntranceMapper.entityToResponse(entrances, members, banks);
+    }
+
+    public DataResponse<EntranceResponse> delete(Long id) {
+        DataResponse<EntranceResponse> response = new DataResponse<>();
+
+        Optional<Entrance> entrance = entranceRepository.findById(id);
+
+        if(entrance.isPresent()) {
+            entrance.get().setDeleted(true);
+            entrance.get().setChangedIn(new Date());
+
+            entranceRepository.save(entrance.get());
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
     }
 
 }

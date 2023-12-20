@@ -26,4 +26,6 @@ public class EntranceResponse {
     private String status;
     private String currency;
     private BigDecimal valueReceived;
+    private String financialCardName;
+    private String money;
 }

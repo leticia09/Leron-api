@@ -29,19 +29,23 @@ public class MovementBankService {
 
     private final FinancialEntityRepository financialEntityRepository;
 
-    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository) {
+    private final CardFinancialEntityRepository cardFinancialRepository;
+
+    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialRepository) {
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.entranceRepository = entranceRepository;
         this.bankMovementRepository = bankMovementRepository;
         this.accountRepository = accountRepository;
         this.financialEntityRepository = financialEntityRepository;
+        this.cardFinancialRepository = cardFinancialRepository;
     }
 
     public DataListResponse<BankMovementResponse> list(Long userAuthId) {
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         return BankMovementMapper.entitiesToResponse(bankMovements);
     }
+
     public DataResponse<GraphicResponse> getData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
@@ -64,13 +68,13 @@ public class MovementBankService {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
-            for(Bank bank: banks) {
+            for (Bank bank : banks) {
                 ArrayList<String> tooltipLabel = new ArrayList<>();
                 tooltipLabel.add("");
                 BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
                 String currency = "";
-                for(Account account: bank.getAccounts()) {
-                    if(member.getId().equals(account.getMemberId())) {
+                for (Account account : bank.getAccounts()) {
+                    if (member.getId().equals(account.getMemberId())) {
                         int labelIndex = labels.indexOf(bank.getName());
                         tooltipLabel.add(account.getAccountNumber() + ": " + account.getCurrency() + " " + account.getValue());
                         totalAccount = totalAccount.add(account.getValue());
@@ -82,27 +86,27 @@ public class MovementBankService {
                             data.set(labelIndex, data.get(labelIndex).add(account.getValue()));
                         }
 
-                        if(account.getCurrency().equalsIgnoreCase("R$")) {
+                        if (account.getCurrency().equalsIgnoreCase("R$")) {
                             totalMoney = totalMoney.add(account.getValue());
                         }
 
-                        if(account.getCurrency().equalsIgnoreCase("US$")) {
+                        if (account.getCurrency().equalsIgnoreCase("US$")) {
                             totalDollar = totalDollar.add(account.getValue());
                         }
 
                     }
                 }
-                tooltipLabel.add("Total: " + currency +" "+totalAccount);
+                tooltipLabel.add("Total: " + currency + " " + totalAccount);
                 tooltips.add(tooltipLabel);
             }
 
-            for(FinancialEntity financialEntity: financialEntities) {
+            for (FinancialEntity financialEntity : financialEntities) {
                 ArrayList<String> tooltipLabel = new ArrayList<>();
                 tooltipLabel.add("");
                 BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
                 String currency = "";
-                for(CardFinancialEntity card: financialEntity.getCardFinancialEntityList()) {
-                    if(member.getId().equals(card.getOwnerId())) {
+                for (CardFinancialEntity card : financialEntity.getCardFinancialEntityList()) {
+                    if (member.getId().equals(card.getOwnerId())) {
                         int labelIndex = labels.indexOf(financialEntity.getName());
                         tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
                         totalAccount = totalAccount.add(card.getBalance());
@@ -114,21 +118,21 @@ public class MovementBankService {
                             data.set(labelIndex, data.get(labelIndex).add(card.getBalance()));
                         }
 
-                        if(card.getCurrency().equalsIgnoreCase("R$")) {
+                        if (card.getCurrency().equalsIgnoreCase("R$")) {
                             totalMoney = totalMoney.add(card.getBalance());
                         }
 
-                        if(card.getCurrency().equalsIgnoreCase("US$")) {
+                        if (card.getCurrency().equalsIgnoreCase("US$")) {
                             totalDollar = totalDollar.add(card.getBalance());
                         }
 
                     }
                 }
-                tooltipLabel.add("Total: " + currency +" "+totalAccount);
+                tooltipLabel.add("Total: " + currency + " " + totalAccount);
                 tooltips.add(tooltipLabel);
             }
 
-            if(!data.isEmpty()) {
+            if (!data.isEmpty()) {
                 dataSet.setLabel(member.getName());
                 dataSet.setBackgroundColor(member.getColor());
                 dataSet.setBorderColor(member.getColor());
@@ -155,15 +159,27 @@ public class MovementBankService {
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<CardFinancialEntity> cardFinancialEntity = cardFinancialRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+
         List<Account> accountList = BankMovementMapper.receiveToAccount(request, accounts, entrances);
-        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts);
+
+        List<CardFinancialEntity> cardFinancialEntityList = BankMovementMapper.receiveToFinancial(request, cardFinancialEntity, entrances);
+
+        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts, cardFinancialEntity);
 
         BankMovementValidator.validate(request, entrances, bankMovementList);
 
 
-        if(!bankMovements.isEmpty() && !accountList.isEmpty()) {
+        if (!bankMovements.isEmpty()) {
             bankMovementRepository.saveAll(bankMovements);
+        }
+
+        if(!accountList.isEmpty()) {
             accountRepository.saveAll(accountList);
+        }
+
+        if(!cardFinancialEntityList.isEmpty()) {
+            cardFinancialRepository.saveAll(cardFinancialEntityList);
         }
 
         response.setSeverity("success");

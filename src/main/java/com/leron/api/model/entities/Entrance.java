@@ -33,4 +33,6 @@ public class Entrance extends GenericEntities {
     private Long monthReceive;
     private Long dayReceive;
     private Long financialEntityId;
+    private Long financialEntityCardId;
+    private Long moneyId;
 }
