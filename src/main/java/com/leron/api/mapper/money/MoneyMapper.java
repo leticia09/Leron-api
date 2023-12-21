@@ -10,6 +10,7 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,7 +25,7 @@ public class MoneyMapper {
             Money money = new Money();
             money.setOwnerId(request.getOwnerId());
             money.setCurrency(request.getCurrency());
-            money.setValue(request.getValue());
+            money.setValue(new BigDecimal(request.getValue().replace(",", ".")));
             money.setCreatedIn(new Date());
             money.setDeleted(false);
             money.setUserAuthId(request.getUserAuthId());
@@ -43,7 +44,7 @@ public class MoneyMapper {
             money.setId(request.getId());
             money.setOwnerId(request.getOwnerId());
             money.setCurrency(request.getCurrency());
-            money.setValue(request.getValue());
+            money.setValue(request.getValue().toString());
             moneyResponses.add(money);
         });
 

@@ -249,7 +249,7 @@ public class EntranceMapper {
 
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setFinancialCardName(cardFinancialEntity.getCardName()));
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setCurrency(cardFinancialEntity.getCurrency()));
-                money.ifPresent(mo -> entranceResponse.setMoney(mo.getCurrency()));
+                money.ifPresent(mo -> entranceResponse.setCurrency(mo.getCurrency()));
 
                 entranceResponse.setOwner(ownerMember.get());
 
@@ -262,7 +262,7 @@ public class EntranceMapper {
         return response;
     }
 
-    public static DataListResponse<EntranceResponse> entityToResponse(List<Entrance> entrances, List<Member> members, List<Bank> banks) {
+    public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial,List<Entrance> entrances, List<Member> members, List<Bank> banks) {
         DataListResponse<EntranceResponse> response = new DataListResponse<>();
         List<EntranceResponse> entranceList = new ArrayList<>();
         for (Entrance entrance : entrances) {
@@ -273,6 +273,7 @@ public class EntranceMapper {
             entranceResponse.setSource(entrance.getSource());
             entranceResponse.setType(entrance.getType());
             entranceResponse.setAccountNumber(String.valueOf(entrance.getAccountId()));
+
 
             if (Objects.nonNull(entrance.getDayReceive())) {
                 entranceResponse.setDayReceive(entrance.getDayReceive());
@@ -298,15 +299,24 @@ public class EntranceMapper {
                     .filter(bank1 -> bank1.getId().equals(entrance.getBankId()))
                     .findFirst();
 
+            Optional<CardFinancialEntity> card = cardFinancial.stream().filter(c -> c.getId().equals(entrance.getFinancialEntityCardId())).findFirst();
+            Optional<Money> money = moneyList.stream().filter(m -> m.getId().equals(entrance.getMoneyId())).findFirst();
 
-            if (ownerMember.isPresent() && bank.isPresent()) {
-                Optional<Account> account = bank.get().getAccounts().stream()
-                        .filter(account1 -> account1.getId().toString().equals(entrance.getAccountId().toString()))
-                        .findFirst();
+
+            if (ownerMember.isPresent()) {
+                if(bank.isPresent()) {
+                    Optional<Account> account = bank.get().getAccounts().stream()
+                            .filter(account1 -> account1.getId().toString().equals(entrance.getAccountId().toString()))
+                            .findFirst();
+                    account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
+                    entranceResponse.setBankName(bank.get().getName());
+                }
+
+                card.ifPresent(cardFinancialEntity -> entranceResponse.setFinancialCardName(cardFinancialEntity.getCardName()));
+                card.ifPresent(cardFinancialEntity -> entranceResponse.setCurrency(cardFinancialEntity.getCurrency()));
+                money.ifPresent(mo -> entranceResponse.setCurrency(mo.getCurrency()));
 
                 entranceResponse.setOwner(ownerMember.get());
-                entranceResponse.setBankName(bank.get().getName());
-                account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
                 entranceList.add(entranceResponse);
             }
         }

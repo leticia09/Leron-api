@@ -160,7 +160,9 @@ public class EntranceService {
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
-        return EntranceMapper.entityToResponse(entrances, members, banks);
+        List<CardFinancialEntity> cardFinancial = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return EntranceMapper.entityToResponse(moneyList, cardFinancial, entrances, members, banks);
     }
 
     public DataResponse<EntranceResponse> delete(Long id) {

@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Data
@@ -19,7 +20,7 @@ public class Money extends GenericEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String currency;
-    private String value;
+    private BigDecimal value;
     private Long ownerId;
 }
 

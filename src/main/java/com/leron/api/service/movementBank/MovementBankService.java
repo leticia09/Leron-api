@@ -26,12 +26,11 @@ public class MovementBankService {
     private final EntranceRepository entranceRepository;
     private final BankMovementRepository bankMovementRepository;
     private final AccountRepository accountRepository;
-
     private final FinancialEntityRepository financialEntityRepository;
-
     private final CardFinancialEntityRepository cardFinancialRepository;
+    private final MoneyRepository moneyRepository;
 
-    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialRepository) {
+    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialRepository, MoneyRepository moneyRepository) {
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.entranceRepository = entranceRepository;
@@ -39,6 +38,7 @@ public class MovementBankService {
         this.accountRepository = accountRepository;
         this.financialEntityRepository = financialEntityRepository;
         this.cardFinancialRepository = cardFinancialRepository;
+        this.moneyRepository = moneyRepository;
     }
 
     public DataListResponse<BankMovementResponse> list(Long userAuthId) {
@@ -160,15 +160,17 @@ public class MovementBankService {
         List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<CardFinancialEntity> cardFinancialEntity = cardFinancialRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Money> money = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+
+        BankMovementValidator.validate(request, entrances, bankMovementList);
 
         List<Account> accountList = BankMovementMapper.receiveToAccount(request, accounts, entrances);
 
         List<CardFinancialEntity> cardFinancialEntityList = BankMovementMapper.receiveToFinancial(request, cardFinancialEntity, entrances);
 
-        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts, cardFinancialEntity);
+        List<Money> moneyList = BankMovementMapper.receiveToMoney(request, entrances, userAuthId, money);
 
-        BankMovementValidator.validate(request, entrances, bankMovementList);
-
+        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts, cardFinancialEntity, moneyList);
 
         if (!bankMovements.isEmpty()) {
             bankMovementRepository.saveAll(bankMovements);
@@ -180,6 +182,10 @@ public class MovementBankService {
 
         if(!cardFinancialEntityList.isEmpty()) {
             cardFinancialRepository.saveAll(cardFinancialEntityList);
+        }
+
+        if(!moneyList.isEmpty()) {
+            moneyRepository.saveAll(moneyList);
         }
 
         response.setSeverity("success");

@@ -11,6 +11,7 @@ import com.leron.api.responses.DataResponse;
 import com.leron.api.validator.money.ValidatorMoney;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +66,7 @@ public class MoneyService {
         ValidatorMoney.validateEdit(currentMoneys, request);
 
         money.ifPresent(value -> {
-            value.setValue(request.getValue());
+            value.setValue(new BigDecimal(request.getValue().replace(",", ".")));
             value.setCurrency(request.getCurrency());
             value.setOwnerId(request.getOwnerId());
             moneyRepository.save(value);

@@ -2,10 +2,7 @@ package com.leron.api.mapper.bankMovement;
 
 import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
-import com.leron.api.model.entities.Account;
-import com.leron.api.model.entities.BankMovement;
-import com.leron.api.model.entities.CardFinancialEntity;
-import com.leron.api.model.entities.Entrance;
+import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
@@ -40,7 +37,7 @@ public class BankMovementMapper {
         return response;
     }
 
-    public static List<BankMovement> receiveToBankMovement(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities) {
+    public static List<BankMovement> receiveToBankMovement(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, List<Money> moneyList) {
         List<BankMovement> response = new ArrayList<>();
         requests.forEach(request -> {
 
@@ -69,6 +66,7 @@ public class BankMovementMapper {
             if (entrance.isPresent()) {
                 Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), entrance.get().getAccountId())).findFirst();
                 Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(cf -> cf.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
+                Optional<Money> money = moneyList.stream().filter(m -> m.getId().equals(entrance.get().getMoneyId())).findFirst();
 
                 bankMovement.setEntranceId(entrance.get().getId());
                 bankMovement.setAccountId(entrance.get().getAccountId());
@@ -81,6 +79,12 @@ public class BankMovementMapper {
                     bankMovement.setCurrency(cardFinancial.get().getCurrency());
                     bankMovement.setFinancialEntityCardId(cardFinancial.get().getId());
                     bankMovement.setFinancialEntityId(cardFinancial.get().getFinancialEntity().getId());
+                    response.add(bankMovement);
+                }
+
+                if(money.isPresent()) {
+                    bankMovement.setMoneyId(money.get().getId());
+                    bankMovement.setCurrency(money.get().getCurrency());
                     response.add(bankMovement);
                 }
 
@@ -115,6 +119,32 @@ public class BankMovementMapper {
         });
 
 
+        return response;
+    }
+
+    public static List<Money> receiveToMoney(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuthId, List<Money> moneyList) {
+        List<Money> response = new ArrayList<>();
+        requests.forEach(receiveRequest -> {
+            Optional<Entrance> entrance = entrances.stream()
+                    .filter(entrance1 -> entrance1.getId().toString().equals(receiveRequest.getEntrance()))
+                    .findFirst();
+            if(entrance.isPresent()) {
+
+                Optional<Money> money = moneyList.stream().filter(mo -> mo.getId().equals(entrance.get().getMoneyId())).findFirst();
+
+                if(money.isPresent()) {
+                    String salaryText = receiveRequest.getSalary();
+                    salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                    salaryText = salaryText.replaceAll("\\.", "");
+                    salaryText = salaryText.replace(",", ".");
+                    BigDecimal salary = new BigDecimal(salaryText);
+                    BigDecimal oldValue = money.get().getValue();
+                    BigDecimal value = salary.add(oldValue);
+                    money.get().setValue(value);
+                    response.add(money.get());
+                }
+            }
+        });
         return response;
     }
 
