@@ -206,7 +206,7 @@ public class RegisterBankService {
     }
 
 
-    public DataResponse<RegisterBankResponse> editBank(Bank registerBankRequest) throws ApplicationBusinessException {
+    public DataResponse<RegisterBankResponse> editBank(RegisterBankRequest registerBankRequest) throws ApplicationBusinessException {
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         Bank bank = bankRepository.findById(registerBankRequest.getId()).orElse(null);
         Long userId = registerBankRequest.getUserAuthId();

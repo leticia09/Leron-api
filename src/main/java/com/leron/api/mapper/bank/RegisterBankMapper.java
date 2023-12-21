@@ -121,9 +121,9 @@ public class RegisterBankMapper {
             Account account = new Account();
             account.setStatus("ACTIVE");
             account.setAccountNumber(accountRequest.getAccountNumber());
-            account.setMemberId(accountRequest.getOwner());
+            account.setMemberId(Long.valueOf(accountRequest.getOwner()));
             account.setUserAuthId(bank.getUserAuthId());
-            account.setValue(new BigDecimal(accountRequest.getValue()));
+            account.setValue(new BigDecimal(accountRequest.getValue().replace(",",".")));
             account.setCurrency(accountRequest.getCurrency());
             account.setDeleted(false);
             account.setCreatedIn(new Date());
@@ -137,7 +137,7 @@ public class RegisterBankMapper {
         return bank;
     }
 
-    public Bank entityToEntity(Bank requestDTO) {
+    public Bank entityToEntity(RegisterBankRequest requestDTO) {
         Bank bank = new Bank();
         bank.setName(requestDTO.getName().substring(0, 1).toUpperCase() + requestDTO.getName().substring(1).toLowerCase());
         bank.setUserAuthId(requestDTO.getUserAuthId());
@@ -145,14 +145,14 @@ public class RegisterBankMapper {
         bank.setCreatedIn(new Date());
 
         List<Account> accounts = new ArrayList<>();
-        for (Account accountRequest : requestDTO.getAccounts()) {
+        for (AccountRequest accountRequest : requestDTO.getAccounts()) {
             Account account = new Account();
             account.setId(accountRequest.getId());
             account.setStatus("ACTIVE");
             account.setAccountNumber(accountRequest.getAccountNumber());
-            account.setMemberId(accountRequest.getMemberId());
+            account.setMemberId(Long.valueOf(accountRequest.getOwner()));
             account.setUserAuthId(bank.getUserAuthId());
-            account.setValue(accountRequest.getValue());
+            account.setValue(new BigDecimal(accountRequest.getValue().replace(",", ".")));
             account.setCurrency(accountRequest.getCurrency());
             account.setDeleted(false);
             account.setChangedIn(new Date());
@@ -189,9 +189,9 @@ public class RegisterBankMapper {
         return cards;
     }
 
-    private static List<Card> getCardsEntity(Account accountRequest, Long authId) {
+    private static List<Card> getCardsEntity(AccountRequest accountRequest, Long authId) {
         List<Card> cards = new ArrayList<>();
-        for (Card cardRequest : accountRequest.getCards()) {
+        for (CardRequest cardRequest : accountRequest.getCards()) {
             Card card = new Card();
             card.setId(cardRequest.getId());
             card.setStatus("ACTIVE");
@@ -202,7 +202,7 @@ public class RegisterBankMapper {
             card.setClosingDate(cardRequest.getClosingDate());
             card.setDueDate(cardRequest.getDueDate());
             card.setOwner(cardRequest.getOwner());
-            card.setPoint(cardRequest.getPoint());
+            card.setPoint(cardRequest.getPoints());
             card.setProgram(cardRequest.getProgram());
             card.setCurrency(cardRequest.getCurrency());
             card.setChangedIn(new Date());

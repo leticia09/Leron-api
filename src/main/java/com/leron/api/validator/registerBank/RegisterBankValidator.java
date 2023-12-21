@@ -70,7 +70,7 @@ public class RegisterBankValidator {
         }
     }
 
-    public static void validateEditBank(Bank request, Bank current) throws ApplicationBusinessException {
+    public static void validateEditBank(RegisterBankRequest request, Bank current) throws ApplicationBusinessException {
 
         AtomicReference<Boolean> areAccountNumbersUnique = new AtomicReference<>(false);
         AtomicReference<Boolean> areCardNumbersUnique = new AtomicReference<>(false);

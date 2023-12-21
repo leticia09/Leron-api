@@ -24,5 +24,13 @@ public class ExpenseRequest {
     private String value;
     private Long userAuthId;
     private Long index;
+
+    private Long moneyId;
+    private Long ticketId;
     private Long cardId;
+    private Boolean hasSplitExpense;
+    private String frequency;
+    private String initialDate;
+    private Long monthPayment;
+    private Long dayPayment;
 }

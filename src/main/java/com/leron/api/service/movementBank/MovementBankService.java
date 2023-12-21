@@ -5,6 +5,7 @@ import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
+import com.leron.api.model.DTO.graphic.LabelTooltip;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -13,11 +14,13 @@ import com.leron.api.responses.DataResponse;
 import com.leron.api.validator.BankMovementValidator;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class MovementBankService {
@@ -52,6 +55,7 @@ public class MovementBankService {
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
         List<Bank> banks = bankRepository.findByUserAuthId(authId);
         List<FinancialEntity> financialEntities = financialEntityRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
         BigDecimal totalMoney = BigDecimal.ZERO;
         BigDecimal totalAvailable = BigDecimal.ZERO;
@@ -62,11 +66,15 @@ public class MovementBankService {
 
         ArrayList<DataSet> dataSets = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
-        ArrayList<List<String>> tooltips = new ArrayList<>();
+        List<LabelTooltip> tooltips = new ArrayList<>();
 
         for (Member member : members) {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+            ArrayList<List<String>> tooltipList = new ArrayList<>();
+
+            LabelTooltip labelTooltipObject = new LabelTooltip();
+            labelTooltipObject.setLabel(member.getName());
 
             for (Bank bank : banks) {
                 ArrayList<String> tooltipLabel = new ArrayList<>();
@@ -97,39 +105,80 @@ public class MovementBankService {
                     }
                 }
                 tooltipLabel.add("Total: " + currency + " " + totalAccount);
-                tooltips.add(tooltipLabel);
+                tooltipList.add(tooltipLabel);
+
             }
 
-            for (FinancialEntity financialEntity : financialEntities) {
-                ArrayList<String> tooltipLabel = new ArrayList<>();
-                tooltipLabel.add("");
-                BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
-                String currency = "";
-                for (CardFinancialEntity card : financialEntity.getCardFinancialEntityList()) {
-                    if (member.getId().equals(card.getOwnerId())) {
-                        int labelIndex = labels.indexOf(financialEntity.getName());
-                        tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
-                        totalAccount = totalAccount.add(card.getBalance());
-                        currency = card.getCurrency();
-                        if (labelIndex == -1) {
-                            labels.add(financialEntity.getName());
-                            data.add(card.getBalance());
-                        } else {
-                            data.set(labelIndex, data.get(labelIndex).add(card.getBalance()));
-                        }
+            if (!financialEntities.isEmpty()) {
+                for (FinancialEntity financialEntity : financialEntities) {
+                    ArrayList<String> tooltipLabel = new ArrayList<>();
+                    tooltipLabel.add("");
+                    BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                    String currency = "";
+                    for (CardFinancialEntity card : financialEntity.getCardFinancialEntityList()) {
+                        if (member.getId().equals(card.getOwnerId())) {
+                            int labelIndex = labels.indexOf(financialEntity.getName());
+                            tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
+                            totalAccount = totalAccount.add(card.getBalance());
+                            currency = card.getCurrency();
+                            if (labelIndex == -1) {
+                                labels.add(financialEntity.getName());
+                                data.add(card.getBalance());
+                            } else {
+                                data.set(labelIndex, data.get(labelIndex).add(card.getBalance()));
+                            }
 
-                        if (card.getCurrency().equalsIgnoreCase("R$")) {
-                            totalMoney = totalMoney.add(card.getBalance());
-                        }
+                            if (card.getCurrency().equalsIgnoreCase("R$")) {
+                                totalMoney = totalMoney.add(card.getBalance());
+                            }
 
-                        if (card.getCurrency().equalsIgnoreCase("US$")) {
-                            totalDollar = totalDollar.add(card.getBalance());
-                        }
+                            if (card.getCurrency().equalsIgnoreCase("US$")) {
+                                totalDollar = totalDollar.add(card.getBalance());
+                            }
 
+                        }
                     }
+
+                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                    tooltipList.add(tooltipLabel);
+
                 }
-                tooltipLabel.add("Total: " + currency + " " + totalAccount);
-                tooltips.add(tooltipLabel);
+            }
+
+            if (!moneyList.isEmpty()) {
+                for (Money money : moneyList) {
+                    ArrayList<String> tooltipLabel = new ArrayList<>();
+                    tooltipLabel.add("");
+                    BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                    String currency = "";
+
+                    if (member.getId().equals(money.getOwnerId())) {
+                        int labelIndex = labels.indexOf(money.getCurrency());
+                        tooltipLabel.add(money.getCurrency() + " " + money.getValue());
+                        totalAccount = totalAccount.add(money.getValue());
+                        currency = money.getCurrency();
+                        if (labelIndex == -1) {
+                            labels.add(money.getCurrency());
+                            data.add(money.getValue());
+                        } else {
+                            data.set(labelIndex, data.get(labelIndex).add(money.getValue()));
+                        }
+
+                        if (money.getCurrency().equalsIgnoreCase("R$")) {
+                            totalMoney = totalMoney.add(money.getValue());
+                        }
+
+                        if (money.getCurrency().equalsIgnoreCase("US$")) {
+                            totalDollar = totalDollar.add(money.getValue());
+                        }
+                    }
+
+
+                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                    tooltipList.add(tooltipLabel);
+
+
+                }
             }
 
             if (!data.isEmpty()) {
@@ -139,6 +188,8 @@ public class MovementBankService {
                 dataSet.setData(data);
                 dataSets.add(dataSet);
             }
+            labelTooltipObject.setTooltipLabel(tooltipList);
+            tooltips.add(labelTooltipObject);
         }
 
         graphicResponse.setDataSet(dataSets);
@@ -176,15 +227,15 @@ public class MovementBankService {
             bankMovementRepository.saveAll(bankMovements);
         }
 
-        if(!accountList.isEmpty()) {
+        if (!accountList.isEmpty()) {
             accountRepository.saveAll(accountList);
         }
 
-        if(!cardFinancialEntityList.isEmpty()) {
+        if (!cardFinancialEntityList.isEmpty()) {
             cardFinancialRepository.saveAll(cardFinancialEntityList);
         }
 
-        if(!moneyList.isEmpty()) {
+        if (!moneyList.isEmpty()) {
             moneyRepository.saveAll(moneyList);
         }
 

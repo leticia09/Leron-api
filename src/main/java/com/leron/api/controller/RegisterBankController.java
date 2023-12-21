@@ -83,11 +83,11 @@ public class RegisterBankController {
             produces = "application/json"
     )
     public DataResponse<RegisterBankResponse> editBank(
-            @RequestBody Bank request,
+            @RequestBody RegisterBankRequest request,
             @RequestHeader(name = "locale", required = true) String locale,
             @RequestHeader(name = "Authorization", required = true) String authorization
     ) {
-        DataRequest<Bank> requestData = new DataRequest<>(request);
+        DataRequest<RegisterBankRequest> requestData = new DataRequest<>(request);
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         try {
             response = bankService.editBank(requestData.getData());

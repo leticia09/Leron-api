@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 @Component
 @Data
 public class CardRequest {
+    private Long id;
     private String name;
     private Long owner;
     private Long finalNumber;

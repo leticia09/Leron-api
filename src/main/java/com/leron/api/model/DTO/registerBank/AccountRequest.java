@@ -9,9 +9,10 @@ import java.util.List;
 @Component
 @Data
 public class AccountRequest {
+    private Long id;
     private String accountNumber;
     private String label;
-    private Long owner;
+    private String owner;
     private String value;
     private String currency;
     private List<CardRequest> cards;

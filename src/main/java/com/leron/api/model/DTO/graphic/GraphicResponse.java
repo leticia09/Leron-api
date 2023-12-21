@@ -16,5 +16,8 @@ public class GraphicResponse {
     private BigDecimal total2;
     private BigDecimal total3;
     private BigDecimal total4;
-    private ArrayList<List<String>> tooltipLabel;
+    private List<LabelTooltip> tooltipLabel;
+
 }
+
+
