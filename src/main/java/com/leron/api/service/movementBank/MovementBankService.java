@@ -3,6 +3,7 @@ package com.leron.api.service.movementBank;
 import com.leron.api.mapper.bankMovement.BankMovementMapper;
 import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.graphic.LabelTooltip;
@@ -256,6 +257,48 @@ public class MovementBankService {
         if (!moneyList.isEmpty()) {
             moneyRepository.saveAll(moneyList);
         }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
+    }
+
+    public DataResponse<BankMovementResponse> createTransfer(List<TransferBankRequest> request, Long userAuthId) throws ApplicationBusinessException {
+        DataResponse<BankMovementResponse> response = new DataResponse<>();
+
+        List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+
+        BankMovementValidator.validateTransfer(request, bankMovementList);
+
+        request.forEach(res -> {
+
+            if (Objects.nonNull(res.getReceiver()) || Objects.nonNull(res.getOwnerDestinyId())) {
+                List<Account> accountList = BankMovementMapper.transferToAccount(res, accounts);
+                List<BankMovement> bankMovements = BankMovementMapper.transferToBankMovement(res, userAuthId, accounts);
+
+                if (!bankMovements.isEmpty()) {
+                    bankMovementRepository.saveAll(bankMovements);
+                }
+
+                if (!accountList.isEmpty()) {
+                    accountRepository.saveAll(accountList);
+                }
+            } else {
+                List<Account> accountList = BankMovementMapper.transferToAccountNotDestiny(res, accounts);
+                List<BankMovement> bankMovements = BankMovementMapper.transferToBankMovementNotDestiny(res, userAuthId, accounts);
+
+                if (!bankMovements.isEmpty()) {
+                    bankMovementRepository.saveAll(bankMovements);
+                }
+
+                if (!accountList.isEmpty()) {
+                    accountRepository.saveAll(accountList);
+                }
+            }
+
+        });
+
 
         response.setSeverity("success");
         response.setMessage("success");

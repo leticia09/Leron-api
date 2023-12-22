@@ -1,6 +1,7 @@
 package com.leron.api.validator;
 
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
 import com.leron.api.model.entities.BankMovement;
 import com.leron.api.model.entities.Entrance;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -44,5 +45,9 @@ public class BankMovementValidator {
         if (nameExists.get()) {
             throw new ApplicationBusinessException("ERROR", "NAME_ALREADY_EXISTS");
         }
+    }
+
+    public static void validateTransfer(List<TransferBankRequest> requests,List<BankMovement> bankMovementList) throws ApplicationBusinessException {
+
     }
 }

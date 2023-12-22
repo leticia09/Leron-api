@@ -12,7 +12,7 @@ public class EntranceRequest {
     private String source;
     private String type;
     private Long ownerId;
-    private BigDecimal salary;
+    private String salary;
     private Long bankId;
     private String accountNumber;
     private String frequency;

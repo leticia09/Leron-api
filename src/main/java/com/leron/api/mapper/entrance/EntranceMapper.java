@@ -25,7 +25,7 @@ public class EntranceMapper {
         requests.forEach(request -> {
             Entrance entrance = new Entrance();
 
-            entrance.setSalary(request.getSalary());
+            entrance.setSalary(new BigDecimal(request.getSalary().replace(",", ".")));
             entrance.setType(request.getType());
             entrance.setSource(request.getSource());
             entrance.setOwnerId(request.getOwnerId());
