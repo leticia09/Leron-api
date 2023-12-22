@@ -36,4 +36,10 @@ public class Expense extends GenericEntities {
     private Long financialEntityId;
     private Long financialEntityCardId;
     private Long moneyId;
+    private Boolean hasSplitExpense;
+    private String frequency;
+    private Timestamp initialDate;
+    private Long monthPayment;
+    private Long dayPayment;
+
 }

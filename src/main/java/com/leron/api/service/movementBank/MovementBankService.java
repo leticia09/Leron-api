@@ -6,6 +6,7 @@ import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.graphic.LabelTooltip;
+import com.leron.api.model.DTO.graphic.Tooltip;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -71,6 +72,7 @@ public class MovementBankService {
         for (Member member : members) {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+            ArrayList<Tooltip> tooltipList1 = new ArrayList<>();
             ArrayList<List<String>> tooltipList = new ArrayList<>();
 
             LabelTooltip labelTooltipObject = new LabelTooltip();
@@ -78,12 +80,14 @@ public class MovementBankService {
 
             for (Bank bank : banks) {
                 ArrayList<String> tooltipLabel = new ArrayList<>();
+                Tooltip tooltip = new Tooltip();
                 tooltipLabel.add("");
                 BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
                 String currency = "";
                 for (Account account : bank.getAccounts()) {
                     if (member.getId().equals(account.getMemberId())) {
                         int labelIndex = labels.indexOf(bank.getName());
+                        tooltip.setName(bank.getName());
                         tooltipLabel.add(account.getAccountNumber() + ": " + account.getCurrency() + " " + account.getValue());
                         totalAccount = totalAccount.add(account.getValue());
                         currency = account.getCurrency();
@@ -104,20 +108,26 @@ public class MovementBankService {
 
                     }
                 }
-                tooltipLabel.add("Total: " + currency + " " + totalAccount);
-                tooltipList.add(tooltipLabel);
+                if (!Objects.equals(currency, "")) {
+                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                    tooltip.setTooltipLabel(tooltipLabel);
+                    tooltipList1.add(tooltip);
+                }
+
 
             }
 
             if (!financialEntities.isEmpty()) {
                 for (FinancialEntity financialEntity : financialEntities) {
                     ArrayList<String> tooltipLabel = new ArrayList<>();
+                    Tooltip tooltip = new Tooltip();
                     tooltipLabel.add("");
                     BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
                     String currency = "";
                     for (CardFinancialEntity card : financialEntity.getCardFinancialEntityList()) {
                         if (member.getId().equals(card.getOwnerId())) {
                             int labelIndex = labels.indexOf(financialEntity.getName());
+                            tooltip.setName(financialEntity.getName());
                             tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
                             totalAccount = totalAccount.add(card.getBalance());
                             currency = card.getCurrency();
@@ -139,8 +149,11 @@ public class MovementBankService {
                         }
                     }
 
-                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
-                    tooltipList.add(tooltipLabel);
+                    if (!Objects.equals(currency, "")) {
+                        tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                        tooltip.setTooltipLabel(tooltipLabel);
+                        tooltipList1.add(tooltip);
+                    }
 
                 }
             }
@@ -148,12 +161,14 @@ public class MovementBankService {
             if (!moneyList.isEmpty()) {
                 for (Money money : moneyList) {
                     ArrayList<String> tooltipLabel = new ArrayList<>();
+                    Tooltip tooltip = new Tooltip();
                     tooltipLabel.add("");
                     BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
                     String currency = "";
 
                     if (member.getId().equals(money.getOwnerId())) {
                         int labelIndex = labels.indexOf(money.getCurrency());
+                        tooltip.setName(money.getCurrency());
                         tooltipLabel.add(money.getCurrency() + " " + money.getValue());
                         totalAccount = totalAccount.add(money.getValue());
                         currency = money.getCurrency();
@@ -174,8 +189,11 @@ public class MovementBankService {
                     }
 
 
-                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
-                    tooltipList.add(tooltipLabel);
+                    if (!Objects.equals(currency, "")) {
+                        tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                        tooltip.setTooltipLabel(tooltipLabel);
+                        tooltipList1.add(tooltip);
+                    }
 
 
                 }
@@ -188,7 +206,7 @@ public class MovementBankService {
                 dataSet.setData(data);
                 dataSets.add(dataSet);
             }
-            labelTooltipObject.setTooltipLabel(tooltipList);
+            labelTooltipObject.setTooltipList(tooltipList1);
             tooltips.add(labelTooltipObject);
         }
 

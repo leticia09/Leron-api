@@ -10,8 +10,6 @@ import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.utils.FormatDate;
-import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.expense.ValidatorExpense;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +26,18 @@ public class ExpenseService {
     final BankMovementRepository bankMovementRepository;
     final AccountRepository accountRepository;
     final CardRepository cardRepository;
+    final MoneyRepository moneyRepository;
+    final CardFinancialEntityRepository cardFinancialEntityRepository;
 
-    public ExpenseService(ExpenseRepository expenseRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, CardRepository cardRepository) {
+    public ExpenseService(ExpenseRepository expenseRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, CardRepository cardRepository, MoneyRepository moneyRepository, CardFinancialEntityRepository cardFinancialEntityRepository) {
         this.expenseRepository = expenseRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.bankMovementRepository = bankMovementRepository;
         this.accountRepository = accountRepository;
         this.cardRepository = cardRepository;
+        this.moneyRepository = moneyRepository;
+        this.cardFinancialEntityRepository = cardFinancialEntityRepository;
     }
 
     public DataResponse<ExpenseResponse> create(List<ExpenseRequest> request) throws ApplicationBusinessException {
@@ -45,41 +47,67 @@ public class ExpenseService {
         List<Card> cards = cardRepository.findByUserAuthId(request.get(0).getUserAuthId());
         ValidatorExpense.validatorCreation(request, expenses);
         request.forEach(res -> {
+            if (!res.getHasSplitExpense() && !res.getHasFixed()) {
+                saveValuesToExpenses(res, cards, accounts);
+            } else {
+                expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            }
+        });
+
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
+    }
+
+    private void saveValuesToExpenses(ExpenseRequest res, List<Card> cards, List<Account> accounts) {
+        if (res.getPaymentForm().equalsIgnoreCase("Débito")) {
             Optional<Card> cardOptional = cards.stream().filter(card -> card.getFinalNumber().equals(res.getFinalCard())).findFirst();
             if (cardOptional.isPresent()) {
                 Optional<Account> account = accounts.stream().filter(ac -> ac.getId().equals(cardOptional.get().getAccount().getId())).findFirst();
                 if (account.isPresent()) {
                     Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, account.get()));
-
-                    if (res.getPaymentForm().equalsIgnoreCase("Débito")) {
-                        BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
-                        account.get().setValue(valueUpdated);
-                        accountRepository.save(account.get());
-                        BankMovement bankMovement = new BankMovement();
-                        bankMovement.setType("Saída");
-                        bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
-                        bankMovement.setOwnerId(res.getOwnerId());
-                        bankMovement.setBankId(account.get().getBank().getId());
-                        bankMovement.setAccountId(account.get().getId());
-                        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
-                        bankMovement.setCurrency(account.get().getCurrency());
-                        bankMovement.setExpenseId(expenseSave.getId());
-                        bankMovement.setReferencePeriod(res.getDateBuy());
-                        bankMovement.setUserAuthId(res.getUserAuthId());
-                        bankMovement.setCreatedIn(new Date());
-                        bankMovement.setDeleted(false);
-                        bankMovementRepository.save(bankMovement);
-                    }
+                    BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
+                    account.get().setValue(valueUpdated);
+                    accountRepository.save(account.get());
+                    bankMovementRepository.save(ExpenseMapper.createBankMovement(res, account.get(), expenseSave));
                 }
-
             }
 
-        });
+        }
 
+        if (res.getPaymentForm().equalsIgnoreCase("Pix")) {
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Optional<Account> account = accountRepository.findById(res.getAccountId());
+            if (account.isPresent()) {
+                BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
+                account.get().setValue(valueUpdated);
+                accountRepository.save(account.get());
+                bankMovementRepository.save(ExpenseMapper.createBankMovement(res, account.get(), expenseSave));
+            }
 
-        response.setSeverity("success");
-        response.setMessage("success");
-        return response;
+        }
+        if (res.getPaymentForm().equalsIgnoreCase("Dinheiro")) {
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Optional<Money> money = moneyRepository.findById(res.getMoneyId());
+            if (money.isPresent()) {
+                BigDecimal valueUpdated = money.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
+                money.get().setValue(valueUpdated);
+                moneyRepository.save(money.get());
+                bankMovementRepository.save(ExpenseMapper.createBankMovementMoney(res, money.get(), expenseSave));
+            }
+
+        }
+
+        if (res.getPaymentForm().equalsIgnoreCase("Vale")) {
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Optional<CardFinancialEntity> card = cardFinancialEntityRepository.findById(res.getCardId());
+            if (card.isPresent()) {
+                BigDecimal valueUpdated = card.get().getBalance().subtract(new BigDecimal(res.getValue().replace(",", ".")));
+                card.get().setBalance(valueUpdated);
+                cardFinancialEntityRepository.save(card.get());
+                bankMovementRepository.save(ExpenseMapper.createBankMovementFinancialEntity(res, card.get(), expenseSave));
+            }
+        }
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year) {
@@ -128,8 +156,9 @@ public class ExpenseService {
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
                         .filter(bm -> Objects.equals(
-                                bm.getEntranceId(), expense.getId()) &&
-                                bm.getReferencePeriod().equalsIgnoreCase(period)
+                                bm.getExpenseId(), expense.getId()) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                                bm.getType().equalsIgnoreCase("Saída")
                         ).collect(Collectors.toList());
 
 

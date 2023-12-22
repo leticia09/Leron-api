@@ -75,6 +75,66 @@ public class ExpenseMapper {
 
         return expense;
     }
+
+    public static Expense requestToEntity(ExpenseRequest res) {
+        Expense expense = new Expense();
+        expense.setAccountId(res.getAccountId());
+        expense.setBankId(res.getBankId());
+        expense.setLocal(res.getLocal());
+        expense.setMacroGroup(res.getMacroGroup());
+        expense.setOwnerId(res.getOwnerId());
+        expense.setPaymentForm(res.getPaymentForm());
+        expense.setHasFixed(res.getHasFixed());
+        expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
+        expense.setUserAuthId(res.getUserAuthId());
+        expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
+        expense.setCreatedIn(new Date());
+        expense.setDeleted(false);
+        expense.setHasSplitExpense(res.getHasSplitExpense());
+
+        if(Objects.nonNull(res.getFinalCard())) {
+            expense.setFinalCard(res.getFinalCard());
+        }
+        if(Objects.nonNull(res.getQuantityPart())) {
+            expense.setQuantityPart(res.getQuantityPart());
+        }
+        if(Objects.nonNull(res.getObs())) {
+            expense.setObs(res.getObs());
+        }
+        if(Objects.nonNull(res.getSpecificGroup())) {
+            expense.setSpecificGroup(res.getSpecificGroup());
+        }
+
+        if(Objects.nonNull(res.getFrequency())) {
+            expense.setFrequency(res.getFrequency());
+        }
+
+        if(Objects.nonNull(res.getInitialDate())) {
+            expense.setInitialDate(FormatDate.formatDate(res.getInitialDate()));
+        }
+
+        if(Objects.nonNull(res.getMonthPayment())) {
+            expense.setMonthPayment(res.getMonthPayment());
+        }
+
+        if(Objects.nonNull(res.getDayPayment())) {
+            expense.setDayPayment(res.getDayPayment());
+        }
+
+        if(Objects.nonNull(res.getMoneyId())) {
+            expense.setMoneyId(res.getMoneyId());
+        }
+
+        if(Objects.nonNull(res.getTicketId())) {
+            expense.setFinancialEntityId(res.getTicketId());
+        }
+
+        if(Objects.nonNull(res.getCardId())) {
+            expense.setFinancialEntityCardId(res.getCardId());
+        }
+
+        return expense;
+    }
     public static DataListResponse<ExpenseResponse> entityToResponse(List<Expense> expenses, List<Member> members, List<Card> cards,  List<BankMovement>  bankMovements, int month, int year) {
         DataListResponse<ExpenseResponse> response = new DataListResponse<>();
         List<ExpenseResponse> expenseList = new ArrayList<>();
@@ -149,6 +209,59 @@ public class ExpenseMapper {
         }
         response.setData(expenseList);
         return response;
+    }
+
+    public static BankMovement createBankMovement (ExpenseRequest res, Account account, Expense expense) {
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setType("Saída");
+        bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
+        bankMovement.setOwnerId(res.getOwnerId());
+        bankMovement.setBankId(account.getBank().getId());
+        bankMovement.setAccountId(account.getId());
+        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+        bankMovement.setCurrency(account.getCurrency());
+        bankMovement.setExpenseId(expense.getId());
+        bankMovement.setReferencePeriod(res.getDateBuy());
+        bankMovement.setUserAuthId(res.getUserAuthId());
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setDeleted(false);
+
+        return bankMovement;
+    }
+
+    public static BankMovement createBankMovementMoney (ExpenseRequest res, Money money, Expense expense) {
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setType("Saída");
+        bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
+        bankMovement.setOwnerId(res.getOwnerId());
+        bankMovement.setMoneyId(money.getId());
+        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+        bankMovement.setCurrency(money.getCurrency());
+        bankMovement.setExpenseId(expense.getId());
+        bankMovement.setReferencePeriod(res.getDateBuy());
+        bankMovement.setUserAuthId(res.getUserAuthId());
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setDeleted(false);
+
+        return bankMovement;
+    }
+
+    public static BankMovement createBankMovementFinancialEntity (ExpenseRequest res, CardFinancialEntity card, Expense expense) {
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setType("Saída");
+        bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
+        bankMovement.setOwnerId(res.getOwnerId());
+        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+        bankMovement.setCurrency(card.getCurrency());
+        bankMovement.setFinancialEntityId(card.getFinancialEntity().getId());
+        bankMovement.setFinancialEntityCardId(card.getId());
+        bankMovement.setExpenseId(expense.getId());
+        bankMovement.setReferencePeriod(res.getDateBuy());
+        bankMovement.setUserAuthId(res.getUserAuthId());
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setDeleted(false);
+
+        return bankMovement;
     }
 
 }

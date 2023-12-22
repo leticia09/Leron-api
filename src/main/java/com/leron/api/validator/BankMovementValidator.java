@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -28,8 +29,7 @@ public class BankMovementValidator {
         requestList.forEach(res -> {
             Optional<Entrance> entranceOptional = entranceList.stream().filter(entrance -> entrance.getId().toString().equals(res.getEntrance())).findFirst();
             if(entranceOptional.isPresent()) {
-                List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> bm.getEntranceId().equals(entranceOptional.get().getId())).collect(Collectors.toList());
-                String a = GetStatusPayment.getStatus(entranceOptional.get(), bankMovementList, MONTH, YEAR);
+                List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getEntranceId()) && bm.getEntranceId().equals(entranceOptional.get().getId())).collect(Collectors.toList());
                 if(GetStatusPayment.getStatus(entranceOptional.get(), bankMovementList, MONTH, YEAR).equalsIgnoreCase("Não Iniciada")) {
                     invalid.set(Boolean.TRUE);
                 }

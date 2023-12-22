@@ -33,4 +33,7 @@ public class ExpenseRequest {
     private String initialDate;
     private Long monthPayment;
     private Long dayPayment;
+
+    private Long accountId;
+    private Long bankId;
 }
