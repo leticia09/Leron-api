@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class MacroGroupMapper {
@@ -57,12 +58,15 @@ public class MacroGroupMapper {
         macro.setName(macroGroupRequest.getName().substring(0, 1).toUpperCase() + macroGroupRequest.getName().substring(1).toLowerCase());
         macro.setUserAuthId(macroGroupRequest.getUserAuthId());
         macro.setSpecificGroups(macroGroupRequest.getSpecificGroups());
-        if (macroGroupRequest.getStatus().equals("1")) {
-            macro.setStatus("ACTIVE");
+        if(Objects.nonNull(macroGroupRequest.getStatus())) {
+            if (macroGroupRequest.getStatus().equals("1")) {
+                macro.setStatus("ACTIVE");
+            }
+            if (macroGroupRequest.getStatus().equals("2")) {
+                macro.setStatus("INACTIVE");
+            }
         }
-        if (macroGroupRequest.getStatus().equals("2")) {
-            macro.setStatus("INACTIVE");
-        }
+
 
 
         macro.setChangedIn(new Date());
