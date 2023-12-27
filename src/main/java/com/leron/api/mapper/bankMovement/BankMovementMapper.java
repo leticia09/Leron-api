@@ -8,7 +8,6 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
-import javax.print.DocFlavor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
@@ -40,23 +39,21 @@ public class BankMovementMapper {
         return response;
     }
 
-    public static List<BankMovement> receiveToBankMovement(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, List<Money> moneyList) {
-        List<BankMovement> response = new ArrayList<>();
-        requests.forEach(request -> {
+    public static BankMovement receiveToBankMovement(ReceiveRequest requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, Money moneyList) {
 
             Optional<Entrance> entrance = entrances.stream()
-                    .filter(entrance1 -> entrance1.getId().toString().equals(request.getEntrance()))
+                    .filter(entrance1 -> entrance1.getId().toString().equals(requests.getEntrance()))
                     .findFirst();
 
             BankMovement bankMovement = new BankMovement();
-            bankMovement.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
-            bankMovement.setOwnerId(request.getOwnerId());
+            bankMovement.setDateMovement(FormatDate.formatDate(requests.getReceiveDate()));
+            bankMovement.setOwnerId(requests.getOwnerId());
             bankMovement.setType("Entrada");
-            bankMovement.setReferencePeriod(request.getReferencePeriod());
+            bankMovement.setReferencePeriod(requests.getReferencePeriod());
             bankMovement.setDeleted(false);
             bankMovement.setCreatedIn(new Date());
             bankMovement.setUserAuthId(userAuth);
-            String salaryText = request.getSalary();
+            String salaryText = requests.getSalary();
 
             salaryText = salaryText.replaceAll("[^\\d.,]", "");
             salaryText = salaryText.replaceAll("\\.", "");
@@ -64,120 +61,104 @@ public class BankMovementMapper {
             BigDecimal salary = new BigDecimal(salaryText);
 
             bankMovement.setValue(salary);
-            bankMovement.setObs(request.getObs());
+            bankMovement.setObs(requests.getObs());
 
             if (entrance.isPresent()) {
                 Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), entrance.get().getAccountId())).findFirst();
                 Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(cf -> cf.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
-                Optional<Money> money = moneyList.stream().filter(m -> m.getId().equals(entrance.get().getMoneyId())).findFirst();
 
                 bankMovement.setEntranceId(entrance.get().getId());
                 bankMovement.setAccountId(entrance.get().getAccountId());
                 bankMovement.setBankId(entrance.get().getBankId());
-                if (account.isPresent()) {
-                    bankMovement.setCurrency(account.get().getCurrency());
-                    response.add(bankMovement);
-                }
+
+                account.ifPresent(value -> bankMovement.setCurrency(value.getCurrency()));
+
                 if (cardFinancial.isPresent()) {
                     bankMovement.setCurrency(cardFinancial.get().getCurrency());
                     bankMovement.setFinancialEntityCardId(cardFinancial.get().getId());
                     bankMovement.setFinancialEntityId(cardFinancial.get().getFinancialEntity().getId());
-                    response.add(bankMovement);
                 }
 
-                if (money.isPresent()) {
-                    bankMovement.setMoneyId(money.get().getId());
-                    bankMovement.setCurrency(money.get().getCurrency());
-                    response.add(bankMovement);
-                }
-
-            }
-        });
-
-        return response;
-    }
-
-    public static List<Account> receiveToAccount(List<ReceiveRequest> requests, List<Account> accounts, List<Entrance> entrances) {
-        List<Account> response = new ArrayList<>();
-
-        requests.forEach(receiveRequest -> {
-            Optional<Entrance> entrance = entrances.stream()
-                    .filter(entrance1 -> entrance1.getId().toString().equals(receiveRequest.getEntrance()))
-                    .findFirst();
-            if (entrance.isPresent()) {
-                Optional<Account> account = accounts.stream().filter(account1 -> account1.getId().toString().equalsIgnoreCase(entrance.get().getAccountId().toString())).findFirst();
-
-                if (account.isPresent()) {
-                    String salaryText = receiveRequest.getSalary();
-                    salaryText = salaryText.replaceAll("[^\\d.,]", "");
-                    salaryText = salaryText.replaceAll("\\.", "");
-                    salaryText = salaryText.replace(",", ".");
-                    BigDecimal salary = new BigDecimal(salaryText);
-                    BigDecimal oldValue = account.get().getValue();
-                    BigDecimal value = salary.add(oldValue);
-                    account.get().setValue(value);
-                    response.add(account.get());
+                if (Objects.nonNull(moneyList)) {
+                    bankMovement.setMoneyId(moneyList.getId());
+                    bankMovement.setCurrency(moneyList.getCurrency());
                 }
             }
-        });
 
-
-        return response;
+        return bankMovement;
     }
 
-    public static List<Money> receiveToMoney(List<ReceiveRequest> requests, List<Entrance> entrances, Long userAuthId, List<Money> moneyList) {
-        List<Money> response = new ArrayList<>();
-        requests.forEach(receiveRequest -> {
-            Optional<Entrance> entrance = entrances.stream()
-                    .filter(entrance1 -> entrance1.getId().toString().equals(receiveRequest.getEntrance()))
-                    .findFirst();
-            if (entrance.isPresent()) {
+    public static Account receiveToAccount(ReceiveRequest request, List<Account> accounts, List<Entrance> entrances) {
+        Optional<Entrance> entrance = entrances.stream()
+                .filter(entrance1 -> entrance1.getId().toString().equals(request.getEntrance()))
+                .findFirst();
+        if (entrance.isPresent()) {
+            Optional<Account> account = accounts.stream().filter(account1 -> account1.getId().toString().equalsIgnoreCase(entrance.get().getAccountId().toString())).findFirst();
 
-                Optional<Money> money = moneyList.stream().filter(mo -> mo.getId().equals(entrance.get().getMoneyId())).findFirst();
-
-                if (money.isPresent()) {
-                    String salaryText = receiveRequest.getSalary();
-                    salaryText = salaryText.replaceAll("[^\\d.,]", "");
-                    salaryText = salaryText.replaceAll("\\.", "");
-                    salaryText = salaryText.replace(",", ".");
-                    BigDecimal salary = new BigDecimal(salaryText);
-                    BigDecimal oldValue = money.get().getValue();
-                    BigDecimal value = salary.add(oldValue);
-                    money.get().setValue(value);
-                    response.add(money.get());
-                }
+            if (account.isPresent()) {
+                String salaryText = request.getSalary();
+                salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                salaryText = salaryText.replaceAll("\\.", "");
+                salaryText = salaryText.replace(",", ".");
+                BigDecimal salary = new BigDecimal(salaryText);
+                BigDecimal oldValue = account.get().getValue();
+                BigDecimal value = salary.add(oldValue);
+                account.get().setValue(value);
+                return account.get();
             }
-        });
-        return response;
+        }
+
+        return null;
     }
 
-    public static List<CardFinancialEntity> receiveToFinancial(List<ReceiveRequest> requests, List<CardFinancialEntity> cardFinancialEntities, List<Entrance> entrances) {
+    public static Money receiveToMoney(ReceiveRequest requests, List<Entrance> entrances, Long userAuthId, List<Money> moneyList) {
+        Optional<Entrance> entrance = entrances.stream()
+                .filter(entrance1 -> entrance1.getId().toString().equals(requests.getEntrance()))
+                .findFirst();
+        if (entrance.isPresent()) {
+
+            Optional<Money> money = moneyList.stream().filter(mo -> mo.getId().equals(entrance.get().getMoneyId())).findFirst();
+
+            if (money.isPresent()) {
+                String salaryText = requests.getSalary();
+                salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                salaryText = salaryText.replaceAll("\\.", "");
+                salaryText = salaryText.replace(",", ".");
+                BigDecimal salary = new BigDecimal(salaryText);
+                BigDecimal oldValue = money.get().getValue();
+                BigDecimal value = salary.add(oldValue);
+                money.get().setValue(value);
+                return money.get();
+            }
+        }
+
+        return null;
+    }
+
+    public static CardFinancialEntity receiveToFinancial(ReceiveRequest requests, List<CardFinancialEntity> cardFinancialEntities, List<Entrance> entrances) {
         List<CardFinancialEntity> response = new ArrayList<>();
 
-        requests.forEach(receiveRequest -> {
-            Optional<Entrance> entrance = entrances.stream()
-                    .filter(entrance1 -> entrance1.getId().toString().equals(receiveRequest.getEntrance()))
-                    .findFirst();
-            if (entrance.isPresent()) {
 
-                Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(account1 -> account1.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
+        Optional<Entrance> entrance = entrances.stream()
+                .filter(entrance1 -> entrance1.getId().toString().equals(requests.getEntrance()))
+                .findFirst();
+        if (entrance.isPresent()) {
 
-                if (cardFinancial.isPresent()) {
-                    String salaryText = receiveRequest.getSalary();
-                    salaryText = salaryText.replaceAll("[^\\d.,]", "");
-                    salaryText = salaryText.replaceAll("\\.", "");
-                    salaryText = salaryText.replace(",", ".");
-                    BigDecimal salary = new BigDecimal(salaryText);
-                    BigDecimal oldValue = cardFinancial.get().getBalance();
-                    BigDecimal value = salary.add(oldValue);
-                    cardFinancial.get().setBalance(value);
-                    response.add(cardFinancial.get());
-                }
+            Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(account1 -> account1.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
+
+            if (cardFinancial.isPresent()) {
+                String salaryText = requests.getSalary();
+                salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                salaryText = salaryText.replaceAll("\\.", "");
+                salaryText = salaryText.replace(",", ".");
+                BigDecimal salary = new BigDecimal(salaryText);
+                BigDecimal oldValue = cardFinancial.get().getBalance();
+                BigDecimal value = salary.add(oldValue);
+                cardFinancial.get().setBalance(value);
+                return cardFinancial.get();
             }
-        });
-
-
-        return response;
+        }
+        return null;
     }
 
     public static List<Account> transferToAccount(TransferBankRequest request, List<Account> accounts) {
@@ -241,7 +222,7 @@ public class BankMovementMapper {
         bankMovementNegative.setDeleted(false);
         bankMovementNegative.setCreatedIn(new Date());
 
-        if(accountReceive.isPresent() && accountRemove.isPresent()) {
+        if (accountReceive.isPresent() && accountRemove.isPresent()) {
             bankMovementNegative.setCurrency(accountRemove.get().getCurrency());
             bankMovementPositive.setCurrency(accountReceive.get().getCurrency());
             response.add(bankMovementPositive);
@@ -250,12 +231,13 @@ public class BankMovementMapper {
 
         return response;
     }
+
     public static List<Account> transferToAccountNotDestiny(TransferBankRequest request, List<Account> accounts) {
         List<Account> response = new ArrayList<>();
 
         Optional<Account> accountRemove = accounts.stream().filter(ac -> ac.getId().equals(request.getAccountOriginId())).findFirst();
 
-        if ( accountRemove.isPresent()) {
+        if (accountRemove.isPresent()) {
             String valueRequest = request.getValue();
             valueRequest = valueRequest.replaceAll("[^\\d.,]", "");
             valueRequest = valueRequest.replaceAll("\\.", "");
@@ -272,8 +254,7 @@ public class BankMovementMapper {
         return response;
     }
 
-    public static List<BankMovement> transferToBankMovementNotDestiny(TransferBankRequest request, Long userAuthId, List<Account> accounts) {
-        List<BankMovement> response = new ArrayList<>();
+    public static BankMovement transferToBankMovementNotDestiny(TransferBankRequest request, Long userAuthId, List<Account> accounts) {
         Optional<Account> accountRemove = accounts.stream().filter(ac -> ac.getId().equals(request.getAccountOriginId())).findFirst();
 
         BankMovement bankMovementNegative = new BankMovement();
@@ -289,6 +270,22 @@ public class BankMovementMapper {
         bankMovementNegative.setDeleted(false);
         bankMovementNegative.setCreatedIn(new Date());
 
-        return response;
+        return bankMovementNegative;
     }
+
+   public static BankMovement receiveBankMovement (ReceiveRequest request, Long userAuthId, String currency) {
+       BankMovement response = new BankMovement();
+       response.setType("Transferência Positiva");
+       response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
+       response.setOwnerId(request.getOwnerId());
+       response.setBankId(request.getBankId());
+       response.setAccountId(request.getAccountId());
+       response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
+       response.setObs(request.getObs());
+       response.setCurrency(currency);
+       response.setUserAuthId(userAuthId);
+       response.setCreatedIn(new Date());
+       response.setDeleted(false);
+       return response;
+   }
 }

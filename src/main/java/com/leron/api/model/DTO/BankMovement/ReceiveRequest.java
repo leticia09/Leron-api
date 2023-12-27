@@ -12,4 +12,7 @@ public class ReceiveRequest {
     private String referencePeriod;
     private Long  ownerId;
     private String obs;
+    private Long bankId;
+    private Long accountId;
+    private String value;
 }

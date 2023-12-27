@@ -19,10 +19,8 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class MovementBankService {
@@ -47,7 +45,7 @@ public class MovementBankService {
     }
 
     public DataListResponse<BankMovementResponse> list(Long userAuthId) {
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateMovementDesc(userAuthId);
         return BankMovementMapper.entitiesToResponse(bankMovements);
     }
 
@@ -234,29 +232,41 @@ public class MovementBankService {
 
         BankMovementValidator.validate(request, entrances, bankMovementList);
 
-        List<Account> accountList = BankMovementMapper.receiveToAccount(request, accounts, entrances);
+        request.forEach(res -> {
+            if (Objects.isNull(res.getBankId()) && Objects.isNull(res.getAccountId())) {
+                Account accountList = BankMovementMapper.receiveToAccount(res, accounts, entrances);
 
-        List<CardFinancialEntity> cardFinancialEntityList = BankMovementMapper.receiveToFinancial(request, cardFinancialEntity, entrances);
+                CardFinancialEntity cardFinancialEntityList = BankMovementMapper.receiveToFinancial(res, cardFinancialEntity, entrances);
 
-        List<Money> moneyList = BankMovementMapper.receiveToMoney(request, entrances, userAuthId, money);
+                Money moneyList = BankMovementMapper.receiveToMoney(res, entrances, userAuthId, money);
 
-        List<BankMovement> bankMovements = BankMovementMapper.receiveToBankMovement(request, entrances, userAuthId, accounts, cardFinancialEntity, moneyList);
+                BankMovement bankMovements = BankMovementMapper.receiveToBankMovement(res, entrances, userAuthId, accounts, cardFinancialEntity, moneyList);
 
-        if (!bankMovements.isEmpty()) {
-            bankMovementRepository.saveAll(bankMovements);
-        }
+                bankMovementRepository.save(bankMovements);
 
-        if (!accountList.isEmpty()) {
-            accountRepository.saveAll(accountList);
-        }
+                assert accountList != null;
+                accountRepository.save(accountList);
 
-        if (!cardFinancialEntityList.isEmpty()) {
-            cardFinancialRepository.saveAll(cardFinancialEntityList);
-        }
+                assert cardFinancialEntityList != null;
+                cardFinancialRepository.save(cardFinancialEntityList);
 
-        if (!moneyList.isEmpty()) {
-            moneyRepository.saveAll(moneyList);
-        }
+                assert moneyList != null;
+                moneyRepository.save(moneyList);
+            } else {
+                Optional<Account> account = accountRepository.findById(res.getAccountId());
+                if (account.isPresent()) {
+                    BankMovement bankMovements = BankMovementMapper.receiveBankMovement(res, userAuthId, account.get().getCurrency());
+                    bankMovementRepository.save(bankMovements);
+                    BigDecimal oldValue = account.get().getValue();
+                    BigDecimal requestValue = new BigDecimal(res.getValue().replace(",", "."));
+                    BigDecimal value = oldValue.add(requestValue);
+                    account.get().setValue(value);
+                    accountRepository.save(account.get());
+                }
+
+            }
+        });
+
 
         response.setSeverity("success");
         response.setMessage("success");
@@ -273,7 +283,7 @@ public class MovementBankService {
 
         request.forEach(res -> {
 
-            if (Objects.nonNull(res.getReceiver()) || Objects.nonNull(res.getOwnerDestinyId())) {
+            if ((Objects.nonNull(res.getBankDestinyId()) && res.getBankDestinyId() != 0) || (Objects.nonNull(res.getOwnerDestinyId()) && res.getOwnerDestinyId() != 0)) {
                 List<Account> accountList = BankMovementMapper.transferToAccount(res, accounts);
                 List<BankMovement> bankMovements = BankMovementMapper.transferToBankMovement(res, userAuthId, accounts);
 
@@ -286,11 +296,9 @@ public class MovementBankService {
                 }
             } else {
                 List<Account> accountList = BankMovementMapper.transferToAccountNotDestiny(res, accounts);
-                List<BankMovement> bankMovements = BankMovementMapper.transferToBankMovementNotDestiny(res, userAuthId, accounts);
+                BankMovement bankMovements = BankMovementMapper.transferToBankMovementNotDestiny(res, userAuthId, accounts);
 
-                if (!bankMovements.isEmpty()) {
-                    bankMovementRepository.saveAll(bankMovements);
-                }
+                bankMovementRepository.save(bankMovements);
 
                 if (!accountList.isEmpty()) {
                     accountRepository.saveAll(accountList);

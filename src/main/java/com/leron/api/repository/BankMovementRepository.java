@@ -9,6 +9,7 @@ import java.util.List;
 
 @Repository
 public interface BankMovementRepository  extends JpaRepository<BankMovement, Long> {
+    List<BankMovement> findAllByUserAuthIdAndDeletedFalseOrderByDateMovementDesc(@Param("userAuthId") Long userAuthId);
     List<BankMovement> findAllByUserAuthIdAndDeletedFalse(@Param("userAuthId") Long userAuthId);
 
     List<BankMovement> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);

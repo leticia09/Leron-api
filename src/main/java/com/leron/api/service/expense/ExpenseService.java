@@ -108,6 +108,10 @@ public class ExpenseService {
                 bankMovementRepository.save(ExpenseMapper.createBankMovementFinancialEntity(res, card.get(), expenseSave));
             }
         }
+
+        if (res.getPaymentForm().equalsIgnoreCase("Crédito")) {
+            expenseRepository.save(ExpenseMapper.requestToEntity(res));
+        }
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year) {
