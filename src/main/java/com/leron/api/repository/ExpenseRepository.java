@@ -11,6 +11,10 @@ import java.util.List;
 public interface ExpenseRepository extends JpaRepository<Expense,Long> {
     List<Expense> findAllByUserAuthIdAndDeletedFalse (Long userAuthId);
 
+    List<Expense> findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId, @Param("accountId") Long accountId, @Param("finalCard") Long finalCard);
+
+    List<Expense>  findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(@Param("userAuthId") Long userAuthId);
+
     List<Expense> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);
 
     List<Expense> findAllByUserAuthIdAndFinancialEntityId(@Param("userAuthId") Long userAuthId, @Param("financialEntityId") Long financialEntityId);

@@ -10,6 +10,7 @@ import com.leron.api.service.expense.ExpenseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -37,8 +38,8 @@ public class ExpenseController {
 
     @GetMapping("/{userAuthId}/{month}/{year}")
     public DataListResponse<ExpenseResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                   @PathVariable(value = "month", required = true) int month,
-                                                   @PathVariable(value = "year", required = true) int year) {
+                                                  @PathVariable(value = "month", required = true) int month,
+                                                  @PathVariable(value = "year", required = true) int year) {
         return service.list(userAuthId, month, year);
     }
 
@@ -52,5 +53,13 @@ public class ExpenseController {
                                                          @PathVariable(value = "month", required = true) int month,
                                                          @PathVariable(value = "year", required = true) int year) {
         return service.getData(userAuthId, month, year);
+    }
+
+    @PostMapping("/{userAuthId}/{bankId}/{accountId}")
+    public DataResponse<BigDecimal> getByRegisterBank(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                          @PathVariable(value = "bankId", required = true) Long bankId,
+                                                          @PathVariable(value = "accountId", required = true) Long accountId,
+                                                          @RequestBody List<String> cardListRequest) {
+        return service.getAmountByRegisterBank(userAuthId, bankId, accountId, cardListRequest);
     }
 }

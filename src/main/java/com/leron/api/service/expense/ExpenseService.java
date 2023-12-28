@@ -14,8 +14,10 @@ import com.leron.api.validator.expense.ValidatorExpense;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,16 +112,19 @@ public class ExpenseService {
         }
 
         if (res.getPaymentForm().equalsIgnoreCase("Crédito")) {
-            expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            expenseRepository.save(ExpenseMapper.requestToEntityList(res, cards));
         }
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year) {
-        List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(userAuthId);
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Card> cards = cardRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year);
+        List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<CardFinancialEntity> cardFinancialEntityList = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year, accounts, moneyList, cardFinancialEntityList);
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId) {
@@ -217,6 +222,27 @@ public class ExpenseService {
 
         response.setData(graphicResponse);
 
+        return response;
+    }
+
+    public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest) {
+        DataResponse<BigDecimal> response = new DataResponse<>();
+        AtomicReference<BigDecimal> amount = new AtomicReference<>(new BigDecimal(BigInteger.ZERO));
+
+        cardListRequest.forEach(card -> {
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, bankId, accountId, Long.parseLong(card));
+
+            for (Expense ex : expenses) {
+                if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
+                    BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
+                    amount.updateAndGet(currentAmount -> currentAmount.add(partValue));
+                }
+            }
+        });
+
+        response.setData(amount.get());
+        response.setSeverity("success");
+        response.setMessage("success");
         return response;
     }
 }

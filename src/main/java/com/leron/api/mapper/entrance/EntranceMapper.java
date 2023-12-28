@@ -257,7 +257,7 @@ public class EntranceMapper {
                 entranceList.add(entranceResponse);
             }
         }
-        response.setData(entranceList);
+        response.setData(entranceList.stream().filter(entranceResponse -> !entranceResponse.getStatus().equalsIgnoreCase("Não Iniciada")).collect(Collectors.toList()));
 
         return response;
     }

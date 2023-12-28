@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface EntranceRepository extends JpaRepository<Entrance, Long> {
 
+    List<Entrance> findAllByUserAuthIdAndDeletedFalseOrderByInitialDateDesc(@Param("userAuthId") Long userAuthId);
     List<Entrance> findAllByUserAuthIdAndDeletedFalse (Long userAuthId);
 
     List<Entrance> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);

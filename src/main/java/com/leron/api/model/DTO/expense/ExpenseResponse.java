@@ -24,4 +24,7 @@ public class ExpenseResponse {
     private String obs;
     private BigDecimal value;
     private String status;
+    private String currency;
+    private int partNumber;
+    private BigDecimal partValue;
 }

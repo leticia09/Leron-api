@@ -96,14 +96,17 @@ public class EntranceService {
 
                 if (member.getId().equals(entrance.getOwnerId())) {
                     int labelIndex = labels.indexOf(entrance.getType());
-                    if (labelIndex == -1) {
+                    if (labelIndex == -1 && !GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
                         labels.add(entrance.getType());
                         data.add(value);
                     } else {
-                        data.set(labelIndex, data.get(labelIndex).add(value));
+                        if (!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                            data.set(labelIndex, data.get(labelIndex).add(value));
+                        }
+
                     }
 
-                    if(!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                    if (!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
                         receiveTotal = receiveTotal.add(entrance.getSalary());
                     }
                     receiveOk = receiveOk.add(value);
@@ -147,13 +150,13 @@ public class EntranceService {
     }
 
     public DataListResponse<EntranceResponse> list(Long userAuthId, int month, int year) {
-        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalseOrderByInitialDateDesc(userAuthId);
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<CardFinancialEntity> cardFinancial = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return EntranceMapper.entityToResponse(moneyList,cardFinancial, entrances, members, banks, bankMovements, month, year);
+        return EntranceMapper.entityToResponse(moneyList, cardFinancial, entrances, members, banks, bankMovements, month, year);
     }
 
     public DataListResponse<EntranceResponse> list(Long userAuthId) {
@@ -170,7 +173,7 @@ public class EntranceService {
 
         Optional<Entrance> entrance = entranceRepository.findById(id);
 
-        if(entrance.isPresent()) {
+        if (entrance.isPresent()) {
             entrance.get().setDeleted(true);
             entrance.get().setChangedIn(new Date());
 
