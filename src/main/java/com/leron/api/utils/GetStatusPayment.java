@@ -2,6 +2,7 @@ package com.leron.api.utils;
 
 import com.leron.api.model.entities.BankMovement;
 import com.leron.api.model.entities.Entrance;
+import com.leron.api.model.entities.Expense;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class GetStatusPayment {
@@ -99,6 +101,88 @@ public class GetStatusPayment {
                     } else {
                         return "Pendente";
                     }
+                }
+            } else {
+                return "Não Iniciada";
+            }
+        }
+        return "";
+    }
+
+    public static String getStatus(Expense expense, List<BankMovement> movements, int month, int year) {
+        LocalDate currentDate = LocalDate.now();
+        int currentDay = currentDate.getDayOfMonth();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
+        if (!movements.isEmpty()) {
+            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            int monthFromDate = initialDate.getMonthValue();
+            int yearFromDate = initialDate.getYear();
+            if (monthFromDate == month && yearFromDate == year) {
+                for (BankMovement bankMovement : movements) {
+                    String[] part = bankMovement.getReferencePeriod().split("/");
+                    int movementMonth = Integer.parseInt(part[0]);
+                    int movementYear = Integer.parseInt(part[1]);
+
+                    if (movementMonth == month && movementYear == year) {
+                        if (expense.getHasSplitExpense() || expense.getHasFixed()) {
+                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
+                                return "Confirmado";
+                            }
+
+                        } else {
+                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
+                                return "Confirmado";
+                            }
+                        }
+
+                    }
+                }
+            } else {
+                return "Não Inicada";
+            }
+
+            return "Pendente";
+        } else {
+            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            int dayFromDate = initialDate.getDayOfMonth();
+            int monthFromDate = initialDate.getMonthValue();
+            int yearFromDate = initialDate.getYear();
+            if (monthFromDate == month && yearFromDate == year) {
+                if (expense.getHasSplitExpense() || expense.getHasFixed()) {
+                    if (Objects.nonNull(expense.getFrequency())) {
+                        if (expense.getFrequency().equalsIgnoreCase("mensal")) {
+                            if (expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear) {
+                                return "Aguardando";
+                            } else if (expense.getDayPayment() <= dayFromDate && month == currentMonth && year == currentYear) {
+                                return "Não Iniciada";
+                            } else {
+                                return "Pendente";
+                            }
+                        } else if (expense.getFrequency().equalsIgnoreCase("Única")) {
+                            if (expense.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now().toLocalDate().atStartOfDay()))) {
+                                return "Aguardando";
+                            } else {
+                                return "Pendente";
+                            }
+                        } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+                            if (expense.getMonthPayment() == month) {
+                                return "Aguardando";
+                            } else {
+                                return "Pendente";
+                            }
+                        }
+
+                    } else {
+                        if (expense.getDayPayment() <= dayFromDate) {
+                            return "Aguardando";
+                        } else {
+                            return "Pendente";
+                        }
+                    }
+
+
                 }
             } else {
                 return "Não Iniciada";

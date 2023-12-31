@@ -10,6 +10,7 @@ import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.expense.ValidatorExpense;
 import org.springframework.stereotype.Service;
 
@@ -181,24 +182,23 @@ public class ExpenseService {
                     } else {
                         data.set(labelIndex, data.get(labelIndex).add(value));
                     }
+                    String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
-//                    if(!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
-//                        receiveTotal = receiveTotal.add(entrance.getSalary());
-//                    }
-//                    receiveOk = receiveOk.add(value);
+                    if(!status.equalsIgnoreCase("Não Iniciada")) {
+                        receiveTotal = receiveTotal.add(expense.getValue());
+                    }
 
+                    if (status.equalsIgnoreCase("Confirmado")) {
+                        receiveOk = receiveOk.add(expense.getValue());
+                    }
 
-//                    if (bankMovementList.isEmpty()) {
-//                        String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
-//
-//                        if (status.equalsIgnoreCase("Aguardando")) {
-//                            receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
-//                        }
-//
-//                        if (status.equalsIgnoreCase("pendente")) {
-//                            receiveNotOk = receiveNotOk.add(entrance.getSalary());
-//                        }
-//                    }
+                    if (status.equalsIgnoreCase("Aguardando")) {
+                        receiveHoldOn = receiveHoldOn.add(expense.getValue());
+                    }
+
+                    if (status.equalsIgnoreCase("pendente")) {
+                        receiveNotOk = receiveNotOk.add(expense.getValue());
+                    }
                 }
 
             }
@@ -215,10 +215,10 @@ public class ExpenseService {
 
         graphicResponse.setDataSet(dataSets);
         graphicResponse.setLabels(labels);
-        graphicResponse.setTotal1(new BigDecimal(100));
-        graphicResponse.setTotal2(new BigDecimal(200));
-        graphicResponse.setTotal3(new BigDecimal(300));
-        graphicResponse.setTotal4(new BigDecimal(400));
+        graphicResponse.setTotal1(receiveTotal);
+        graphicResponse.setTotal2(receiveOk);
+        graphicResponse.setTotal3(receiveHoldOn);
+        graphicResponse.setTotal4(receiveNotOk);
 
         response.setData(graphicResponse);
 

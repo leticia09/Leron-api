@@ -273,15 +273,28 @@ public class BankMovementMapper {
         return bankMovementNegative;
     }
 
-   public static BankMovement receiveBankMovement (ReceiveRequest request, Long userAuthId, String currency) {
+   public static BankMovement receiveBankMovement (ReceiveRequest request, Long userAuthId, String currency, Account account) {
        BankMovement response = new BankMovement();
-       response.setType("Transferência Positiva");
-       response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
+       response.setType("Entrada");
+       if(!Objects.equals(request.getValue(), "")  && Objects.nonNull(request.getValue())) {
+           response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
+       }
+       if(!Objects.equals(request.getSalary(), "")  && Objects.nonNull(request.getSalary())) {
+           String value = request.getSalary().replace(currency, "").replace(",", ".").trim();
+
+           response.setValue(new BigDecimal(value));
+       }
        response.setOwnerId(request.getOwnerId());
-       response.setBankId(request.getBankId());
-       response.setAccountId(request.getAccountId());
+       response.setBankId(account.getBank().getId());
+       response.setAccountId(account.getId());
        response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
        response.setObs(request.getObs());
+       if(Objects.nonNull(request.getEntrance())) {
+          response.setEntranceId(Long.valueOf(request.getEntrance()));
+       }
+       if(Objects.nonNull(request.getReferencePeriod())) {
+           response.setReferencePeriod(request.getReferencePeriod());
+       }
        response.setCurrency(currency);
        response.setUserAuthId(userAuthId);
        response.setCreatedIn(new Date());
