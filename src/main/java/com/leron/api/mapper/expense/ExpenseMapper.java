@@ -318,6 +318,7 @@ public class ExpenseMapper {
                             int monthFinished = dateBuy.getMonthValue() + Math.toIntExact(expense.getQuantityPart() -1);
                             int part = month - dateBuy.getMonthValue() + 1;
                             expenseResponse.setPartNumber(part);
+                            expenseResponse.setPartValue(expense.getValue().divide(new BigDecimal(expense.getQuantityPart())));
 
                             if (month <= monthFinished) {
                                 if (expense.getDayPayment() <= today.getDayOfMonth()) {

@@ -185,7 +185,12 @@ public class ExpenseService {
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
                     if(!status.equalsIgnoreCase("Não Iniciada")) {
-                        receiveTotal = receiveTotal.add(expense.getValue());
+                        if(expense.getHasSplitExpense()) {
+                            receiveTotal = receiveTotal.add(expense.getValue().divide(new BigDecimal(expense.getQuantityPart())));
+                        } else {
+                            receiveTotal = receiveTotal.add(expense.getValue());
+                        }
+
                     }
 
                     if (status.equalsIgnoreCase("Confirmado")) {
