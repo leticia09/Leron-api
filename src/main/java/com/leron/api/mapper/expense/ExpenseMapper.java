@@ -382,7 +382,7 @@ public class ExpenseMapper {
             }
             expenseList.add(expenseResponse);
         }
-        response.setData(expenseList.stream().filter(expense -> !expense.getStatus().equalsIgnoreCase("Não Iniciada")).collect(Collectors.toList()));
+        response.setData(expenseList);
         return response;
     }
 
