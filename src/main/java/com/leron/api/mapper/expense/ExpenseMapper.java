@@ -343,6 +343,22 @@ public class ExpenseMapper {
 
                         }
                     }
+
+                    if(Objects.nonNull(expense.getFrequency())) {
+                        String a = expense.getFrequency();
+                        if(expense.getFrequency().equalsIgnoreCase("Única") ) {
+                            if (dateBuy.getYear() == year && dateBuy.getMonthValue() == month) {
+                                if (expense.getDayPayment() <= today.getDayOfMonth()) {
+                                    expenseResponse.setStatus("Aguardando");
+                                } else {
+                                    expenseResponse.setStatus("Pendente");
+                                }
+                            } else {
+                                expenseResponse.setStatus("Não Iniciada");
+                            }
+                        }
+
+                    }
                 }
 
             }
@@ -355,7 +371,7 @@ public class ExpenseMapper {
 
 
         }
-        response.setData(expenseList.stream().filter(expense -> !expense.getStatus().equalsIgnoreCase("Não Iniciada") && !expense.getStatus().equalsIgnoreCase("Fechada")).collect(Collectors.toList()));
+        response.setData(expenseList.stream().filter(expense -> Objects.nonNull(expense.getStatus()) && !expense.getStatus().equalsIgnoreCase("Não Iniciada") && !expense.getStatus().equalsIgnoreCase("Fechada")).collect(Collectors.toList()));
         return response;
     }
 

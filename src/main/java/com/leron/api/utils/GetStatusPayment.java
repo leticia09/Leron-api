@@ -8,103 +8,125 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Component
 public class GetStatusPayment {
+    //TODO: Validar o Estado UNICO - Implementar esse GET na MAPPER
     public static String getStatus(Entrance entrance, List<BankMovement> movements, int month, int year) {
         LocalDate currentDate = LocalDate.now();
         int currentDay = currentDate.getDayOfMonth();
         int currentMonth = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
 
+        LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
+        int initialDay = initialDate.getDayOfMonth();
+        Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
+
         if (!movements.isEmpty()) {
-            LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
-            int monthFromDate = initialDate.getMonthValue();
-            int yearFromDate = initialDate.getYear();
-            if (monthFromDate == month && yearFromDate == year) {
-                for (BankMovement bankMovement : movements) {
-                    String[] part = bankMovement.getReferencePeriod().split("/");
-                    int movementMonth = Integer.parseInt(part[0]);
-                    int movementYear = Integer.parseInt(part[1]);
 
-                    if (movementMonth == month && movementYear == year) {
-                        if (entrance.getFrequency().equalsIgnoreCase("Mensal")) {
-                            if (bankMovement.getType().equalsIgnoreCase("Entrada")) {
-                                return "Confirmado";
-                            }
-                        } else if (entrance.getFrequency().equalsIgnoreCase("Única") ||
-                                entrance.getFrequency().equalsIgnoreCase("Anual")) {
-                            if (bankMovement.getType().equalsIgnoreCase("Entrada")) {
-                                return "Confirmado";
-                            }
-                        } else if (entrance.getFrequency().equalsIgnoreCase("Trimestral")) {
-                            ArrayList<ArrayList<Integer>> quarters = getArrayLists();
-                            if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
-                                    belongsToSameQuarter(movementMonth, month, quarters)) {
-                                return "Confirmado";
-                            }
-                        } else if (entrance.getFrequency().equalsIgnoreCase("Semestral")) {
-                            ArrayList<ArrayList<Integer>> semesters = getArrayListsSemester();
-                            if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
-                                    belongsToSameQuarter(movementMonth, month, semesters)) {
-                                return "Confirmado";
-                            }
-                        }
-                    }
-                }
-            } else {
-                return "Não Inicada";
-            }
+            for (BankMovement bankMovement : movements) {
+                String[] part = bankMovement.getReferencePeriod().split("/");
+                int movementMonth = Integer.parseInt(part[0]);
+                int movementYear = Integer.parseInt(part[1]);
 
-            return "Pendente";
-        } else {
-            LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
-            int dayFromDate = initialDate.getDayOfMonth();
-            int monthFromDate = initialDate.getMonthValue();
-            int yearFromDate = initialDate.getYear();
-            if (monthFromDate == month && yearFromDate == year) {
                 if (entrance.getFrequency().equalsIgnoreCase("Mensal")) {
-                    if (entrance.getDayReceive() >= currentDay && month == currentMonth && year == currentYear) {
-                        return "Aguardando";
-                    } else if (entrance.getDayReceive() <= dayFromDate && month == currentMonth && year == currentYear) {
+                    if (entrance.getInitialDate().after(date)) {
                         return "Não Iniciada";
-                    } else {
+                    } else if (bankMovement.getType().equalsIgnoreCase("Entrada") && movementMonth == month && movementYear == year) {
+                        return "Confirmado";
+                    } else if (entrance.getDayReceive() < currentDay && currentMonth == month) {
                         return "Pendente";
+                    } else {
+                        return "Aguardando";
                     }
                 } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
-                    if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now().toLocalDate().atStartOfDay()))) {
-                        return "Aguardando";
-                    } else {
+                    if (entrance.getInitialDate().after(date)) {
+                        return "Não Iniciada";
+                    } else if (bankMovement.getType().equalsIgnoreCase("Entrada") && movementMonth == month && movementYear == year) {
+                        return "Confirmado";
+                    } else if (entrance.getInitialDate().after(new Date())) {
                         return "Pendente";
+                    } else {
+                        return "Aguardando";
                     }
                 } else if (entrance.getFrequency().equalsIgnoreCase("Anual")) {
-                    if (entrance.getMonthReceive() == month) {
-                        return "Aguardando";
-                    } else {
+                    if (entrance.getInitialDate().after(date) || entrance.getMonthReceive() >= month) {
+                        return "Não Iniciada";
+                    } else if (bankMovement.getType().equalsIgnoreCase("Entrada") && movementMonth == month && movementYear == year) {
+                        return "Confirmado";
+                    } else if (entrance.getInitialDate().after(new Date())) {
                         return "Pendente";
+                    } else {
+                        return "Aguardando";
                     }
                 } else if (entrance.getFrequency().equalsIgnoreCase("Trimestral")) {
                     ArrayList<ArrayList<Integer>> quarters = getArrayLists();
-                    if (belongsToSameQuarter(currentMonth, month, quarters)) {
-                        return "Aguardando";
-                    } else {
-                        return "Pendente";
+                    if (entrance.getInitialDate().after(date)) {
+                        return "Não Iniciada";
+                    } else if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
+                            belongsToSameQuarter(movementMonth, month, quarters)) {
+                        return "Confirmado";
                     }
                 } else if (entrance.getFrequency().equalsIgnoreCase("Semestral")) {
                     ArrayList<ArrayList<Integer>> semesters = getArrayListsSemester();
-                    if (belongsToSameQuarter(currentMonth, month, semesters)) {
-                        return "Aguardando";
-                    } else {
-                        return "Pendente";
+                    if (entrance.getInitialDate().after(date)) {
+                        return "Não Iniciada";
+                    } else if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
+                            belongsToSameQuarter(movementMonth, month, semesters)) {
+                        return "Confirmado";
                     }
                 }
-            } else {
-                return "Não Iniciada";
+
             }
+
+        } else {
+            if (entrance.getFrequency().equalsIgnoreCase("Mensal")) {
+                if (entrance.getInitialDate().after(date)) {
+                    return "Não Iniciada";
+                } else if (entrance.getDayReceive() >= currentDay && month >= currentMonth && year >= currentYear) {
+                    return "Aguardando";
+                } else {
+                    return "Pendente";
+                }
+            } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
+                if (entrance.getInitialDate().after(date)) {
+                    return "Não Iniciada";
+                } else if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now()))) {
+                    return "Aguardando";
+                } else {
+                    return "Pendente";
+                }
+            } else if (entrance.getFrequency().equalsIgnoreCase("Anual")) {
+                if (entrance.getInitialDate().after(date) || entrance.getMonthReceive() >= month) {
+                    return "Não Iniciada";
+                } else if (entrance.getMonthReceive() == month) {
+                    if (entrance.getDayReceive() > currentDay) {
+                        return "Pendente";
+                    } else {
+                        return "Aguardando";
+                    }
+                }
+            } else if (entrance.getFrequency().equalsIgnoreCase("Trimestral")) {
+                ArrayList<ArrayList<Integer>> quarters = getArrayLists();
+                if (entrance.getInitialDate().after(date)) {
+                    return "Não Iniciada";
+                } else if (belongsToSameQuarter(currentMonth, month, quarters)) {
+                    return "Aguardando";
+                } else {
+                    return "Pendente";
+                }
+            } else if (entrance.getFrequency().equalsIgnoreCase("Semestral")) {
+                ArrayList<ArrayList<Integer>> semesters = getArrayListsSemester();
+                if (entrance.getInitialDate().after(date)) {
+                    return "Não Iniciada";
+                } else if (belongsToSameQuarter(currentMonth, month, semesters)) {
+                    return "Aguardando";
+                } else {
+                    return "Pendente";
+                }
+            }
+
         }
         return "";
     }

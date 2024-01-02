@@ -87,8 +87,7 @@ public class EntranceService {
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
                         .filter(bm -> Objects.equals(
-                                bm.getEntranceId(), entrance.getId()) &&
-                                bm.getReferencePeriod().equalsIgnoreCase(period)
+                                bm.getEntranceId(), entrance.getId())
                         ).collect(Collectors.toList());
 
 
@@ -96,33 +95,34 @@ public class EntranceService {
 
                 if (member.getId().equals(entrance.getOwnerId())) {
                     int labelIndex = labels.indexOf(entrance.getType());
-                    if (labelIndex == -1 && !GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                    String a = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
+                    if (labelIndex == -1 && GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Confirmado")) {
                         labels.add(entrance.getType());
                         data.add(value);
                     } else {
-                        if (!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                        if (GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Confirmado")) {
                             data.set(labelIndex, data.get(labelIndex).add(value));
                         }
 
                     }
 
-                    if (!GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Não Iniciada")) {
+                    String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
+
+                    if (!status.equalsIgnoreCase("Não Iniciada")) {
                         receiveTotal = receiveTotal.add(entrance.getSalary());
                     }
-                    receiveOk = receiveOk.add(value);
 
-
-                    if (bankMovementList.isEmpty()) {
-                        String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
-
-                        if (status.equalsIgnoreCase("Aguardando")) {
-                            receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
-                        }
-
-                        if (status.equalsIgnoreCase("pendente")) {
-                            receiveNotOk = receiveNotOk.add(entrance.getSalary());
-                        }
+                    if (status.equalsIgnoreCase("Aguardando")) {
+                        receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
                     }
+
+                    if (status.equalsIgnoreCase("Pendente")) {
+                        receiveNotOk = receiveNotOk.add(entrance.getSalary());
+                    }
+                    if(status.equalsIgnoreCase("Confirmado")) {
+                        receiveOk = receiveOk.add(value);
+                    }
+
                 }
 
             }
