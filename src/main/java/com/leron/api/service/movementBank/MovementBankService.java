@@ -253,18 +253,13 @@ public class MovementBankService {
                 assert moneyList != null;
                 moneyRepository.save(moneyList);
             } else {
-                Optional<Entrance> entrance = entranceRepository.findById(Long.valueOf(res.getEntrance()));
+                Optional<Account> account = accountRepository.findById(res.getAccountId());
+                if (account.isPresent()) {
+                    BankMovement bankMovements = BankMovementMapper.receiveBankMovement(res, userAuthId, account.get().getCurrency(), account.get());
+                    bankMovementRepository.save(bankMovements);
 
-                if (entrance.isPresent()) {
-                    Optional<Account> account = accountRepository.findById(entrance.get().getAccountId());
-                    if (account.isPresent()) {
-                        BankMovement bankMovements = BankMovementMapper.receiveBankMovement(res, userAuthId, account.get().getCurrency(), account.get());
-                        bankMovementRepository.save(bankMovements);
-
-                        account.get().setValue(getBigDecimal(res, account.get()));
-                        accountRepository.save(account.get());
-                    }
-
+                    account.get().setValue(getBigDecimal(res, account.get()));
+                    accountRepository.save(account.get());
                 }
 
             }
@@ -278,11 +273,11 @@ public class MovementBankService {
 
     private static BigDecimal getBigDecimal(ReceiveRequest res, Account account) {
         String values = "";
-        if(!Objects.equals(res.getValue(), "")  && Objects.nonNull(res.getValue())) {
+        if (!Objects.equals(res.getValue(), "") && Objects.nonNull(res.getValue())) {
             values = res.getValue().replace(",", ".");
         }
-        if(!Objects.equals(res.getSalary(), "")  && Objects.nonNull(res.getSalary())) {
-             values = res.getSalary().replace(account.getCurrency(), "").replace(",", ".").trim();
+        if (!Objects.equals(res.getSalary(), "") && Objects.nonNull(res.getSalary())) {
+            values = res.getSalary().replace(account.getCurrency(), "").replace(",", ".").trim();
         }
         BigDecimal oldValue = account.getValue();
         BigDecimal requestValue = new BigDecimal(values);

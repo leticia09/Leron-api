@@ -5,9 +5,11 @@ import com.leron.api.model.DTO.expense.ExpenseResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
+import com.leron.api.utils.GetStatusPayment;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
@@ -153,10 +155,14 @@ public class ExpenseMapper {
         return expense;
     }
 
-    public static Expense requestToEntity(ExpenseRequest res) {
+    public static Expense requestToEntity(ExpenseRequest res, List<Card> cards) {
         Expense expense = new Expense();
-        expense.setAccountId(res.getAccountId());
-        expense.setBankId(res.getBankId());
+        Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(res.getFinalCard())).findFirst();
+        if (cardOptional.isPresent()) {
+            expense.setAccountId(cardOptional.get().getAccount().getId());
+            expense.setBankId(cardOptional.get().getAccount().getBank().getId());
+        }
+
         expense.setLocal(res.getLocal());
         expense.setMacroGroup(res.getMacroGroup());
         expense.setOwnerId(res.getOwnerId());
@@ -221,13 +227,6 @@ public class ExpenseMapper {
         DataListResponse<ExpenseResponse> response = new DataListResponse<>();
         List<ExpenseResponse> expenseList = new ArrayList<>();
         for (Expense expense : expenses) {
-            LocalDate dateBuy;
-            if (Objects.nonNull(expense.getInitialDate())) {
-                dateBuy = expense.getInitialDate().toLocalDateTime().toLocalDate();
-            } else {
-                dateBuy = expense.getDateBuy().toLocalDateTime().toLocalDate();
-            }
-
 
             ExpenseResponse expenseResponse = new ExpenseResponse();
             expenseResponse.setId(expense.getId());
@@ -238,6 +237,7 @@ public class ExpenseMapper {
             expenseResponse.setHasFixed(expense.getHasFixed());
             expenseResponse.setDateBuy(expense.getDateBuy());
             expenseResponse.setValue(expense.getValue());
+
             if (Objects.nonNull(expense.getObs())) {
                 expenseResponse.setObs(expense.getObs());
             }
@@ -264,110 +264,56 @@ public class ExpenseMapper {
                 account.ifPresent(value -> expenseResponse.setCurrency(value.getCurrency()));
             }
 
-            Optional<BankMovement> bankMovement = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(expense.getId())).findFirst();
+            if(expense.getHasSplitExpense()) {
+                BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                expenseResponse.setPartValue(c);
+            }
+
             Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
             List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(expense.getId())).collect(Collectors.toList());
 
             cardOptional.ifPresent(card -> expenseResponse.setFinalCard(card.getName() + "/ " + expense.getFinalCard()));
 
-            if (bankMovement.isPresent()) {
-                if (!expense.getHasSplitExpense() && !expense.getHasFixed() && !expense.getPaymentForm().equalsIgnoreCase("crédito")) {
-                    expenseResponse.setStatus("Confirmado");
-                }
 
-                if (expense.getPaymentForm().equalsIgnoreCase("crédito") || expense.getHasSplitExpense()) {
-                    String[] part = bankMovement.get().getReferencePeriod().split("/");
 
-                    int monthReferencePeriod = Integer.parseInt(part[0]);
-                    int yearReferencePeriod = Integer.parseInt(part[1]);
-
-                    if (yearReferencePeriod == year && monthReferencePeriod == month) {
-                        expenseResponse.setStatus("Confirmado");
-                        expenseResponse.setPartValue(bankMovement.get().getValue());
-                        expenseResponse.setPartNumber(bankMovementList.size());
-                    }
-                }
-
+            LocalDate dateBuy;
+            if (Objects.nonNull(expense.getInitialDate())) {
+                dateBuy = expense.getInitialDate().toLocalDateTime().toLocalDate();
             } else {
-                LocalDate today = LocalDate.now();
-
-                if (expense.getPaymentForm().equalsIgnoreCase("crédito")) {
-                    if (cardOptional.isPresent() && cardOptional.get().getClosingDate() < dateBuy.getDayOfMonth()) {
-                        expenseResponse.setStatus("Aguardando");
-                    } else {
-                        expenseResponse.setStatus("Pendente");
-                    }
-                }
-
-                if ((expense.getPaymentForm().equalsIgnoreCase("débito") ||
-                        expense.getPaymentForm().equalsIgnoreCase("pix") ||
-                        expense.getPaymentForm().equalsIgnoreCase("dinheiro")) && (expense.getHasFixed() || expense.getHasSplitExpense())) {
-
-                    if (expense.getHasFixed()) {
-                        if (dateBuy.getYear() == year && dateBuy.getMonthValue() <= month) {
-                            if (expense.getDayPayment() <= today.getDayOfMonth()) {
-                                expenseResponse.setStatus("Aguardando");
-                            } else {
-                                expenseResponse.setStatus("Pendente");
-                            }
-                        } else {
-                            expenseResponse.setStatus("Não Iniciada");
-                        }
-                    } else {
-                        if (expense.getHasSplitExpense()) {
-                            int monthFinished = dateBuy.getMonthValue() + Math.toIntExact(expense.getQuantityPart() -1);
-                            int part = month - dateBuy.getMonthValue() + 1;
-                            expenseResponse.setPartNumber(part);
-                            expenseResponse.setPartValue(expense.getValue().divide(new BigDecimal(expense.getQuantityPart())));
-
-                            if (month <= monthFinished) {
-                                if (expense.getDayPayment() <= today.getDayOfMonth()) {
-                                    expenseResponse.setStatus("Aguardando");
-                                } else {
-                                    expenseResponse.setStatus("Pendente");
-                                }
-                            } else {
-                                expenseResponse.setStatus("Fechada");
-                                expenseResponse.setPartNumber(Math.toIntExact(expense.getQuantityPart()));
-                            }
-                        } else {
-                            if (dateBuy.getYear() == year && dateBuy.getMonthValue() == month) {
-                                if (expense.getDayPayment() <= today.getDayOfMonth()) {
-                                    expenseResponse.setStatus("Aguardando");
-                                } else {
-                                    expenseResponse.setStatus("Pendente");
-                                }
-                            } else {
-                                expenseResponse.setStatus("Não Iniciada");
-                            }
-
-                        }
-                    }
-
-                    if(Objects.nonNull(expense.getFrequency())) {
-                        String a = expense.getFrequency();
-                        if(expense.getFrequency().equalsIgnoreCase("Única") ) {
-                            if (dateBuy.getYear() == year && dateBuy.getMonthValue() == month) {
-                                if (expense.getDayPayment() <= today.getDayOfMonth()) {
-                                    expenseResponse.setStatus("Aguardando");
-                                } else {
-                                    expenseResponse.setStatus("Pendente");
-                                }
-                            } else {
-                                expenseResponse.setStatus("Não Iniciada");
-                            }
-                        }
-
-                    }
-                }
-
+                dateBuy = expense.getDateBuy().toLocalDateTime().toLocalDate();
             }
 
-            if(!expense.getHasFixed() && !expense.getHasSplitExpense() && dateBuy.getYear() == year && dateBuy.getMonthValue() == month) {
-                expenseList.add(expenseResponse);
-            } else if((expense.getHasFixed() || expense.getHasSplitExpense()) && dateBuy.getYear() <= year && dateBuy.getMonthValue() <= month){
-                expenseList.add(expenseResponse);
+            if(expense.getHasSplitExpense()) {
+                int monthFinished = dateBuy.getMonthValue() + Math.toIntExact(expense.getQuantityPart() -1);
+                int part = month - dateBuy.getMonthValue() + 1;
+                expenseResponse.setPartNumber(part);
+                BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                expenseResponse.setPartValue(c);
             }
+
+            String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
+
+            final BigDecimal[] valueReceived = {BigDecimal.ZERO};
+
+            if (status.equalsIgnoreCase("Não Iniciada")) {
+                expenseResponse.setStatus("Não Iniciada");
+            }
+
+            if (status.equalsIgnoreCase("Aguardando")) {
+                expenseResponse.setStatus("Aguardando");
+            }
+
+            if (status.equalsIgnoreCase("Pendente")) {
+                expenseResponse.setStatus("Pendente");
+            }
+            if(status.equalsIgnoreCase("Confirmado")) {
+                expenseResponse.setStatus("Confirmado");
+                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(month+"/"+year) && bank.getExpenseId().equals(expense.getId())).findFirst();
+                bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
+                expenseResponse.setValuePaid(valueReceived[0]);
+            }
+
+            expenseList.add(expenseResponse);
 
 
         }
@@ -410,10 +356,18 @@ public class ExpenseMapper {
         bankMovement.setOwnerId(res.getOwnerId());
         bankMovement.setBankId(account.getBank().getId());
         bankMovement.setAccountId(account.getId());
-        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
         bankMovement.setCurrency(account.getCurrency());
         bankMovement.setExpenseId(expense.getId());
-        bankMovement.setReferencePeriod(res.getDateBuy());
+        if (Objects.nonNull(res.getDateBuy())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
+        if (Objects.nonNull(res.getInitialDate())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getInitialDate()));
+            LocalDate initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
         bankMovement.setUserAuthId(res.getUserAuthId());
         bankMovement.setCreatedIn(new Date());
         bankMovement.setDeleted(false);
@@ -427,10 +381,18 @@ public class ExpenseMapper {
         bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         bankMovement.setOwnerId(res.getOwnerId());
         bankMovement.setMoneyId(money.getId());
-        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+        if (Objects.nonNull(res.getDateBuy())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
+        if (Objects.nonNull(res.getInitialDate())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getInitialDate()));
+            LocalDate initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
         bankMovement.setCurrency(money.getCurrency());
         bankMovement.setExpenseId(expense.getId());
-        bankMovement.setReferencePeriod(res.getDateBuy());
         bankMovement.setUserAuthId(res.getUserAuthId());
         bankMovement.setCreatedIn(new Date());
         bankMovement.setDeleted(false);
@@ -443,12 +405,20 @@ public class ExpenseMapper {
         bankMovement.setType("Saída");
         bankMovement.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         bankMovement.setOwnerId(res.getOwnerId());
-        bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
         bankMovement.setCurrency(card.getCurrency());
         bankMovement.setFinancialEntityId(card.getFinancialEntity().getId());
         bankMovement.setFinancialEntityCardId(card.getId());
         bankMovement.setExpenseId(expense.getId());
-        bankMovement.setReferencePeriod(res.getDateBuy());
+        if (Objects.nonNull(res.getDateBuy())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
+            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
+        if (Objects.nonNull(res.getInitialDate())) {
+            bankMovement.setDateMovement(FormatDate.formatDate(res.getInitialDate()));
+            LocalDate initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+        }
         bankMovement.setUserAuthId(res.getUserAuthId());
         bankMovement.setCreatedIn(new Date());
         bankMovement.setDeleted(false);

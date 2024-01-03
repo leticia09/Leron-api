@@ -12,7 +12,6 @@ import java.util.*;
 
 @Component
 public class GetStatusPayment {
-    //TODO: Validar o Estado UNICO - Implementar esse GET na MAPPER
     public static String getStatus(Entrance entrance, List<BankMovement> movements, int month, int year) {
         LocalDate currentDate = LocalDate.now();
         int currentDay = currentDate.getDayOfMonth();
@@ -21,6 +20,8 @@ public class GetStatusPayment {
 
         LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
         int initialDay = initialDate.getDayOfMonth();
+        int initialMonth = initialDate.getMonthValue();
+        int initialYear = initialDate.getYear();
         Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
 
         if (!movements.isEmpty()) {
@@ -77,7 +78,6 @@ public class GetStatusPayment {
                         return "Confirmado";
                     }
                 }
-
             }
 
         } else {
@@ -92,16 +92,16 @@ public class GetStatusPayment {
             } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
                 if (entrance.getInitialDate().after(date)) {
                     return "Não Iniciada";
-                } else if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now()))) {
+                } else if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now())) && month == initialMonth && year == initialYear) {
                     return "Aguardando";
                 } else {
                     return "Pendente";
                 }
             } else if (entrance.getFrequency().equalsIgnoreCase("Anual")) {
-                if (entrance.getInitialDate().after(date) || entrance.getMonthReceive() >= month) {
+                if (entrance.getInitialDate().after(date) || entrance.getMonthReceive() != month) {
                     return "Não Iniciada";
                 } else if (entrance.getMonthReceive() == month) {
-                    if (entrance.getDayReceive() > currentDay) {
+                    if (entrance.getDayReceive() < currentDay) {
                         return "Pendente";
                     } else {
                         return "Aguardando";
@@ -137,81 +137,193 @@ public class GetStatusPayment {
         int currentMonth = currentDate.getMonthValue();
         int currentYear = currentDate.getYear();
 
+        LocalDate initialDate;
+        if (Objects.nonNull(expense.getInitialDate())) {
+            initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+        } else {
+            initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+        }
+        int initialDay = initialDate.getDayOfMonth();
+        int initialMonth = initialDate.getMonthValue();
+        int initialYear = initialDate.getYear();
+        Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
+
         if (!movements.isEmpty()) {
-            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-            int monthFromDate = initialDate.getMonthValue();
-            int yearFromDate = initialDate.getYear();
-            if (monthFromDate == month && yearFromDate == year) {
-                for (BankMovement bankMovement : movements) {
-                    String[] part = bankMovement.getReferencePeriod().split("/");
-                    int movementMonth = Integer.parseInt(part[0]);
-                    int movementYear = Integer.parseInt(part[1]);
 
-                    if (movementMonth == month && movementYear == year) {
-                        if (expense.getHasSplitExpense() || expense.getHasFixed()) {
-                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
-                                return "Confirmado";
-                            }
-
+            for (BankMovement bankMovement : movements) {
+                String[] part = bankMovement.getReferencePeriod().split("/");
+                int movementMonth = Integer.parseInt(part[0]);
+                int movementYear = Integer.parseInt(part[1]);
+                if (expense.getHasSplitExpense()) {
+                    if (expense.getFrequency().equalsIgnoreCase("Mensal")) {
+                        if (expense.getInitialDate().after(date)) {
+                            return "Não Iniciada";
+                        } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                            return "Confirmado";
+                        } else if (expense.getDayPayment() < currentDay && currentMonth == month) {
+                            return "Pendente";
                         } else {
-                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
-                                return "Confirmado";
-                            }
+                            return "Aguardando";
                         }
-
+                    } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+                        if (expense.getInitialDate().after(date) || expense.getMonthPayment() >= month) {
+                            return "Não Iniciada";
+                        } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                            return "Confirmado";
+                        } else if (expense.getInitialDate().after(new Date())) {
+                            return "Pendente";
+                        } else {
+                            return "Aguardando";
+                        }
+                    }
+                } else if (expense.getHasFixed()) {
+                    if (expense.getInitialDate().after(date)) {
+                        return "Não Iniciada";
+                    } else if (expense.getDayPayment() <= initialDay) {
+                        return "Aguardando";
+                    } else {
+                        return "Pendente";
+                    }
+                } else {
+                    if (expense.getDateBuy().after(date)) {
+                        return "Não Iniciada";
+                    } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                        return "Confirmado";
                     }
                 }
-            } else {
-                return "Não Inicada";
             }
 
-            return "Pendente";
         } else {
-            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-            int dayFromDate = initialDate.getDayOfMonth();
-            int monthFromDate = initialDate.getMonthValue();
-            int yearFromDate = initialDate.getYear();
-            if (monthFromDate == month && yearFromDate == year) {
-                if (expense.getHasSplitExpense() || expense.getHasFixed()) {
-                    if (Objects.nonNull(expense.getFrequency())) {
-                        if (expense.getFrequency().equalsIgnoreCase("mensal")) {
-                            if (expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear) {
-                                return "Aguardando";
-                            } else if (expense.getDayPayment() <= dayFromDate && month == currentMonth && year == currentYear) {
-                                return "Não Iniciada";
-                            } else {
-                                return "Pendente";
-                            }
-                        } else if (expense.getFrequency().equalsIgnoreCase("Única")) {
-                            if (expense.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now().toLocalDate().atStartOfDay()))) {
-                                return "Aguardando";
-                            } else {
-                                return "Pendente";
-                            }
-                        } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
-                            if (expense.getMonthPayment() == month) {
-                                return "Aguardando";
-                            } else {
-                                return "Pendente";
-                            }
-                        }
-
-                    } else {
-                        if (expense.getDayPayment() <= dayFromDate) {
+            if (expense.getHasSplitExpense()) {
+                int part = month - expense.getInitialDate().toLocalDateTime().toLocalDate().getMonthValue() + 1;
+                if (expense.getFrequency().equalsIgnoreCase("Mensal")) {
+                    if (part <= expense.getQuantityPart()) {
+                        if (expense.getInitialDate().after(date)) {
+                            return "Não Iniciada";
+                        } else if (expense.getDayPayment() >= currentDay && month >= currentMonth && year >= currentYear) {
                             return "Aguardando";
                         } else {
                             return "Pendente";
                         }
                     }
-
-
+                } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+                    if (expense.getInitialDate().after(date) || expense.getMonthPayment() != month) {
+                        return "Não Iniciada";
+                    } else if (expense.getMonthPayment() == month) {
+                        if (expense.getDayPayment() < currentDay) {
+                            return "Pendente";
+                        } else {
+                            return "Aguardando";
+                        }
+                    }
                 }
+            } else if (expense.getHasFixed()) {
+                if (expense.getInitialDate().after(date)) {
+                    return "Não Iniciada";
+                } else if (expense.getDayPayment() >= currentDay) {
+                    return "Aguardando";
+                } else {
+                    return "Pendente";
+                }
+
             } else {
-                return "Não Iniciada";
+                if (expense.getDateBuy().after(date)) {
+                    return "Não Iniciada";
+                }
             }
+
+
         }
         return "";
     }
+
+//    public static String getStatus(Expense expense, List<BankMovement> movements, int month, int year) {
+//        LocalDate currentDate = LocalDate.now();
+//        int currentDay = currentDate.getDayOfMonth();
+//        int currentMonth = currentDate.getMonthValue();
+//        int currentYear = currentDate.getYear();
+//
+//        if (!movements.isEmpty()) {
+//            LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+//            int monthFromDate = initialDate.getMonthValue();
+//            int yearFromDate = initialDate.getYear();
+//            if (monthFromDate == month && yearFromDate == year) {
+//                for (BankMovement bankMovement : movements) {
+//                    String[] part = bankMovement.getReferencePeriod().split("/");
+//                    int movementMonth = Integer.parseInt(part[0]);
+//                    int movementYear = Integer.parseInt(part[1]);
+//
+//                    if (movementMonth == month && movementYear == year) {
+//                        if (expense.getHasSplitExpense() || expense.getHasFixed()) {
+//                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
+//                                return "Confirmado";
+//                            }
+//
+//                        } else {
+//                            if (bankMovement.getType().equalsIgnoreCase("Saída")) {
+//                                return "Confirmado";
+//                            }
+//                        }
+//
+//                    }
+//                }
+//            } else {
+//                return "Não Iniciada";
+//            }
+//
+//            return "Pendente";
+//        } else {
+//            LocalDate initialDate;
+//            if(Objects.nonNull(expense.getDateBuy())){
+//                initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+//            } else {
+//                initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+//            }
+//
+//            int dayFromDate = initialDate.getDayOfMonth();
+//            int monthFromDate = initialDate.getMonthValue();
+//            int yearFromDate = initialDate.getYear();
+//            if (monthFromDate == month && yearFromDate == year) {
+//                if (expense.getHasSplitExpense() || expense.getHasFixed()) {
+//                    if (Objects.nonNull(expense.getFrequency())) {
+//                        if (expense.getFrequency().equalsIgnoreCase("mensal")) {
+//                            if (expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear) {
+//                                return "Aguardando";
+//                            } else if (expense.getDayPayment() <= dayFromDate && month == currentMonth && year == currentYear) {
+//                                return "Não Iniciada";
+//                            } else {
+//                                return "Pendente";
+//                            }
+//                        } else if (expense.getFrequency().equalsIgnoreCase("Única")) {
+//                            if (expense.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now().toLocalDate().atStartOfDay()))) {
+//                                return "Aguardando";
+//                            } else {
+//                                return "Pendente";
+//                            }
+//                        } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+//                            if (expense.getMonthPayment() == month) {
+//                                return "Aguardando";
+//                            } else {
+//                                return "Pendente";
+//                            }
+//                        }
+//
+//                    } else {
+//                        if (expense.getDayPayment() <= dayFromDate) {
+//                            return "Aguardando";
+//                        } else {
+//                            return "Pendente";
+//                        }
+//                    }
+//
+//
+//                }
+//            } else {
+//                return "Não Iniciada";
+//            }
+//        }
+//        return "";
+//    }
 
     private static ArrayList<ArrayList<Integer>> getArrayLists() {
         ArrayList<ArrayList<Integer>> quarters = new ArrayList<>();

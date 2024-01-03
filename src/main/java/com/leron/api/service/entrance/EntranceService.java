@@ -79,23 +79,16 @@ public class EntranceService {
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
             for (Entrance entrance : entrances) {
-                AtomicInteger movementMonth = new AtomicInteger();
-                AtomicInteger movementYear = new AtomicInteger();
-                final BigDecimal[] valueReceived = {BigDecimal.ZERO};
-
-                String period = month + "/" + year;
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
                         .filter(bm -> Objects.equals(
                                 bm.getEntranceId(), entrance.getId())
                         ).collect(Collectors.toList());
 
-
                 BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
                 if (member.getId().equals(entrance.getOwnerId())) {
                     int labelIndex = labels.indexOf(entrance.getType());
-                    String a = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
                     if (labelIndex == -1 && GetStatusPayment.getStatus(entrance, bankMovementList, month, year).equalsIgnoreCase("Confirmado")) {
                         labels.add(entrance.getType());
                         data.add(value);
@@ -119,7 +112,7 @@ public class EntranceService {
                     if (status.equalsIgnoreCase("Pendente")) {
                         receiveNotOk = receiveNotOk.add(entrance.getSalary());
                     }
-                    if(status.equalsIgnoreCase("Confirmado")) {
+                    if (status.equalsIgnoreCase("Confirmado")) {
                         receiveOk = receiveOk.add(value);
                     }
 

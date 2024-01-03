@@ -275,7 +275,7 @@ public class BankMovementMapper {
 
    public static BankMovement receiveBankMovement (ReceiveRequest request, Long userAuthId, String currency, Account account) {
        BankMovement response = new BankMovement();
-       response.setType("Entrada");
+       response.setType("Trasferência Positiva");
        if(!Objects.equals(request.getValue(), "")  && Objects.nonNull(request.getValue())) {
            response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
        }
@@ -289,7 +289,7 @@ public class BankMovementMapper {
        response.setAccountId(account.getId());
        response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
        response.setObs(request.getObs());
-       if(Objects.nonNull(request.getEntrance())) {
+       if(Objects.nonNull(request.getEntrance()) && !request.getEntrance().isEmpty()) {
           response.setEntranceId(Long.valueOf(request.getEntrance()));
        }
        if(Objects.nonNull(request.getReferencePeriod())) {

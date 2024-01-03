@@ -27,4 +27,5 @@ public class ExpenseResponse {
     private String currency;
     private int partNumber;
     private BigDecimal partValue;
+    private BigDecimal valuePaid;
 }

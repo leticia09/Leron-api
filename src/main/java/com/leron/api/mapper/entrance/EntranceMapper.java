@@ -99,12 +99,9 @@ public class EntranceMapper {
             List<BankMovement> bankMovementList = bankMovements.stream()
                     .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId())).collect(Collectors.toList());
 
-//            LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
-//            int initialDay = initialDate.getDayOfMonth();
-//
-//            Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
 
             String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
+
             final BigDecimal[] valueReceived = {BigDecimal.ZERO};
 
             if (status.equalsIgnoreCase("Não Iniciada")) {
@@ -120,140 +117,10 @@ public class EntranceMapper {
             }
             if(status.equalsIgnoreCase("Confirmado")) {
                 entranceResponse.setStatus("Confirmado");
-                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(month+"/"+year) && bank.getEntranceId().equals(entrance.getBankId())).findFirst();
+                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(month+"/"+year) && bank.getEntranceId().equals(entrance.getId())).findFirst();
                 bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
                 entranceResponse.setValueReceived(valueReceived[0]);
             }
-
-//            if (!bankMovementList.isEmpty()) {
-//
-//                bankMovementList.forEach(bankMovement -> {
-//                    String[] part = bankMovement.getReferencePeriod().split("/");
-//                    movementMonth.set(Integer.parseInt(part[0]));
-//                    movementYear.set(Integer.parseInt(part[1]));
-//
-//                    switch (entrance.getFrequency()) {
-//                        case "Mensal":
-//                            if (entrance.getInitialDate().after(date)) {
-//                                entranceResponse.setStatus("Não Iniciada");
-//                            } else if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
-//                                    movementMonth.get() == month &&
-//                                    movementYear.get() == year) {
-//                                entranceResponse.setStatus("Confirmado");
-//                                valueReceived[0] = valueReceived[0].add(bankMovement.getValue());
-//                                entranceResponse.setValueReceived(valueReceived[0]);
-//                            } else if (entrance.getDayReceive() < DAY && MONTH == month) {
-//                                entranceResponse.setStatus("Pendente");
-//                            } else {
-//                                entranceResponse.setStatus("Aguardando");
-//                            }
-//                            break;
-//                        case "Única":
-//                            if (entrance.getInitialDate().after(date)) {
-//                                entranceResponse.setStatus("Não Iniciada");
-//                            } else if (bankMovement.getType().equalsIgnoreCase("Entrada")) {
-//                                entranceResponse.setStatus("Confirmado");
-//                                valueReceived[0] = valueReceived[0].add(bankMovement.getValue());
-//                                entranceResponse.setValueReceived(valueReceived[0]);
-//                            } else if (entrance.getInitialDate().after(new Date())) {
-//                                entranceResponse.setStatus("Pendente");
-//                            } else {
-//                                entranceResponse.setStatus("Aguardando");
-//                            }
-//                            break;
-//                        case "Anual":
-//                            if (entrance.getInitialDate().after(date)) {
-//                                entranceResponse.setStatus("Não Iniciada");
-//                            } else if (bankMovement.getType().equalsIgnoreCase("Entrada") && movementYear.get() == year) {
-//                                entranceResponse.setStatus("Confirmado");
-//                                valueReceived[0] = valueReceived[0].add(bankMovement.getValue());
-//                                entranceResponse.setValueReceived(valueReceived[0]);
-//                            } else if (entrance.getDayReceive() > DAY && entrance.getMonthReceive() == month) {
-//                                entranceResponse.setStatus("Pendente");
-//                            } else {
-//                                entranceResponse.setStatus("Aguardando");
-//                            }
-//                            break;
-//                        case "Trimestral":
-//                            ArrayList<ArrayList<Integer>> quarters = getArrayLists();
-//                            if (entrance.getInitialDate().after(date)) {
-//                                entranceResponse.setStatus("Não Iniciada");
-//                            } else if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
-//                                    belongsToSameQuarter(movementMonth.get(), month, quarters)) {
-//                                entranceResponse.setStatus("Confirmado");
-//                                valueReceived[0] = valueReceived[0].add(bankMovement.getValue());
-//                                entranceResponse.setValueReceived(valueReceived[0]);
-//                            }
-//                            break;
-//                        case "Semestral":
-//                            ArrayList<ArrayList<Integer>> semetre = getArrayListsSemester();
-//                            if (entrance.getInitialDate().after(date)) {
-//                                entranceResponse.setStatus("Não Iniciada");
-//                            } else if (bankMovement.getType().equalsIgnoreCase("Entrada") &&
-//                                    belongsToSameQuarter(movementMonth.get(), month, semetre)) {
-//                                entranceResponse.setStatus("Confirmado");
-//                                valueReceived[0] = valueReceived[0].add(bankMovement.getValue());
-//                                entranceResponse.setValueReceived(valueReceived[0]);
-//                            }
-//                            break;
-//                    }
-//                });
-//
-//            } else {
-//
-//                switch (entrance.getFrequency()) {
-//                    case "Mensal":
-//                        if (entrance.getInitialDate().after(date)) {
-//                            entranceResponse.setStatus("Não Iniciada");
-//                        } else if (entrance.getDayReceive() >= DAY && month >= MONTH && year >= YEAR) {
-//                            entranceResponse.setStatus("Aguardando");
-//                        } else {
-//                            entranceResponse.setStatus("Pendente");
-//                        }
-//                        break;
-//                    case "Única":
-//                        if (entrance.getInitialDate().after(date)) {
-//                            entranceResponse.setStatus("Não Iniciada");
-//                        } else if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now())) || entrance.getInitialDate().equals(Timestamp.valueOf(LocalDateTime.now()))) {
-//                            entranceResponse.setStatus("Aguardando");
-//                        } else if (entrance.getInitialDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
-//                            entranceResponse.setStatus("Pendente");
-//                        }
-//
-//                        break;
-//                    case "Anual":
-//                        if (entrance.getInitialDate().after(date)) {
-//                            entranceResponse.setStatus("Não Iniciada");
-//                        } else if (entrance.getMonthReceive() == month) {
-//                            if (entrance.getDayReceive() > DAY) {
-//                                entranceResponse.setStatus("Pendente");
-//                            } else {
-//                                entranceResponse.setStatus("Aguardando");
-//                            }
-//                        }
-//                        break;
-//                    case "Trimestral":
-//                        ArrayList<ArrayList<Integer>> quarters = getArrayLists();
-//                        if (entrance.getInitialDate().after(date)) {
-//                            entranceResponse.setStatus("Não Iniciada");
-//                        } else if (belongsToSameQuarter(movementMonth.get(), month, quarters)) {
-//                            entranceResponse.setStatus("Aguardando");
-//                        } else {
-//                            entranceResponse.setStatus("Pendente");
-//                        }
-//                        break;
-//                    case "Semestral":
-//                        ArrayList<ArrayList<Integer>> semetre = getArrayListsSemester();
-//                        if (entrance.getInitialDate().after(date)) {
-//                            entranceResponse.setStatus("Não Iniciada");
-//                        } else if (belongsToSameQuarter(movementMonth.get(), month, semetre)) {
-//                            entranceResponse.setStatus("Aguardando");
-//                        } else {
-//                            entranceResponse.setStatus("Pendente");
-//                        }
-//                        break;
-//                }
-//            }
 
             if (Objects.nonNull(entrance.getDayReceive())) {
                 entranceResponse.setDayReceive(entrance.getDayReceive());

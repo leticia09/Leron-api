@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -53,7 +54,7 @@ public class ExpenseService {
             if (!res.getHasSplitExpense() && !res.getHasFixed()) {
                 saveValuesToExpenses(res, cards, accounts);
             } else {
-                expenseRepository.save(ExpenseMapper.requestToEntity(res));
+                expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
             }
         });
 
@@ -79,7 +80,7 @@ public class ExpenseService {
         }
 
         if (res.getPaymentForm().equalsIgnoreCase("Pix")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
             Optional<Account> account = accountRepository.findById(res.getAccountId());
             if (account.isPresent()) {
                 BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -90,7 +91,7 @@ public class ExpenseService {
 
         }
         if (res.getPaymentForm().equalsIgnoreCase("Dinheiro")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
             Optional<Money> money = moneyRepository.findById(res.getMoneyId());
             if (money.isPresent()) {
                 BigDecimal valueUpdated = money.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -102,7 +103,7 @@ public class ExpenseService {
         }
 
         if (res.getPaymentForm().equalsIgnoreCase("Vale")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
             Optional<CardFinancialEntity> card = cardFinancialEntityRepository.findById(res.getCardId());
             if (card.isPresent()) {
                 BigDecimal valueUpdated = card.get().getBalance().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -184,9 +185,10 @@ public class ExpenseService {
                     }
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
-                    if(!status.equalsIgnoreCase("Não Iniciada")) {
+                    if(!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
                         if(expense.getHasSplitExpense()) {
-                            receiveTotal = receiveTotal.add(expense.getValue().divide(new BigDecimal(expense.getQuantityPart())));
+                            BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                            receiveTotal = receiveTotal.add(c);
                         } else {
                             receiveTotal = receiveTotal.add(expense.getValue());
                         }
@@ -198,11 +200,22 @@ public class ExpenseService {
                     }
 
                     if (status.equalsIgnoreCase("Aguardando")) {
-                        receiveHoldOn = receiveHoldOn.add(expense.getValue());
+                        if(expense.getHasSplitExpense()) {
+                            BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                            receiveHoldOn = receiveHoldOn.add(c);
+                        } else {
+                            receiveHoldOn = receiveHoldOn.add(expense.getValue());
+                        }
                     }
 
                     if (status.equalsIgnoreCase("pendente")) {
                         receiveNotOk = receiveNotOk.add(expense.getValue());
+                        if(expense.getHasSplitExpense()) {
+                            BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                            receiveNotOk = receiveNotOk.add(c);
+                        } else {
+                            receiveNotOk = receiveNotOk.add(expense.getValue());
+                        }
                     }
                 }
 
