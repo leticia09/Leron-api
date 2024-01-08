@@ -65,6 +65,7 @@ public class ExpenseMapper {
         expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         expense.setCreatedIn(new Date());
         expense.setDeleted(false);
+        expense.setCurrency(account.getCurrency());
         expense.setHasSplitExpense(res.getHasSplitExpense());
         if (Objects.nonNull(res.getFinalCard())) {
             expense.setFinalCard(res.getFinalCard());
@@ -155,12 +156,13 @@ public class ExpenseMapper {
         return expense;
     }
 
-    public static Expense requestToEntity(ExpenseRequest res, List<Card> cards) {
+    public static Expense requestToEntity(ExpenseRequest res, List<Card> cards,  List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
         Expense expense = new Expense();
         Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(res.getFinalCard())).findFirst();
         if (cardOptional.isPresent()) {
             expense.setAccountId(cardOptional.get().getAccount().getId());
             expense.setBankId(cardOptional.get().getAccount().getBank().getId());
+            expense.setCurrency(cardOptional.get().getAccount().getCurrency());
         }
 
         expense.setLocal(res.getLocal());
@@ -177,6 +179,7 @@ public class ExpenseMapper {
         expense.setCreatedIn(new Date());
         expense.setDeleted(false);
         expense.setHasSplitExpense(res.getHasSplitExpense());
+
 
         if (Objects.nonNull(res.getFinalCard())) {
             expense.setFinalCard(res.getFinalCard());
@@ -209,6 +212,8 @@ public class ExpenseMapper {
 
         if (Objects.nonNull(res.getMoneyId())) {
             expense.setMoneyId(res.getMoneyId());
+            Optional<Money> money = moneyList.stream().filter(mo -> mo.getId().equals(res.getMoneyId())).findFirst();
+            money.ifPresent(value -> expense.setCurrency(value.getCurrency()));
         }
 
         if (Objects.nonNull(res.getTicketId())) {
@@ -217,6 +222,8 @@ public class ExpenseMapper {
 
         if (Objects.nonNull(res.getCardId())) {
             expense.setFinancialEntityCardId(res.getCardId());
+            Optional<CardFinancialEntity> card = cardFinancialEntityList.stream().filter(mo -> mo.getId().equals(res.getTicketId())).findFirst();
+            card.ifPresent(value -> expense.setCurrency(value.getCurrency()));
         }
 
 
@@ -226,6 +233,12 @@ public class ExpenseMapper {
     public static DataListResponse<ExpenseResponse> entityToResponse(List<Expense> expenses, List<Member> members, List<Card> cards, List<BankMovement> bankMovements, int month, int year, List<Account> accounts, List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
         DataListResponse<ExpenseResponse> response = new DataListResponse<>();
         List<ExpenseResponse> expenseList = new ArrayList<>();
+        String monthValue;
+        if(month < 10) {
+            monthValue = "0" + month;
+        } else {
+            monthValue = "" + month;
+        }
         for (Expense expense : expenses) {
 
             ExpenseResponse expenseResponse = new ExpenseResponse();
@@ -308,9 +321,16 @@ public class ExpenseMapper {
             }
             if(status.equalsIgnoreCase("Confirmado")) {
                 expenseResponse.setStatus("Confirmado");
-                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(month+"/"+year) && bank.getExpenseId().equals(expense.getId())).findFirst();
-                bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
-                expenseResponse.setValuePaid(valueReceived[0]);
+                List<BankMovement> bankMovement1 = bankMovementList.stream()
+                        .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(monthValue+"/"+year) &&
+                                bm.getType().equalsIgnoreCase("Saída")
+                        ).collect(Collectors.toList());
+
+
+                BigDecimal value = bankMovement1.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                expenseResponse.setValuePaid(value);
             }
 
             expenseList.add(expenseResponse);

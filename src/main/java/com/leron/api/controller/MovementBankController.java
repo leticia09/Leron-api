@@ -1,6 +1,7 @@
 package com.leron.api.controller;
 
 import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.BankMovement.PaymentRequest;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
@@ -39,7 +40,19 @@ public class MovementBankController {
         return response;
 
     }
+    @PostMapping("payment/{userAuthId}")
+    public DataResponse<BankMovementResponse> createPayment(@RequestBody List<PaymentRequest> requestDTO,
+                                                            @PathVariable(value = "userAuthId", required = true) Long userAuthId) throws ApplicationBusinessException {
 
+        DataResponse<BankMovementResponse> response = new DataResponse<>();
+        try {
+            response = movementBankService.createPayment(requestDTO, userAuthId);
+        } catch (ApplicationBusinessException error) {
+            response.setResponse(error);
+        }
+        return response;
+
+    }
     @PostMapping("transfer/{userAuthId}")
     public DataResponse<BankMovementResponse> createTransfer(@RequestBody List<TransferBankRequest> requestDTO,
                                                             @PathVariable(value = "userAuthId", required = true) Long userAuthId) throws ApplicationBusinessException {

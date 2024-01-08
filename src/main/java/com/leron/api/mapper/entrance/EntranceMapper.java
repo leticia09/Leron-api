@@ -39,6 +39,7 @@ public class EntranceMapper {
             entrance.setDeleted(false);
             entrance.setUserAuthId(request.getUserAuthId());
             entrance.setFrequency(request.getFrequency());
+
             if (Objects.nonNull(request.getMoneyId())) {
                 entrance.setMoneyId(request.getMoneyId());
             }
@@ -52,6 +53,7 @@ public class EntranceMapper {
             if (Objects.nonNull(request.getBankId())) {
                 entrance.setBankId(request.getBankId());
             }
+
             if (request.getFrequency().equalsIgnoreCase("ÚNICO")) {
                 entrance.setInitialDate(FormatDate.formatDate(request.getInitialDate()));
             } else if (request.getFrequency().equalsIgnoreCase("MENSAL")) {

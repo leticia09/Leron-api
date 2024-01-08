@@ -49,12 +49,14 @@ public class ExpenseService {
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(request.get(0).getUserAuthId());
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(request.get(0).getUserAuthId());
         List<Card> cards = cardRepository.findByUserAuthId(request.get(0).getUserAuthId());
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(request.get(0).getUserAuthId());
+        List<CardFinancialEntity> cardFinancialEntityList = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(request.get(0).getUserAuthId());
         ValidatorExpense.validatorCreation(request, expenses);
         request.forEach(res -> {
             if (!res.getHasSplitExpense() && !res.getHasFixed()) {
-                saveValuesToExpenses(res, cards, accounts);
+                saveValuesToExpenses(res, cards, accounts, moneyList, cardFinancialEntityList);
             } else {
-                expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
+                expenseRepository.save(ExpenseMapper.requestToEntity(res, cards, moneyList, cardFinancialEntityList));
             }
         });
 
@@ -63,7 +65,7 @@ public class ExpenseService {
         return response;
     }
 
-    private void saveValuesToExpenses(ExpenseRequest res, List<Card> cards, List<Account> accounts) {
+    private void saveValuesToExpenses(ExpenseRequest res, List<Card> cards, List<Account> accounts, List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
         if (res.getPaymentForm().equalsIgnoreCase("Débito")) {
             Optional<Card> cardOptional = cards.stream().filter(card -> card.getFinalNumber().equals(res.getFinalCard())).findFirst();
             if (cardOptional.isPresent()) {
@@ -80,7 +82,7 @@ public class ExpenseService {
         }
 
         if (res.getPaymentForm().equalsIgnoreCase("Pix")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards, moneyList, cardFinancialEntityList));
             Optional<Account> account = accountRepository.findById(res.getAccountId());
             if (account.isPresent()) {
                 BigDecimal valueUpdated = account.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -91,7 +93,7 @@ public class ExpenseService {
 
         }
         if (res.getPaymentForm().equalsIgnoreCase("Dinheiro")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards, moneyList, cardFinancialEntityList));
             Optional<Money> money = moneyRepository.findById(res.getMoneyId());
             if (money.isPresent()) {
                 BigDecimal valueUpdated = money.get().getValue().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -103,7 +105,7 @@ public class ExpenseService {
         }
 
         if (res.getPaymentForm().equalsIgnoreCase("Vale")) {
-            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards));
+            Expense expenseSave = expenseRepository.save(ExpenseMapper.requestToEntity(res, cards, moneyList, cardFinancialEntityList));
             Optional<CardFinancialEntity> card = cardFinancialEntityRepository.findById(res.getCardId());
             if (card.isPresent()) {
                 BigDecimal valueUpdated = card.get().getBalance().subtract(new BigDecimal(res.getValue().replace(",", ".")));
@@ -162,12 +164,14 @@ public class ExpenseService {
                 AtomicInteger movementMonth = new AtomicInteger();
                 AtomicInteger movementYear = new AtomicInteger();
                 final BigDecimal[] valueReceived = {BigDecimal.ZERO};
-
-                String period = month + "/" + year;
+                String monthValidate = ""+month;
+                if(month < 10) {
+                    monthValidate = "0" + month;
+                }
+                String period = monthValidate + "/" + year;
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
-                        .filter(bm -> Objects.equals(
-                                bm.getExpenseId(), expense.getId()) &&
+                        .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
                                 bm.getReferencePeriod().equalsIgnoreCase(period) &&
                                 bm.getType().equalsIgnoreCase("Saída")
                         ).collect(Collectors.toList());
@@ -185,8 +189,8 @@ public class ExpenseService {
                     }
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
-                    if(!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                        if(expense.getHasSplitExpense()) {
+                    if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
+                        if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveTotal = receiveTotal.add(c);
                         } else {
@@ -200,7 +204,7 @@ public class ExpenseService {
                     }
 
                     if (status.equalsIgnoreCase("Aguardando")) {
-                        if(expense.getHasSplitExpense()) {
+                        if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveHoldOn = receiveHoldOn.add(c);
                         } else {
@@ -210,7 +214,7 @@ public class ExpenseService {
 
                     if (status.equalsIgnoreCase("pendente")) {
                         receiveNotOk = receiveNotOk.add(expense.getValue());
-                        if(expense.getHasSplitExpense()) {
+                        if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveNotOk = receiveNotOk.add(c);
                         } else {
@@ -262,5 +266,18 @@ public class ExpenseService {
         response.setSeverity("success");
         response.setMessage("success");
         return response;
+    }
+
+    public Expense getById(Long id) {
+        return expenseRepository.getById(id);
+    }
+
+    public List<Expense> getExpenseFixed(Long userAuthId) {
+        return expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasFixedTrue(userAuthId);
+    }
+
+    public List<Expense> getExpenseHasSplit(Long userAuthId) {
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrue(userAuthId);
+        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || !ex.getStatus().equalsIgnoreCase("QUITADO"))).collect(Collectors.toList());
     }
 }

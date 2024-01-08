@@ -1,6 +1,7 @@
 package com.leron.api.mapper.bankMovement;
 
 import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.BankMovement.PaymentRequest;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
 import com.leron.api.model.entities.*;
@@ -37,6 +38,55 @@ public class BankMovementMapper {
         });
         response.setData(responses);
         return response;
+    }
+
+    public static BankMovement payToBankMovement(PaymentRequest requests, List<Expense> expenses, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, Money moneyList) {
+
+        Optional<Expense> expense = expenses.stream()
+                .filter(expense1 -> expense1.getId().equals(requests.getExpenseId()))
+                .findFirst();
+
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setDateMovement(FormatDate.formatDate(requests.getPaymentDate()));
+        bankMovement.setOwnerId(requests.getOwnerId());
+        bankMovement.setType("Saída");
+        bankMovement.setReferencePeriod(requests.getReferencePeriod());
+        bankMovement.setDeleted(false);
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setUserAuthId(userAuth);
+        String salaryText = requests.getValue();
+
+        salaryText = salaryText.replaceAll("[^\\d.,]", "");
+        salaryText = salaryText.replaceAll("\\.", "");
+        salaryText = salaryText.replace(",", ".");
+        BigDecimal salary = new BigDecimal(salaryText);
+
+        bankMovement.setValue(salary);
+        bankMovement.setObs(requests.getObs());
+
+        if (expense.isPresent()) {
+            Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), expense.get().getAccountId())).findFirst();
+            Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(cf -> cf.getId().equals(expense.get().getFinancialEntityCardId())).findFirst();
+
+            bankMovement.setExpenseId(expense.get().getId());
+            bankMovement.setAccountId(expense.get().getAccountId());
+            bankMovement.setBankId(expense.get().getBankId());
+
+            account.ifPresent(value -> bankMovement.setCurrency(value.getCurrency()));
+
+            if (cardFinancial.isPresent()) {
+                bankMovement.setCurrency(cardFinancial.get().getCurrency());
+                bankMovement.setFinancialEntityCardId(cardFinancial.get().getId());
+                bankMovement.setFinancialEntityId(cardFinancial.get().getFinancialEntity().getId());
+            }
+
+            if (Objects.nonNull(moneyList)) {
+                bankMovement.setMoneyId(moneyList.getId());
+                bankMovement.setCurrency(moneyList.getCurrency());
+            }
+        }
+
+        return bankMovement;
     }
 
     public static BankMovement receiveToBankMovement(ReceiveRequest requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, Money moneyList) {
@@ -88,6 +138,29 @@ public class BankMovementMapper {
         return bankMovement;
     }
 
+    public static Account paymentToAccount(PaymentRequest request, List<Account> accounts, List<Expense> expenses) {
+        Optional<Expense> expense = expenses.stream()
+                .filter(expense1 -> expense1.getId().equals(request.getExpenseId()))
+                .findFirst();
+        if (expense.isPresent()) {
+            Optional<Account> account = accounts.stream().filter(account1 -> account1.getId().toString().equalsIgnoreCase(expense.get().getAccountId().toString())).findFirst();
+
+            if (account.isPresent()) {
+                String salaryText = request.getValue();
+                salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                salaryText = salaryText.replaceAll("\\.", "");
+                salaryText = salaryText.replace(",", ".");
+                BigDecimal salary = new BigDecimal(salaryText);
+                BigDecimal oldValue = account.get().getValue();
+                BigDecimal value = oldValue.subtract(salary);
+                account.get().setValue(value);
+                return account.get();
+            }
+        }
+
+        return null;
+    }
+
     public static Account receiveToAccount(ReceiveRequest request, List<Account> accounts, List<Entrance> entrances) {
         Optional<Entrance> entrance = entrances.stream()
                 .filter(entrance1 -> entrance1.getId().toString().equals(request.getEntrance()))
@@ -127,6 +200,29 @@ public class BankMovementMapper {
                 BigDecimal salary = new BigDecimal(salaryText);
                 BigDecimal oldValue = money.get().getValue();
                 BigDecimal value = salary.add(oldValue);
+                money.get().setValue(value);
+                return money.get();
+            }
+        }
+
+        return null;
+    }
+
+    public static Money payToMoney(PaymentRequest requests, List<Expense> expenses, Long userAuthId, List<Money> moneyList) {
+        Optional<Expense> expense = expenses.stream()
+                .filter(expense1 -> expense1.getId().equals(requests.getExpenseId()))
+                .findFirst();
+        if (expense.isPresent()) {
+
+            Optional<Money> money = moneyList.stream().filter(mo -> mo.getId().equals(expense.get().getMoneyId())).findFirst();
+            if (money.isPresent()) {
+                String salaryText = requests.getValue();
+                salaryText = salaryText.replaceAll("[^\\d.,]", "");
+                salaryText = salaryText.replaceAll("\\.", "");
+                salaryText = salaryText.replace(",", ".");
+                BigDecimal salary = new BigDecimal(salaryText);
+                BigDecimal oldValue = money.get().getValue();
+                BigDecimal value = salary.subtract(oldValue);
                 money.get().setValue(value);
                 return money.get();
             }

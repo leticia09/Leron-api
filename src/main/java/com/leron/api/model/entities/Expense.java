@@ -41,5 +41,5 @@ public class Expense extends GenericEntities {
     private Timestamp initialDate;
     private Long monthPayment;
     private Long dayPayment;
-
+    private String currency;
 }

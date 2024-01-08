@@ -3,6 +3,7 @@ package com.leron.api.controller;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
+import com.leron.api.model.entities.Expense;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
@@ -61,5 +62,21 @@ public class ExpenseController {
                                                           @PathVariable(value = "accountId", required = true) Long accountId,
                                                           @RequestBody List<String> cardListRequest) {
         return service.getAmountByRegisterBank(userAuthId, bankId, accountId, cardListRequest);
+    }
+
+
+    @GetMapping("id/{id}")
+    public Expense getById(@PathVariable(value = "id", required = true) Long id) {
+        return service.getById(id);
+    }
+
+    @GetMapping("fixed/{userAuthId}")
+    public List<Expense> getExpenseFixed(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
+        return service.getExpenseFixed(userAuthId);
+    }
+
+    @GetMapping("split/{userAuthId}")
+    public List<Expense> getExpenseHasSplit(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
+        return service.getExpenseHasSplit(userAuthId);
     }
 }

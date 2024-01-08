@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,15 +28,18 @@ public class EntranceService {
 
     final BankMovementRepository bankMovementRepository;
 
+    final AccountRepository accountRepository;
+
     final CardFinancialEntityRepository cardFinancialEntityRepository;
 
     final MoneyRepository moneyRepository;
 
-    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
+    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
         this.entranceRepository = entranceRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.bankMovementRepository = bankMovementRepository;
+        this.accountRepository = accountRepository;
         this.cardFinancialEntityRepository = cardFinancialEntityRepository;
         this.moneyRepository = moneyRepository;
     }

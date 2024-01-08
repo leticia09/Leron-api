@@ -179,6 +179,8 @@ public class GetStatusPayment {
                 } else if (expense.getHasFixed()) {
                     if (expense.getInitialDate().after(date)) {
                         return "Não Iniciada";
+                    }  else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                        return "Confirmado";
                     } else if (expense.getDayPayment() <= initialDay) {
                         return "Aguardando";
                     } else {
