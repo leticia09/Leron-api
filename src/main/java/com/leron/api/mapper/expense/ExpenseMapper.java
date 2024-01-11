@@ -286,7 +286,7 @@ public class ExpenseMapper {
             Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
             List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(expense.getId())).collect(Collectors.toList());
 
-            cardOptional.ifPresent(card -> expenseResponse.setFinalCard(card.getName() + "/ " + expense.getFinalCard()));
+            cardOptional.ifPresent(card -> expenseResponse.setFinalCard(expense.getFinalCard()));
 
             String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
@@ -298,7 +298,6 @@ public class ExpenseMapper {
             }
 
             if(expense.getHasSplitExpense()) {
-                int monthFinished = dateBuy.getMonthValue() + Math.toIntExact(expense.getQuantityPart() -1);
                 int part = month - dateBuy.getMonthValue() + 1;
                 expenseResponse.setPartNumber(part);
                 if(status.equalsIgnoreCase("aguardando") && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
@@ -311,10 +310,6 @@ public class ExpenseMapper {
                 BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                 expenseResponse.setPartValue(c);
             }
-
-
-
-            final BigDecimal[] valueReceived = {BigDecimal.ZERO};
 
             if (status.equalsIgnoreCase("Não Iniciada")) {
                 expenseResponse.setStatus("Não Iniciada");
@@ -366,7 +361,7 @@ public class ExpenseMapper {
                 expenseResponse.setObs(expense.getObs());
             }
             if (Objects.nonNull(expense.getFinalCard())) {
-                expenseResponse.setFinalCard(expense.getFinalCard().toString());
+                expenseResponse.setFinalCard(expense.getFinalCard());
             }
             if (Objects.nonNull(expense.getQuantityPart())) {
                 expenseResponse.setQuantityPart(expense.getQuantityPart());
