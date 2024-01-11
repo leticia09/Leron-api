@@ -6,6 +6,7 @@ import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -109,7 +110,7 @@ public class ExpenseMapper {
         expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         expense.setCreatedIn(new Date());
         expense.setDeleted(false);
-        expense.setHasSplitExpense(res.getHasSplitExpense());
+        expense.setHasSplitExpense(true);
 
         if (Objects.nonNull(res.getFinalCard())) {
             expense.setFinalCard(res.getFinalCard());
@@ -287,7 +288,7 @@ public class ExpenseMapper {
 
             cardOptional.ifPresent(card -> expenseResponse.setFinalCard(card.getName() + "/ " + expense.getFinalCard()));
 
-
+            String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
             LocalDate dateBuy;
             if (Objects.nonNull(expense.getInitialDate())) {
@@ -300,11 +301,18 @@ public class ExpenseMapper {
                 int monthFinished = dateBuy.getMonthValue() + Math.toIntExact(expense.getQuantityPart() -1);
                 int part = month - dateBuy.getMonthValue() + 1;
                 expenseResponse.setPartNumber(part);
+                if(status.equalsIgnoreCase("aguardando") && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
+                    if(dateBuy.getMonthValue() < month) {
+                        expenseResponse.setPartNumber(month - 1);
+                    }
+                }
+
+
                 BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                 expenseResponse.setPartValue(c);
             }
 
-            String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
+
 
             final BigDecimal[] valueReceived = {BigDecimal.ZERO};
 

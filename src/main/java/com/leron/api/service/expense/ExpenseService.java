@@ -12,6 +12,7 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.expense.ValidatorExpense;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -164,6 +165,7 @@ public class ExpenseService {
                 AtomicInteger movementMonth = new AtomicInteger();
                 AtomicInteger movementYear = new AtomicInteger();
                 final BigDecimal[] valueReceived = {BigDecimal.ZERO};
+
                 String monthValidate = ""+month;
                 if(month < 10) {
                     monthValidate = "0" + month;
@@ -172,10 +174,10 @@ public class ExpenseService {
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
                         .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
+                                bm.getUserAuthId().equals(authId) &&
                                 bm.getReferencePeriod().equalsIgnoreCase(period) &&
                                 bm.getType().equalsIgnoreCase("Saída")
                         ).collect(Collectors.toList());
-
 
                 BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -200,7 +202,7 @@ public class ExpenseService {
                     }
 
                     if (status.equalsIgnoreCase("Confirmado")) {
-                        receiveOk = receiveOk.add(expense.getValue());
+                        receiveOk = receiveOk.add(value);
                     }
 
                     if (status.equalsIgnoreCase("Aguardando")) {
