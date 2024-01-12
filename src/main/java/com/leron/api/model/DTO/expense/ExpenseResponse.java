@@ -28,4 +28,5 @@ public class ExpenseResponse {
     private int partNumber;
     private BigDecimal partValue;
     private BigDecimal valuePaid;
+    private Long dayPayment;
 }

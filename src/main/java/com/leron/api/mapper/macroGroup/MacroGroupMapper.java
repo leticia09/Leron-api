@@ -67,8 +67,6 @@ public class MacroGroupMapper {
             }
         }
 
-
-
         macro.setChangedIn(new Date());
         macro.setDeleted(false);
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -192,7 +193,9 @@ public class ExpenseService {
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
                     if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                        if (expense.getHasSplitExpense()) {
+                        if (status.equalsIgnoreCase("Confirmado")) {
+                            receiveTotal = receiveTotal.add(value);
+                        } else if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveTotal = receiveTotal.add(c);
                         } else {
@@ -215,7 +218,6 @@ public class ExpenseService {
                     }
 
                     if (status.equalsIgnoreCase("pendente")) {
-                        receiveNotOk = receiveNotOk.add(expense.getValue());
                         if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveNotOk = receiveNotOk.add(c);
@@ -280,6 +282,28 @@ public class ExpenseService {
 
     public List<Expense> getExpenseHasSplit(Long userAuthId) {
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrue(userAuthId);
-        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || !ex.getStatus().equalsIgnoreCase("QUITADO"))).collect(Collectors.toList());
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+
+        LocalDate currentDate = LocalDate.now();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
+        expenses.forEach(ex -> {
+            String monthValidate = "" + currentMonth;
+            if (currentMonth < 10) {
+                monthValidate = "0" + currentMonth;
+            }
+            String period = monthValidate + "/" + currentYear;
+            List<BankMovement> bankMovementList = bankMovements
+                    .stream()
+                    .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
+                            bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                            bm.getExpenseId().equals(ex.getId()
+                            )).collect(Collectors.toList());
+            String status = GetStatusPayment.getStatus(ex, bankMovementList, currentMonth, currentYear);
+            ex.setStatus(status);
+        });
+
+        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando"))).collect(Collectors.toList());
     }
 }

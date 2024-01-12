@@ -212,7 +212,9 @@ public class GetStatusPayment {
                     if (part <= expense.getQuantityPart()) {
                         if (expense.getInitialDate().after(date)) {
                             return "Não Iniciada";
-                        } else if (expense.getDayPayment() >= currentDay && month >= currentMonth && year >= currentYear) {
+                        } else if (month > currentMonth && year >= currentYear) {
+                            return "Aguardando";
+                        } else if(expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear){
                             return "Aguardando";
                         } else {
                             return "Pendente";
@@ -232,12 +234,13 @@ public class GetStatusPayment {
             } else if (expense.getHasFixed()) {
                 if (expense.getInitialDate().after(date)) {
                     return "Não Iniciada";
-                } else if (expense.getDayPayment() >= currentDay) {
+                } else if (month > currentMonth && year >= currentYear) {
+                    return "Aguardando";
+                } else if(expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear){
                     return "Aguardando";
                 } else {
                     return "Pendente";
                 }
-
             } else {
                 if (expense.getDateBuy().after(date)) {
                     return "Não Iniciada";
@@ -246,21 +249,21 @@ public class GetStatusPayment {
                     LocalDate buyDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
                     int lastMonth = buyDate.getMonthValue() - 1;
                     int lastYear = year;
-                    if(lastMonth == 0) {
+                    if (lastMonth == 0) {
                         lastMonth = 12;
                         lastYear = year - 1;
                     }
                     LocalDate lastDayMonthPrevious = LocalDate.of(lastYear, lastMonth, card.getClosingDate());
                     LocalDate currentDateWithParameter = LocalDate.of(year, month, card.getClosingDate());
 
-                    if(buyDate.isAfter(lastDayMonthPrevious)) {
-                        if(buyDate.isBefore(currentDateWithParameter)) {
+                    if (buyDate.isAfter(lastDayMonthPrevious)) {
+                        if (buyDate.isBefore(currentDateWithParameter)) {
                             int monthFinished = buyDate.getMonthValue() + Math.toIntExact(expense.getQuantityPart());
-                            if(card.getClosingDate() > buyDate.getDayOfMonth()) {
+                            if (card.getClosingDate() > buyDate.getDayOfMonth()) {
                                 monthFinished = monthFinished - 1;
                             }
-                            if(month <= monthFinished) {
-                                if(card.getDueDate() > currentDay) {
+                            if (month <= monthFinished) {
+                                if (card.getDueDate() > currentDay) {
                                     return "Aguardando";
                                 } else {
                                     return "Pendente";

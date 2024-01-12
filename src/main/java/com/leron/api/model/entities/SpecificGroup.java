@@ -20,6 +20,12 @@ public class SpecificGroup extends GenericEntities {
     @Column(name= "name", nullable = false)
     private String name;
 
+    @Column(name= "currency")
+    private String currency;
+
+    @Column(name= "goal")
+    private String goal;
+
     @ManyToOne
     @JsonIgnore
     @ToString.Exclude

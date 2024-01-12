@@ -157,7 +157,7 @@ public class ExpenseMapper {
         return expense;
     }
 
-    public static Expense requestToEntity(ExpenseRequest res, List<Card> cards,  List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
+    public static Expense requestToEntity(ExpenseRequest res, List<Card> cards, List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
         Expense expense = new Expense();
         Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(res.getFinalCard())).findFirst();
         if (cardOptional.isPresent()) {
@@ -235,7 +235,7 @@ public class ExpenseMapper {
         DataListResponse<ExpenseResponse> response = new DataListResponse<>();
         List<ExpenseResponse> expenseList = new ArrayList<>();
         String monthValue;
-        if(month < 10) {
+        if (month < 10) {
             monthValue = "0" + month;
         } else {
             monthValue = "" + month;
@@ -266,25 +266,42 @@ public class ExpenseMapper {
             if (Objects.nonNull(expense.getMoneyId())) {
                 Optional<Money> money = moneyList.stream().filter(m -> m.getId().equals(expense.getMoneyId())).findFirst();
                 money.ifPresent(value -> expenseResponse.setCurrency(value.getCurrency()));
+                expenseResponse.setDayPayment(expense.getDayPayment());
             }
 
             if (Objects.nonNull(expense.getFinancialEntityCardId())) {
                 Optional<CardFinancialEntity> card = cardFinancialEntityList.stream().filter(c -> c.getId().equals(expense.getFinancialEntityCardId())).findFirst();
                 card.ifPresent(value -> expenseResponse.setCurrency(value.getCurrency()));
+                card.ifPresent(value -> expenseResponse.setFinalCard(value.getFinalCard()));
+                expenseResponse.setDayPayment(expense.getDayPayment());
             }
 
             if (Objects.nonNull(expense.getAccountId())) {
-                Optional<Account> account = accounts.stream().filter(a -> a.getId().equals(expense.getAccountId())).findFirst();
-                account.ifPresent(value -> expenseResponse.setCurrency(value.getCurrency()));
+                Optional<Account> accountOptional = accounts.stream().filter(a -> a.getId().equals(expense.getAccountId())).findFirst();
+                if (accountOptional.isPresent()) {
+                    expenseResponse.setCurrency(accountOptional.get().getCurrency());
+                    Optional<Card> card = accountOptional.get().getCards().stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
+                   // card.ifPresent(value -> expenseResponse.setDayPayment(Long.valueOf(value.getDueDate())));
+                }
             }
 
-            if(expense.getHasSplitExpense()) {
+            if (expense.getHasSplitExpense()) {
                 BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                 expenseResponse.setPartValue(c);
             }
 
             Optional<Card> cardOptional = cards.stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
-            List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(expense.getId())).collect(Collectors.toList());
+            String monthValidate = "" + month;
+            if (month < 10) {
+                monthValidate = "0" + month;
+            }
+            String period = monthValidate + "/" + year;
+            List<BankMovement> bankMovementList = bankMovements
+                    .stream()
+                    .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
+                            bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                            bm.getExpenseId().equals(expense.getId()
+                            )).collect(Collectors.toList());
 
             cardOptional.ifPresent(card -> expenseResponse.setFinalCard(expense.getFinalCard()));
 
@@ -297,11 +314,11 @@ public class ExpenseMapper {
                 dateBuy = expense.getDateBuy().toLocalDateTime().toLocalDate();
             }
 
-            if(expense.getHasSplitExpense()) {
+            if (expense.getHasSplitExpense()) {
                 int part = month - dateBuy.getMonthValue() + 1;
                 expenseResponse.setPartNumber(part);
-                if(status.equalsIgnoreCase("aguardando") && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
-                    if(dateBuy.getMonthValue() < month) {
+                if (status.equalsIgnoreCase("aguardando") && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
+                    if (dateBuy.getMonthValue() < month) {
                         expenseResponse.setPartNumber(month - 1);
                     }
                 }
@@ -322,11 +339,11 @@ public class ExpenseMapper {
             if (status.equalsIgnoreCase("Pendente")) {
                 expenseResponse.setStatus("Pendente");
             }
-            if(status.equalsIgnoreCase("Confirmado")) {
+            if (status.equalsIgnoreCase("Confirmado")) {
                 expenseResponse.setStatus("Confirmado");
                 List<BankMovement> bankMovement1 = bankMovementList.stream()
                         .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
-                                bm.getReferencePeriod().equalsIgnoreCase(monthValue+"/"+year) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(monthValue + "/" + year) &&
                                 bm.getType().equalsIgnoreCase("Saída")
                         ).collect(Collectors.toList());
 
