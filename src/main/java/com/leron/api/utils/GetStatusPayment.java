@@ -52,7 +52,7 @@ public class GetStatusPayment {
                         return "Aguardando";
                     }
                 } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
-                    if (entrance.getInitialDate().after(date)) {
+                    if (entrance.getInitialDate().after(date) || month > movementMonth || year > movementYear ) {
                         return "Não Iniciada";
                     } else if (bankMovement.getType().equalsIgnoreCase("Entrada") && movementMonth == month && movementYear == year) {
                         return "Confirmado";
@@ -100,7 +100,7 @@ public class GetStatusPayment {
                     return "Pendente";
                 }
             } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
-                if (entrance.getInitialDate().after(date)) {
+                if (entrance.getInitialDate().after(date) || initialMonth < month || initialYear < year) {
                     return "Não Iniciada";
                 } else if (entrance.getInitialDate().after(Timestamp.valueOf(LocalDateTime.now())) && month == initialMonth && year == initialYear) {
                     return "Aguardando";

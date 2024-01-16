@@ -119,7 +119,12 @@ public class EntranceMapper {
             }
             if(status.equalsIgnoreCase("Confirmado")) {
                 entranceResponse.setStatus("Confirmado");
-                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(month+"/"+year) && bank.getEntranceId().equals(entrance.getId())).findFirst();
+                String monthValidate = "" + month;
+                if (month < 10) {
+                    monthValidate = "0" + month;
+                }
+                String period = monthValidate + "/" + year;
+                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(period) && bank.getEntranceId().equals(entrance.getId())).findFirst();
                 bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
                 entranceResponse.setValueReceived(valueReceived[0]);
             }

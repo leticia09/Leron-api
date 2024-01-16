@@ -175,6 +175,7 @@ public class ExpenseMapper {
             expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
         }
 
+
         expense.setUserAuthId(res.getUserAuthId());
         expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         expense.setCreatedIn(new Date());
@@ -225,6 +226,10 @@ public class ExpenseMapper {
             expense.setFinancialEntityCardId(res.getCardId());
             Optional<CardFinancialEntity> card = cardFinancialEntityList.stream().filter(mo -> mo.getId().equals(res.getTicketId())).findFirst();
             card.ifPresent(value -> expense.setCurrency(value.getCurrency()));
+        }
+
+        if (res.getPaymentForm().equalsIgnoreCase("Crédito")) {
+            expense.setHasSplitExpense(true);
         }
 
 
@@ -281,7 +286,7 @@ public class ExpenseMapper {
                 if (accountOptional.isPresent()) {
                     expenseResponse.setCurrency(accountOptional.get().getCurrency());
                     Optional<Card> card = accountOptional.get().getCards().stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
-                   // card.ifPresent(value -> expenseResponse.setDayPayment(Long.valueOf(value.getDueDate())));
+                    // card.ifPresent(value -> expenseResponse.setDayPayment(Long.valueOf(value.getDueDate())));
                 }
             }
 

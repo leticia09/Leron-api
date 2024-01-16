@@ -105,10 +105,6 @@ public class MacroGroupService {
                     .findFirst()
                     .ifPresent(existingGroup -> {
                         existingGroup.setName(newSpecificGroup.getName());
-                        existingGroup.setGoal(newSpecificGroup.getGoal());
-                        existingGroup.setStatus(newSpecificGroup.getStatus());
-                        existingGroup.setCurrency(newSpecificGroup.getCurrency());
-
                     });
         });
 
