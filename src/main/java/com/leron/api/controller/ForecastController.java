@@ -1,5 +1,6 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
 import com.leron.api.model.DTO.forecast.ForecastRequest;
 import com.leron.api.model.DTO.forecast.ForecastResponse;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
@@ -36,6 +37,14 @@ public class ForecastController {
                                                    @PathVariable(value = "year", required = true) int year,
                                                    @PathVariable(value = "owners", required = true) List<Long> owners) {
         return forecastService.list(userAuthId, month, year, owners);
+    }
+
+    @GetMapping("prev/{userAuthId}/{month}/{year}/{owners}")
+    public DataListResponse<ForecastPrevResponse> list1(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                        @PathVariable(value = "month", required = true) int month,
+                                                        @PathVariable(value = "year", required = true) int year,
+                                                        @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return forecastService.listPrev(userAuthId, month, year, owners);
     }
 
     @GetMapping("/{userAuthId}")

@@ -122,9 +122,9 @@ public class ExpenseService {
         }
     }
 
-    public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year) {
+    public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
         List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(userAuthId);
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(userAuthId, owners);
         List<Card> cards = cardRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
@@ -141,10 +141,10 @@ public class ExpenseService {
         return ExpenseMapper.entityToResponse(expense, members, banks, bankMovements);
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year) {
+    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
+        List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 

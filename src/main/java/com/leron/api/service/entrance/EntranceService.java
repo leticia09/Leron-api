@@ -59,10 +59,10 @@ public class EntranceService {
         return response;
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year) {
+    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
+        List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
@@ -144,9 +144,9 @@ public class EntranceService {
         return response;
     }
 
-    public DataListResponse<EntranceResponse> list(Long userAuthId, int month, int year) {
+    public DataListResponse<EntranceResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalseOrderByInitialDateDesc(userAuthId);
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(userAuthId, owners);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<CardFinancialEntity> cardFinancial = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);

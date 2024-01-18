@@ -2,6 +2,7 @@ package com.leron.api.repository;
 
 import com.leron.api.model.entities.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +23,7 @@ public interface ExpenseRepository extends JpaRepository<Expense,Long> {
     List<Expense> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);
 
     List<Expense> findAllByUserAuthIdAndFinancialEntityId(@Param("userAuthId") Long userAuthId, @Param("financialEntityId") Long financialEntityId);
+
+    @Query("SELECT b FROM Expense b WHERE b.userAuthId = :userAuthId AND b.ownerId in (:ids) AND b.deleted = false")
+    List<Expense> findAllByUserAuthIdAndOwnersId(Long userAuthId, List<Long> ids);
 }

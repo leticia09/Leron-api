@@ -35,18 +35,20 @@ public class EntranceController {
 
     }
 
-    @GetMapping("data/{userAuthId}/{month}/{year}")
+    @GetMapping("data/{userAuthId}/{month}/{year}/{owners}")
     public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
                                                          @PathVariable(value = "month", required = true) int month,
-                                                         @PathVariable(value = "year", required = true) int year) {
-        return service.getData(userAuthId, month, year);
+                                                         @PathVariable(value = "year", required = true) int year,
+                                                         @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return service.getData(userAuthId, month, year, owners);
     }
 
-    @GetMapping("/{userAuthId}/{month}/{year}")
+    @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
     public DataListResponse<EntranceResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
                                                    @PathVariable(value = "month", required = true) int month,
-                                                   @PathVariable(value = "year", required = true) int year) {
-        return service.list(userAuthId, month, year);
+                                                   @PathVariable(value = "year", required = true) int year,
+                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return service.list(userAuthId, month, year, owners);
     }
 
     @GetMapping("/{userAuthId}")

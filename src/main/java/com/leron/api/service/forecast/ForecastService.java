@@ -1,6 +1,7 @@
 package com.leron.api.service.forecast;
 
 import com.leron.api.mapper.forecast.ForecastMapper;
+import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
 import com.leron.api.model.DTO.forecast.ForecastRequest;
 import com.leron.api.model.DTO.forecast.ForecastResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
@@ -19,10 +20,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,13 +30,15 @@ public class ForecastService {
     final ExpenseRepository expenseRepository;
     final BankMovementRepository bankMovementRepository;
     final SpecificGroupRepository specificGroupRepository;
+    final MacroGroupRepository macroGroupRepository;
 
-    public ForecastService(ForecastRepository forecastRepository, EntranceRepository entranceRepository, ExpenseRepository expenseRepository, BankMovementRepository bankMovementRepository, SpecificGroupRepository specificGroupRepository) {
+    public ForecastService(ForecastRepository forecastRepository, EntranceRepository entranceRepository, ExpenseRepository expenseRepository, BankMovementRepository bankMovementRepository, SpecificGroupRepository specificGroupRepository, MacroGroupRepository macroGroupRepository) {
         this.forecastRepository = forecastRepository;
         this.entranceRepository = entranceRepository;
         this.expenseRepository = expenseRepository;
         this.bankMovementRepository = bankMovementRepository;
         this.specificGroupRepository = specificGroupRepository;
+        this.macroGroupRepository = macroGroupRepository;
     }
 
     public DataResponse<ForecastResponse> createForecast(List<ForecastRequest> forecastRequest) throws ApplicationBusinessException {
@@ -61,6 +61,40 @@ public class ForecastService {
         return ForecastMapper.entityToResponse(month, year, forecastList, owners);
     }
 
+    public DataListResponse<ForecastPrevResponse> listPrev(Long userAuthId, int month, int year, List<Long> owners) {
+        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(userAuthId, owners);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndOwnersId(userAuthId, owners);
+        String period = (month < 10) ? "0" + month + "/" + year : month + "/" + year;
+        List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalseAndReferencePeriodAndOwnersId(userAuthId, period, owners);
+        List<MacroGroup> macroGroupList = macroGroupRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Expense> expensesFiltered = new ArrayList<>();
+        for (Expense expense : expenses) {
+            String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
+            if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
+                LocalDate initialDate;
+                if (Objects.nonNull(expense.getInitialDate())) {
+                    initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+                } else {
+                    initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+                }
+                int initialMonth = initialDate.getMonthValue();
+                int initialYear = initialDate.getYear();
+                if (status.equalsIgnoreCase("Confirmado")) {
+                    if (initialMonth == month && initialYear == year) {
+                        expense.setStatus(status);
+                        expensesFiltered.add(expense);
+                    }
+                } else {
+                    expense.setStatus(status);
+                    expensesFiltered.add(expense);
+                }
+            }
+        }
+
+
+        return ForecastMapper.entityToResponsePrev(month, year, forecastList, expensesFiltered, macroGroupList);
+    }
+
     public DataListResponse<ForecastResponse> list(Long userAuthId) {
         List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         return ForecastMapper.entityToResponse(forecastList);
@@ -68,10 +102,10 @@ public class ForecastService {
 
     public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
-        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
-        List<Forecast> forecasts = forecastRepository.findAllByUserAuthIdAndDeletedFalse(authId);
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndOwnersId(authId, owners);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndOwnersId(authId, owners);
+        List<Forecast> forecasts = forecastRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(authId, owners);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(authId, owners);
         List<SpecificGroup> specificGroups = specificGroupRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         GraphicResponse graphicResponse = new GraphicResponse();
 
@@ -262,7 +296,7 @@ public class ForecastService {
 
         for (int i = 0; i < 12; i++) {
             for (Expense expense : expenses) {
-                int monthValue = i +1;
+                int monthValue = i + 1;
                 if (owners.contains(expense.getOwnerId())) {
                     String monthValidate = (monthValue < 10) ? "0" + monthValue : "" + monthValue;
                     String period = monthValidate + "/" + year;
@@ -275,9 +309,9 @@ public class ForecastService {
 
                     BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, i + 1, year);
-
                     if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                        if(status.equalsIgnoreCase("Confirmado")) {
+                        expense.setStatus(status);
+                        if (status.equalsIgnoreCase("Confirmado")) {
                             months[i] = months[i].add(value);
                         } else {
                             BigDecimal valueToAdd = expense.getHasSplitExpense() ?
@@ -291,20 +325,6 @@ public class ForecastService {
                 }
             }
         }
-
-        for (Forecast forecast : forecasts) {
-            List<String> monthNames = forecast.getMonths();
-
-            for (String monthName : monthNames) {
-                int index = Arrays.asList("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro").indexOf(monthName);
-
-                if (index != -1) {
-                    BigDecimal valueToAdd = forecast.getValue();
-                    months[index] = months[index].add(valueToAdd);
-                }
-            }
-        }
-
 
         data.addAll(Arrays.asList(months));
 
