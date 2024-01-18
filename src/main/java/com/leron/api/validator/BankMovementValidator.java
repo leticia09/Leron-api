@@ -31,9 +31,9 @@ public class BankMovementValidator {
             Optional<Entrance> entranceOptional = entranceList.stream().filter(entrance -> entrance.getId().toString().equals(res.getEntrance())).findFirst();
             if(entranceOptional.isPresent()) {
                 List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.nonNull(bm.getEntranceId()) && bm.getEntranceId().equals(entranceOptional.get().getId())).collect(Collectors.toList());
-                if(GetStatusPayment.getStatus(entranceOptional.get(), bankMovementList, MONTH, YEAR).equalsIgnoreCase("Não Iniciada")) {
-                    invalid.set(Boolean.TRUE);
-                }
+//                if(GetStatusPayment.getStatus(entranceOptional.get(), bankMovementList, MONTH, YEAR).equalsIgnoreCase("Não Iniciada")) {
+//                    invalid.set(Boolean.TRUE);
+//                }
             }
         });
 

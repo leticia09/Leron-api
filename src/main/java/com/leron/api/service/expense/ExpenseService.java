@@ -167,8 +167,8 @@ public class ExpenseService {
                 AtomicInteger movementYear = new AtomicInteger();
                 final BigDecimal[] valueReceived = {BigDecimal.ZERO};
 
-                String monthValidate = ""+month;
-                if(month < 10) {
+                String monthValidate = "" + month;
+                if (month < 10) {
                     monthValidate = "0" + month;
                 }
                 String period = monthValidate + "/" + year;
@@ -277,7 +277,33 @@ public class ExpenseService {
     }
 
     public List<Expense> getExpenseFixed(Long userAuthId) {
-        return expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasFixedTrue(userAuthId);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasFixedTrue(userAuthId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+
+        LocalDate currentDate = LocalDate.now();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
+        expenses.forEach(ex -> {
+            String monthValidate = "" + currentMonth;
+            if (currentMonth < 10) {
+                monthValidate = "0" + currentMonth;
+            }
+            String period = monthValidate + "/" + currentYear;
+            List<BankMovement> bankMovementList = bankMovements
+                    .stream()
+                    .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
+                            bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                            bm.getExpenseId().equals(ex.getId()
+                            )).collect(Collectors.toList());
+            String status = GetStatusPayment.getStatus(ex, bankMovementList, currentMonth, currentYear);
+            ex.setStatus(status);
+        });
+        return expenses.stream().filter(ex -> (
+                Objects.isNull(ex.getStatus()) ||
+                        ex.getStatus().equalsIgnoreCase("Aguardando") ||
+                        ex.getStatus().equalsIgnoreCase("Pendente")
+        )).collect(Collectors.toList());
     }
 
     public List<Expense> getExpenseHasSplit(Long userAuthId) {
@@ -304,6 +330,8 @@ public class ExpenseService {
             ex.setStatus(status);
         });
 
-        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando"))).collect(Collectors.toList());
+        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando") ||
+                ex.getStatus().equalsIgnoreCase("Pendente")
+        )).collect(Collectors.toList());
     }
 }

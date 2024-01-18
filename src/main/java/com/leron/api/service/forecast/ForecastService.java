@@ -20,6 +20,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -88,6 +89,7 @@ public class ForecastService {
         graphicResponse.setTotal2(getTotal(dataSets.get(1).getData(), month));
         graphicResponse.setTotal3(getTotal(dataSets.get(2).getData(), month));
         graphicResponse.setTotal4(getTotal(percent.getData(), month));
+        graphicResponse.setTotal5(getTotalLeft(dataSets.get(2).getData()));
 
         response.setData(graphicResponse);
 
@@ -252,250 +254,65 @@ public class ForecastService {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
-        BigDecimal month1 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month2 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month3 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month4 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month5 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month6 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month7 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month8 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month9 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month10 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month11 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month12 = new BigDecimal(BigInteger.ZERO);
+        BigDecimal[] months = new BigDecimal[12];
 
-        for (Expense expense : expenses) {
+        for (int i = 0; i < 12; i++) {
+            months[i] = new BigDecimal(BigInteger.ZERO);
+        }
 
-            String monthValidate = "" + month;
-            if (month < 10) {
-                monthValidate = "0" + month;
-            }
-            String period = monthValidate + "/" + year;
+        for (int i = 0; i < 12; i++) {
+            for (Expense expense : expenses) {
+                int monthValue = i +1;
+                if (owners.contains(expense.getOwnerId())) {
+                    String monthValidate = (monthValue < 10) ? "0" + monthValue : "" + monthValue;
+                    String period = monthValidate + "/" + year;
 
-            List<BankMovement> bankMovementList = bankMovements.stream()
-                    .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
-                            bm.getReferencePeriod().equalsIgnoreCase(period) &&
-                            bm.getType().equalsIgnoreCase("Saída")
-                    ).collect(Collectors.toList());
+                    List<BankMovement> bankMovementList = bankMovements.stream()
+                            .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
+                                    bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                                    bm.getType().equalsIgnoreCase("Saída")
+                            ).collect(Collectors.toList());
 
-            if (owners.contains(expense.getOwnerId())) {
-                String status1 = GetStatusPayment.getStatus(expense, bankMovementList, 1, year);
-                String status2 = GetStatusPayment.getStatus(expense, bankMovementList, 2, year);
-                String status3 = GetStatusPayment.getStatus(expense, bankMovementList, 3, year);
-                String status4 = GetStatusPayment.getStatus(expense, bankMovementList, 4, year);
-                String status5 = GetStatusPayment.getStatus(expense, bankMovementList, 5, year);
-                String status6 = GetStatusPayment.getStatus(expense, bankMovementList, 6, year);
-                String status7 = GetStatusPayment.getStatus(expense, bankMovementList, 7, year);
-                String status8 = GetStatusPayment.getStatus(expense, bankMovementList, 8, year);
-                String status9 = GetStatusPayment.getStatus(expense, bankMovementList, 9, year);
-                String status10 = GetStatusPayment.getStatus(expense, bankMovementList, 10, year);
-                String status11 = GetStatusPayment.getStatus(expense, bankMovementList, 11, year);
-                String status12 = GetStatusPayment.getStatus(expense, bankMovementList, 12, year);
+                    BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    String status = GetStatusPayment.getStatus(expense, bankMovementList, i + 1, year);
 
-                if (!status1.equalsIgnoreCase("Não Iniciada") && !status1.equalsIgnoreCase("")) {
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month1 = month1.add(c);
-                    } else {
-                        month1 = month1.add(expense.getValue());
+                    if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
+                        if(status.equalsIgnoreCase("Confirmado")) {
+                            months[i] = months[i].add(value);
+                        } else {
+                            BigDecimal valueToAdd = expense.getHasSplitExpense() ?
+                                    expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32) :
+                                    expense.getValue();
+
+                            months[i] = months[i].add(valueToAdd);
+                        }
+
                     }
-                }
-                if (!status2.equalsIgnoreCase("Não Iniciada") && !status2.equalsIgnoreCase("")) {
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month2 = month2.add(c);
-                    } else {
-                        month2 = month2.add(expense.getValue());
-                    }
-
-                }
-                if (!status3.equalsIgnoreCase("Não Iniciada") && !status3.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month3 = month3.add(c);
-                    } else {
-                        month3 = month3.add(expense.getValue());
-                    }
-
-                }
-                if (!status4.equalsIgnoreCase("Não Iniciada") && !status4.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month4 = month4.add(c);
-                    } else {
-                        month4 = month4.add(expense.getValue());
-                    }
-
-                }
-                if (!status5.equalsIgnoreCase("Não Iniciada") && !status5.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month5 = month5.add(c);
-                    } else {
-                        month5 = month5.add(expense.getValue());
-                    }
-
-                }
-                if (!status6.equalsIgnoreCase("Não Iniciada") && !status6.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month6 = month6.add(c);
-                    } else {
-                        month6 = month6.add(expense.getValue());
-                    }
-
-                }
-                if (!status7.equalsIgnoreCase("Não Iniciada") && !status7.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month7 = month7.add(c);
-                    } else {
-                        month7 = month7.add(expense.getValue());
-                    }
-
-                }
-                if (!status8.equalsIgnoreCase("Não Iniciada") && !status8.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month8 = month8.add(c);
-                    } else {
-                        month8 = month8.add(expense.getValue());
-                    }
-
-                }
-                if (!status9.equalsIgnoreCase("Não Iniciada") && !status9.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month9 = month9.add(c);
-                    } else {
-                        month9 = month9.add(expense.getValue());
-                    }
-
-                }
-                if (!status10.equalsIgnoreCase("Não Iniciada") && !status10.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month10 = month10.add(c);
-                    } else {
-                        month10 = month10.add(expense.getValue());
-                    }
-
-                }
-                if (!status11.equalsIgnoreCase("Não Iniciada") && !status11.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month11 = month11.add(c);
-                    } else {
-                        month11 = month11.add(expense.getValue());
-                    }
-
-                }
-                if (!status12.equalsIgnoreCase("Não Iniciada") && !status12.equalsIgnoreCase("")) {
-
-                    if (expense.getHasSplitExpense()) {
-                        BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-                        month12 = month12.add(c);
-                    } else {
-                        month12 = month12.add(expense.getValue());
-                    }
-
                 }
             }
         }
-        BigDecimal additional = new BigDecimal(BigInteger.ZERO);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Março"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month3 = month3.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Janeiro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month1 = month1.add(additional);
 
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Fevereiro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month2 = month2.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Abril"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month4 = month4.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Maio"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month5 = month5.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Junho"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month6 = month6.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Julho"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month7 = month7.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Setembro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month9 = month9.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Agosto"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month8 = month8.add(additional);
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Outubro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month10 = month10.add(additional);
+        for (Forecast forecast : forecasts) {
+            List<String> monthNames = forecast.getMonths();
 
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Novembro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month11 = month11.add(additional);
+            for (String monthName : monthNames) {
+                int index = Arrays.asList("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro").indexOf(monthName);
 
-        additional = forecasts.stream()
-                .filter(forecast -> Objects.nonNull(forecast.getMonths()) && forecast.getMonths().contains("Dezembro"))
-                .map(Forecast::getValue)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        month12 = month12.add(additional);
+                if (index != -1) {
+                    BigDecimal valueToAdd = forecast.getValue();
+                    months[index] = months[index].add(valueToAdd);
+                }
+            }
+        }
 
-        data.add(month1);
-        data.add(month2);
-        data.add(month3);
-        data.add(month4);
-        data.add(month5);
-        data.add(month6);
-        data.add(month7);
-        data.add(month8);
-        data.add(month9);
-        data.add(month10);
-        data.add(month11);
-        data.add(month12);
+
+        data.addAll(Arrays.asList(months));
 
         dataSet.setLabel("Despesa");
         dataSet.setBackgroundColor("red");
         dataSet.setBorderColor("red");
         dataSet.setData(data);
         return dataSet;
-
     }
 
     private static DataSet populateLeft(DataSet receive, DataSet expense) {
@@ -583,6 +400,14 @@ public class ForecastService {
             receiveTotal = dataList.get(10);
         } else if (index == 12) {
             receiveTotal = dataList.get(11);
+        }
+        return receiveTotal;
+    }
+
+    private static BigDecimal getTotalLeft(ArrayList<BigDecimal> dataList) {
+        BigDecimal receiveTotal = new BigDecimal(BigInteger.ZERO);
+        for (int i = 0; i < dataList.size(); i++) {
+            receiveTotal = receiveTotal.add(dataList.get(i));
         }
         return receiveTotal;
     }
