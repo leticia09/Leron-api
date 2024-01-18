@@ -11,6 +11,7 @@ import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.forecast.ValidatorForecast;
 import org.springframework.stereotype.Service;
@@ -309,6 +310,7 @@ public class ForecastService {
 
                     BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
                     String status = GetStatusPayment.getStatus(expense, bankMovementList, i + 1, year);
+
                     if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
                         expense.setStatus(status);
                         if (status.equalsIgnoreCase("Confirmado")) {
@@ -325,6 +327,18 @@ public class ForecastService {
                 }
             }
         }
+        for (Forecast forecast : forecasts) {
+            List<String> monthNames = forecast.getMonths();
+            for (String monthName : monthNames) {
+                int index = Arrays.asList("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro").indexOf(monthName);
+
+                if (index != -1) {
+                    BigDecimal valueToAdd = forecast.getValue();
+                    months[index] = months[index].add(valueToAdd);
+                }
+            }
+        }
+
 
         data.addAll(Arrays.asList(months));
 
@@ -339,31 +353,10 @@ public class ForecastService {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
-        BigDecimal month1 = receive.getData().get(0).subtract(expense.getData().get(0));
-        BigDecimal month2 = receive.getData().get(1).subtract(expense.getData().get(1));
-        BigDecimal month3 = receive.getData().get(2).subtract(expense.getData().get(2));
-        BigDecimal month4 = receive.getData().get(3).subtract(expense.getData().get(3));
-        BigDecimal month5 = receive.getData().get(4).subtract(expense.getData().get(4));
-        BigDecimal month6 = receive.getData().get(5).subtract(expense.getData().get(5));
-        BigDecimal month7 = receive.getData().get(6).subtract(expense.getData().get(6));
-        BigDecimal month8 = receive.getData().get(7).subtract(expense.getData().get(7));
-        BigDecimal month9 = receive.getData().get(8).subtract(expense.getData().get(8));
-        BigDecimal month10 = receive.getData().get(9).subtract(expense.getData().get(9));
-        BigDecimal month11 = receive.getData().get(10).subtract(expense.getData().get(10));
-        BigDecimal month12 = receive.getData().get(11).subtract(expense.getData().get(11));
-
-        data.add(month1);
-        data.add(month2);
-        data.add(month3);
-        data.add(month4);
-        data.add(month5);
-        data.add(month6);
-        data.add(month7);
-        data.add(month8);
-        data.add(month9);
-        data.add(month10);
-        data.add(month11);
-        data.add(month12);
+        for (int i = 0; i < 12; i++) {
+            BigDecimal difference = receive.getData().get(i).subtract(expense.getData().get(i));
+            data.add(difference);
+        }
 
         dataSet.setLabel("Sobra");
         dataSet.setBackgroundColor("#0195f5");
@@ -371,6 +364,7 @@ public class ForecastService {
         dataSet.setData(data);
         return dataSet;
     }
+
 
     private static DataSet populateLeftPercent(DataSet receive, DataSet expense) {
         DataSet dataSet = new DataSet();
