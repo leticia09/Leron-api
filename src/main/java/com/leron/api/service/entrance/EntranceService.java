@@ -81,11 +81,14 @@ public class EntranceService {
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
             for (Entrance entrance : entrances) {
+                String monthValidate = "" + month;
+                if (month < 10) {
+                    monthValidate = "0" + month;
+                }
+                String period = monthValidate + "/" + year;
 
                 List<BankMovement> bankMovementList = bankMovements.stream()
-                        .filter(bm -> Objects.equals(
-                                bm.getEntranceId(), entrance.getId())
-                        ).collect(Collectors.toList());
+                        .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId()) && bm.getReferencePeriod().equalsIgnoreCase(period)).collect(Collectors.toList());
 
                 BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 

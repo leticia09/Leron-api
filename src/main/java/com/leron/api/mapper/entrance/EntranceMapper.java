@@ -82,14 +82,13 @@ public class EntranceMapper {
     public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial, List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
         DataListResponse<EntranceResponse> response = new DataListResponse<>();
         List<EntranceResponse> entranceList = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
-        int DAY = currentDate.getDayOfMonth();
-        int MONTH = currentDate.getMonthValue();
-        int YEAR = currentDate.getYear();
-        AtomicInteger movementMonth = new AtomicInteger();
-        AtomicInteger movementYear = new AtomicInteger();
-
         for (Entrance entrance : entrances) {
+            String monthValidate = "" + month;
+            if (month < 10) {
+                monthValidate = "0" + month;
+            }
+            String period = monthValidate + "/" + year;
+
             EntranceResponse entranceResponse = new EntranceResponse();
             entranceResponse.setId(entrance.getId());
             entranceResponse.setFrequency(entrance.getFrequency());
@@ -99,7 +98,7 @@ public class EntranceMapper {
             entranceResponse.setAccountNumber(String.valueOf(entrance.getAccountId()));
 
             List<BankMovement> bankMovementList = bankMovements.stream()
-                    .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId())).collect(Collectors.toList());
+                    .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId()) && bm.getReferencePeriod().equalsIgnoreCase(period)).collect(Collectors.toList());
 
 
             String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
@@ -119,11 +118,7 @@ public class EntranceMapper {
             }
             if(status.equalsIgnoreCase("Confirmado")) {
                 entranceResponse.setStatus("Confirmado");
-                String monthValidate = "" + month;
-                if (month < 10) {
-                    monthValidate = "0" + month;
-                }
-                String period = monthValidate + "/" + year;
+
                 Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(period) && bank.getEntranceId().equals(entrance.getId())).findFirst();
                 bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
                 entranceResponse.setValueReceived(valueReceived[0]);

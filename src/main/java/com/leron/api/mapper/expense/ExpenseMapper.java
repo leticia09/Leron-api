@@ -284,11 +284,7 @@ public class ExpenseMapper {
 
                     if (Objects.nonNull(expense.getAccountId())) {
                         Optional<Account> accountOptional = accounts.stream().filter(a -> a.getId().equals(expense.getAccountId())).findFirst();
-                        if (accountOptional.isPresent()) {
-                            expenseResponse.setCurrency(accountOptional.get().getCurrency());
-                            Optional<Card> card = accountOptional.get().getCards().stream().filter(ca -> ca.getFinalNumber().equals(expense.getFinalCard())).findFirst();
-                            // card.ifPresent(value -> expenseResponse.setDayPayment(Long.valueOf(value.getDueDate())));
-                        }
+                        accountOptional.ifPresent(account -> expenseResponse.setCurrency(account.getCurrency()));
                     }
 
                     if (expense.getHasSplitExpense()) {
@@ -323,16 +319,17 @@ public class ExpenseMapper {
                     if (expense.getHasSplitExpense()) {
                         int part = month - dateBuy.getMonthValue() + 1;
                         expenseResponse.setPartNumber(part);
-                        if (status.equalsIgnoreCase("aguardando") && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
-                            if (dateBuy.getMonthValue() < month) {
+                        if ((status.equalsIgnoreCase("aguardando") || status.equalsIgnoreCase("pendente")) && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
+                            LocalDate buyDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+                            if (dateBuy.getMonthValue() < month && cardOptional.isPresent() && cardOptional.get().getClosingDate() < buyDate.getDayOfMonth()) {
                                 expenseResponse.setPartNumber(month - 1);
                             }
                         }
 
-
                         BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                         expenseResponse.setPartValue(c);
                     }
+
 
                     if (status.equalsIgnoreCase("Não Iniciada")) {
                         expenseResponse.setStatus("Não Iniciada");

@@ -154,8 +154,6 @@ public class GetStatusPayment {
             initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
         }
         int initialDay = initialDate.getDayOfMonth();
-        int initialMonth = initialDate.getMonthValue();
-        int initialYear = initialDate.getYear();
         Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
 
         if (!movements.isEmpty()) {
@@ -263,10 +261,10 @@ public class GetStatusPayment {
                                 monthFinished = monthFinished - 1;
                             }
                             if (month <= monthFinished) {
-                                if (card.getDueDate() > currentDay) {
-                                    return "Aguardando";
-                                } else {
+                                if (card.getDueDate() < currentDay && month == currentMonth && year == currentYear) {
                                     return "Pendente";
+                                } else if(month >= currentMonth && year >= currentYear) {
+                                    return "Aguardando";
                                 }
                             } else {
                                 return "Não Iniciada";
