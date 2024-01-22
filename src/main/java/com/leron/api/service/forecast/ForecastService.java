@@ -114,7 +114,7 @@ public class ForecastService {
         ArrayList<DataSet> dataSets = new ArrayList<>();
 
         dataSets.add(populateEntrances(entrances, month, year, owners));
-        dataSets.add(populateExpenses(expenses, bankMovements, month, year, owners, forecasts, specificGroups));
+        dataSets.add(populateExpenses(expenses, bankMovements, month, year, owners, forecasts, specificGroups, authId));
         dataSets.add(populateLeft(dataSets.get(0), dataSets.get(1)));
 
         DataSet percent = populateLeftPercent(dataSets.get(0), dataSets.get(1));
@@ -285,7 +285,7 @@ public class ForecastService {
 
     }
 
-    private static DataSet populateExpenses(List<Expense> expenses, List<BankMovement> bankMovements, int month, int year, List<Long> owners, List<Forecast> forecasts, List<SpecificGroup> specificGroups) {
+    private DataSet populateExpenses(List<Expense> expenses, List<BankMovement> bankMovements, int month, int year, List<Long> owners, List<Forecast> forecasts, List<SpecificGroup> specificGroups, Long userAuthId) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
@@ -296,6 +296,7 @@ public class ForecastService {
         }
 
         for (int i = 0; i < 12; i++) {
+
             for (Expense expense : expenses) {
                 int monthValue = i + 1;
                 if (owners.contains(expense.getOwnerId())) {
@@ -332,8 +333,23 @@ public class ForecastService {
             for (String monthName : monthNames) {
                 int index = Arrays.asList("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro").indexOf(monthName);
 
+
                 if (index != -1) {
-                    BigDecimal valueToAdd = forecast.getValue();
+                    DataListResponse<ForecastPrevResponse> forecastPrevResponse = listPrev(userAuthId, index+1, year, owners);
+                    Optional<ForecastPrevResponse> forecastOptional = forecastPrevResponse.getData().stream().filter(f -> f.getForecastId().equals(forecast.getId())).findFirst();
+
+                    BigDecimal valueToAdd = new BigDecimal(BigInteger.ZERO);
+
+                    if (forecastOptional.isPresent()) {
+                        valueToAdd = forecast.getValue().subtract(forecastOptional.get().getValuePaidForecast());
+
+                        if (valueToAdd.compareTo(BigDecimal.ZERO) < 0) {
+                            valueToAdd = valueToAdd.abs();
+                        }
+                    } else {
+                        valueToAdd = valueToAdd.add(forecast.getValue());
+                    }
+
                     months[index] = months[index].add(valueToAdd);
                 }
             }
@@ -354,7 +370,9 @@ public class ForecastService {
         ArrayList<BigDecimal> data = new ArrayList<>();
 
         for (int i = 0; i < 12; i++) {
-            BigDecimal difference = receive.getData().get(i).subtract(expense.getData().get(i));
+            BigDecimal receiveValue = receive.getData().get(i);
+            BigDecimal expenseValue = expense.getData().get(i);
+            BigDecimal difference = receiveValue.subtract(expenseValue);
             data.add(difference);
         }
 

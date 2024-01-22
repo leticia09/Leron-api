@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @Component
 public class ForecastPrevResponse {
+    private Long forecastId;
     private Long ownerId;
     private String macroGroup;
     private String specificGroup;

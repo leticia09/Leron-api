@@ -91,6 +91,7 @@ public class ForecastMapper {
         for (Forecast forecast : forecastList) {
             if (forecast.getMonths().contains(FormatDate.getMonth(month)) && forecast.getYears().contains(year)) {
                 ForecastPrevResponse forecastPrevResponse = new ForecastPrevResponse();
+                forecastPrevResponse.setForecastId(forecast.getId());
                 forecastPrevResponse.setOwnerId(forecast.getOwnerId());
                 forecastPrevResponse.setCurrency(forecast.getCurrency());
                 Optional<MacroGroup> macroGroupOptional = macroGroupList.stream().filter(group -> group.getId().equals(forecast.getMacroGroupId())).findFirst();
