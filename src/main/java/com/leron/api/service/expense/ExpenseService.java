@@ -163,10 +163,6 @@ public class ExpenseService {
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
 
             for (Expense expense : expenses) {
-                AtomicInteger movementMonth = new AtomicInteger();
-                AtomicInteger movementYear = new AtomicInteger();
-                final BigDecimal[] valueReceived = {BigDecimal.ZERO};
-
                 String monthValidate = "" + month;
                 if (month < 10) {
                     monthValidate = "0" + month;
@@ -251,17 +247,31 @@ public class ExpenseService {
         return response;
     }
 
-    public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest) {
+    public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest, String period) {
         DataResponse<BigDecimal> response = new DataResponse<>();
         AtomicReference<BigDecimal> amount = new AtomicReference<>(new BigDecimal(BigInteger.ZERO));
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
 
         cardListRequest.forEach(card -> {
-            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, bankId, accountId, Long.parseLong(card));
+            String[] part = period.split("/");
+            int month = Integer.parseInt(part[0]);
+            int year = Integer.parseInt(part[1]);
 
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, bankId, accountId, Long.parseLong(card));
             for (Expense ex : expenses) {
-                if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
-                    BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
-                    amount.updateAndGet(currentAmount -> currentAmount.add(partValue));
+                List<BankMovement> bankMovementList = bankMovements.stream()
+                        .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
+                                bm.getUserAuthId().equals(userAuthId) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                                bm.getType().equalsIgnoreCase("Saída")
+                        ).collect(Collectors.toList());
+
+                String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
+                if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
+                    if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
+                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
+                        amount.updateAndGet(currentAmount -> currentAmount.add(partValue));
+                    }
                 }
             }
         });

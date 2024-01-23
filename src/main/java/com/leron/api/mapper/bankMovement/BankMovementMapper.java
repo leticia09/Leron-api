@@ -10,6 +10,7 @@ import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -89,51 +90,87 @@ public class BankMovementMapper {
         return bankMovement;
     }
 
+    public static BankMovement paymentCreditToBankMovement(PaymentRequest request, Expense expense, Long userAuth, Account account, Card card) {
+
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setDateMovement(FormatDate.formatDate(request.getPaymentDate()));
+        bankMovement.setOwnerId(request.getOwnerId());
+        bankMovement.setType("Saída");
+        bankMovement.setReferencePeriod(request.getReferencePeriod());
+        bankMovement.setDeleted(false);
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setUserAuthId(userAuth);
+        String salaryText = request.getValue();
+
+        salaryText = salaryText.replaceAll("[^\\d.,]", "");
+        salaryText = salaryText.replaceAll("\\.", "");
+        salaryText = salaryText.replace(",", ".");
+        BigDecimal salary = new BigDecimal(salaryText);
+
+        if(expense.getHasSplitExpense()) {
+            BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+            bankMovement.setValue(c);
+        } else {
+            bankMovement.setValue(expense.getValue());
+        }
+
+
+        bankMovement.setObs("Pagamento Fatura Cartão: " + card.getFinalNumber());
+
+        bankMovement.setExpenseId(expense.getId());
+        bankMovement.setAccountId(expense.getAccountId());
+        bankMovement.setBankId(expense.getBankId());
+        bankMovement.setCurrency(account.getCurrency());
+
+        return bankMovement;
+    }
+
+
     public static BankMovement receiveToBankMovement(ReceiveRequest requests, List<Entrance> entrances, Long userAuth, List<Account> accounts, List<CardFinancialEntity> cardFinancialEntities, Money moneyList) {
 
-            Optional<Entrance> entrance = entrances.stream()
-                    .filter(entrance1 -> entrance1.getId().toString().equals(requests.getEntrance()))
-                    .findFirst();
+        Optional<Entrance> entrance = entrances.stream()
+                .filter(entrance1 -> entrance1.getId().toString().equals(requests.getEntrance()))
+                .findFirst();
 
-            BankMovement bankMovement = new BankMovement();
-            bankMovement.setDateMovement(FormatDate.formatDate(requests.getReceiveDate()));
-            bankMovement.setOwnerId(requests.getOwnerId());
-            bankMovement.setType("Entrada");
-            bankMovement.setReferencePeriod(requests.getReferencePeriod());
-            bankMovement.setDeleted(false);
-            bankMovement.setCreatedIn(new Date());
-            bankMovement.setUserAuthId(userAuth);
-            String salaryText = requests.getSalary();
+        BankMovement bankMovement = new BankMovement();
+        bankMovement.setDateMovement(FormatDate.formatDate(requests.getReceiveDate()));
+        bankMovement.setOwnerId(requests.getOwnerId());
+        bankMovement.setType("Entrada");
+        bankMovement.setReferencePeriod(requests.getReferencePeriod());
+        bankMovement.setDeleted(false);
+        bankMovement.setCreatedIn(new Date());
+        bankMovement.setUserAuthId(userAuth);
+        String salaryText = requests.getSalary();
 
-            salaryText = salaryText.replaceAll("[^\\d.,]", "");
-            salaryText = salaryText.replaceAll("\\.", "");
-            salaryText = salaryText.replace(",", ".");
-            BigDecimal salary = new BigDecimal(salaryText);
+        salaryText = salaryText.replaceAll("[^\\d.,]", "");
+        salaryText = salaryText.replaceAll("\\.", "");
+        salaryText = salaryText.replace(",", ".");
+        BigDecimal salary = new BigDecimal(salaryText);
 
-            bankMovement.setValue(salary);
-            bankMovement.setObs(requests.getObs());
+        bankMovement.setValue(salary);
+        bankMovement.setObs(requests.getObs());
 
-            if (entrance.isPresent()) {
-                Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), entrance.get().getAccountId())).findFirst();
-                Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(cf -> cf.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
+        if (entrance.isPresent()) {
+            Optional<Account> account = accounts.stream().filter(ac -> Objects.equals(ac.getId(), entrance.get().getAccountId())).findFirst();
+            Optional<CardFinancialEntity> cardFinancial = cardFinancialEntities.stream().filter(cf -> cf.getId().equals(entrance.get().getFinancialEntityCardId())).findFirst();
 
-                bankMovement.setEntranceId(entrance.get().getId());
-                bankMovement.setAccountId(entrance.get().getAccountId());
-                bankMovement.setBankId(entrance.get().getBankId());
+            bankMovement.setEntranceId(entrance.get().getId());
+            bankMovement.setAccountId(entrance.get().getAccountId());
+            bankMovement.setBankId(entrance.get().getBankId());
 
-                account.ifPresent(value -> bankMovement.setCurrency(value.getCurrency()));
+            account.ifPresent(value -> bankMovement.setCurrency(value.getCurrency()));
 
-                if (cardFinancial.isPresent()) {
-                    bankMovement.setCurrency(cardFinancial.get().getCurrency());
-                    bankMovement.setFinancialEntityCardId(cardFinancial.get().getId());
-                    bankMovement.setFinancialEntityId(cardFinancial.get().getFinancialEntity().getId());
-                }
-
-                if (Objects.nonNull(moneyList)) {
-                    bankMovement.setMoneyId(moneyList.getId());
-                    bankMovement.setCurrency(moneyList.getCurrency());
-                }
+            if (cardFinancial.isPresent()) {
+                bankMovement.setCurrency(cardFinancial.get().getCurrency());
+                bankMovement.setFinancialEntityCardId(cardFinancial.get().getId());
+                bankMovement.setFinancialEntityId(cardFinancial.get().getFinancialEntity().getId());
             }
+
+            if (Objects.nonNull(moneyList)) {
+                bankMovement.setMoneyId(moneyList.getId());
+                bankMovement.setCurrency(moneyList.getCurrency());
+            }
+        }
 
         return bankMovement;
     }
@@ -369,32 +406,32 @@ public class BankMovementMapper {
         return bankMovementNegative;
     }
 
-   public static BankMovement receiveBankMovement (ReceiveRequest request, Long userAuthId, String currency, Account account) {
-       BankMovement response = new BankMovement();
-       response.setType("Trasferência Positiva");
-       if(!Objects.equals(request.getValue(), "")  && Objects.nonNull(request.getValue())) {
-           response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
-       }
-       if(!Objects.equals(request.getSalary(), "")  && Objects.nonNull(request.getSalary())) {
-           String value = request.getSalary().replace(currency, "").replace(",", ".").trim();
+    public static BankMovement receiveBankMovement(ReceiveRequest request, Long userAuthId, String currency, Account account) {
+        BankMovement response = new BankMovement();
+        response.setType("Trasferência Positiva");
+        if (!Objects.equals(request.getValue(), "") && Objects.nonNull(request.getValue())) {
+            response.setValue(new BigDecimal(request.getValue().replace(",", ".")));
+        }
+        if (!Objects.equals(request.getSalary(), "") && Objects.nonNull(request.getSalary())) {
+            String value = request.getSalary().replace(currency, "").replace(",", ".").trim();
 
-           response.setValue(new BigDecimal(value));
-       }
-       response.setOwnerId(request.getOwnerId());
-       response.setBankId(account.getBank().getId());
-       response.setAccountId(account.getId());
-       response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
-       response.setObs(request.getObs());
-       if(Objects.nonNull(request.getEntrance()) && !request.getEntrance().isEmpty()) {
-          response.setEntranceId(Long.valueOf(request.getEntrance()));
-       }
-       if(Objects.nonNull(request.getReferencePeriod())) {
-           response.setReferencePeriod(request.getReferencePeriod());
-       }
-       response.setCurrency(currency);
-       response.setUserAuthId(userAuthId);
-       response.setCreatedIn(new Date());
-       response.setDeleted(false);
-       return response;
-   }
+            response.setValue(new BigDecimal(value));
+        }
+        response.setOwnerId(request.getOwnerId());
+        response.setBankId(account.getBank().getId());
+        response.setAccountId(account.getId());
+        response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
+        response.setObs(request.getObs());
+        if (Objects.nonNull(request.getEntrance()) && !request.getEntrance().isEmpty()) {
+            response.setEntranceId(Long.valueOf(request.getEntrance()));
+        }
+        if (Objects.nonNull(request.getReferencePeriod())) {
+            response.setReferencePeriod(request.getReferencePeriod());
+        }
+        response.setCurrency(currency);
+        response.setUserAuthId(userAuthId);
+        response.setCreatedIn(new Date());
+        response.setDeleted(false);
+        return response;
+    }
 }

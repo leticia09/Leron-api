@@ -14,6 +14,7 @@ import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.BankMovementValidator;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,9 @@ public class MovementBankService {
     private final CardFinancialEntityRepository cardFinancialRepository;
     private final MoneyRepository moneyRepository;
     private final ExpenseRepository expenseRepository;
+    private final CardRepository cardRepository;
 
-    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialRepository, MoneyRepository moneyRepository, ExpenseRepository expenseRepository) {
+    public MovementBankService(MemberRepository memberRepository, RegisterBankRepository bankRepository, EntranceRepository entranceRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialRepository, MoneyRepository moneyRepository, ExpenseRepository expenseRepository, CardRepository cardRepository) {
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.entranceRepository = entranceRepository;
@@ -45,6 +47,7 @@ public class MovementBankService {
         this.cardFinancialRepository = cardFinancialRepository;
         this.moneyRepository = moneyRepository;
         this.expenseRepository = expenseRepository;
+        this.cardRepository = cardRepository;
     }
 
     public DataListResponse<BankMovementResponse> list(Long userAuthId) {
@@ -285,38 +288,81 @@ public class MovementBankService {
         List<Money> money = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         request.forEach(res -> {
-            Optional<Expense> expense = expenses.stream().filter(ex -> ex.getId().equals(res.getExpenseId())).findFirst();
+            if (Objects.isNull(res.getBankId()) && Objects.isNull(res.getAccountId()) && Objects.isNull(res.getCardId())) {
 
-            if (expense.isPresent()) {
-                if (Objects.nonNull(expense.get().getAccountId())) {
-                    Account accountList = BankMovementMapper.paymentToAccount(res, accounts, expenses);
-                    if (accountList != null) {
-                        accountRepository.save(accountList);
+                Optional<Expense> expense = expenses.stream().filter(ex -> ex.getId().equals(res.getExpenseId())).findFirst();
+
+                if (expense.isPresent()) {
+                    if (Objects.nonNull(expense.get().getAccountId())) {
+                        Account accountList = BankMovementMapper.paymentToAccount(res, accounts, expenses);
+                        if (accountList != null) {
+                            accountRepository.save(accountList);
+                        }
+                    }
+                    Money moneyList = null;
+                    if (Objects.nonNull(expense.get().getMoneyId())) {
+                        moneyList = BankMovementMapper.payToMoney(res, expenses, userAuthId, money);
+                    }
+
+                    BankMovement bankMovements = BankMovementMapper.payToBankMovement(res, expenses, userAuthId, accounts, cardFinancialEntity, moneyList);
+
+                    bankMovementRepository.save(bankMovements);
+
+                    if (moneyList != null) {
+                        moneyRepository.save(moneyList);
+                    }
+
+                    List<BankMovement> banks = bankMovementList.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(res.getExpenseId())).collect(Collectors.toList());
+
+                    if (Objects.nonNull(expense.get().getQuantityPart()) && expense.get().getQuantityPart() == banks.size()) {
+                        expense.get().setStatus("Quitado");
+                        expenseRepository.save(expense.get());
+                    }
+
+                }
+
+            } else {
+                Account account = accountRepository.getById(res.getAccountId());
+
+                for (Long card : res.getCardId()) {
+                    String[] part = res.getReferencePeriod().split("/");
+                    int month = Integer.parseInt(part[0]);
+                    int year = Integer.parseInt(part[1]);
+
+                    List<Expense> expenseList = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, res.getBankId(), res.getAccountId(), card);
+
+                    for (Expense ex : expenseList) {
+                        List<BankMovement> bankMovementList1 = bankMovementList.stream()
+                                .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
+                                        bm.getUserAuthId().equals(userAuthId) &&
+                                        bm.getReferencePeriod().equalsIgnoreCase(res.getReferencePeriod()) &&
+                                        bm.getType().equalsIgnoreCase("Saída")
+                                ).collect(Collectors.toList());
+
+                        String status = GetStatusPayment.getStatus(ex, bankMovementList1, month, year);
+                        if (ex.getPaymentForm().equalsIgnoreCase("crédito") &&
+                                !status.equalsIgnoreCase("Não Iniciada") &&
+                                !status.equalsIgnoreCase("Confirmado") &&
+                                !status.equalsIgnoreCase("")) {
+                            Card card1 = cardRepository.findCardByFinalNumber(card);
+
+                            BankMovement bankMovements = BankMovementMapper.paymentCreditToBankMovement(res, ex, userAuthId, account, card1);
+                            bankMovementRepository.save(bankMovements);
+
+                        }
                     }
                 }
-                Money moneyList = null;
-                if (Objects.nonNull(expense.get().getMoneyId())) {
-                    moneyList = BankMovementMapper.payToMoney(res, expenses, userAuthId, money);
-                }
 
-                BankMovement bankMovements = BankMovementMapper.payToBankMovement(res, expenses, userAuthId, accounts, cardFinancialEntity, moneyList);
-
-                bankMovementRepository.save(bankMovements);
-
-                if (moneyList != null) {
-                    moneyRepository.save(moneyList);
-                }
-
-                List<BankMovement> banks = bankMovementList.stream().filter(bm -> Objects.nonNull(bm.getExpenseId()) && bm.getExpenseId().equals(res.getExpenseId())).collect(Collectors.toList());
-
-                if (Objects.nonNull(expense.get().getQuantityPart()) && expense.get().getQuantityPart() == banks.size()) {
-                    expense.get().setStatus("Quitado");
-                    expenseRepository.save(expense.get());
-                }
+                BigDecimal value = new BigDecimal(res.getValue());
+                BigDecimal oldValue = account.getValue();
+                BigDecimal newValue = oldValue.subtract(value);
+                account.setChangedIn(new Date());
+                account.setValue(newValue);
+                accountRepository.save(account);
 
             }
-
         });
+
         response.setSeverity("success");
         response.setMessage("success");
         return response;

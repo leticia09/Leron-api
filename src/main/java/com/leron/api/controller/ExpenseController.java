@@ -58,12 +58,14 @@ public class ExpenseController {
         return service.getData(userAuthId, month, year, owners);
     }
 
-    @PostMapping("/{userAuthId}/{bankId}/{accountId}")
+    @PostMapping("/{userAuthId}/{bankId}/{accountId}/{month}/{year}")
     public DataResponse<BigDecimal> getByRegisterBank(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                          @PathVariable(value = "bankId", required = true) Long bankId,
-                                                          @PathVariable(value = "accountId", required = true) Long accountId,
-                                                          @RequestBody List<String> cardListRequest) {
-        return service.getAmountByRegisterBank(userAuthId, bankId, accountId, cardListRequest);
+                                                      @PathVariable(value = "bankId", required = true) Long bankId,
+                                                      @PathVariable(value = "accountId", required = true) Long accountId,
+                                                      @PathVariable(value = "month", required = true) String month,
+                                                      @PathVariable(value = "year", required = true) String year,
+                                                      @RequestBody List<String> cardListRequest) {
+        return service.getAmountByRegisterBank(userAuthId, bankId, accountId, cardListRequest, month + "/" + year);
     }
 
 

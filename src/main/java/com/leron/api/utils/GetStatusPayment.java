@@ -162,7 +162,7 @@ public class GetStatusPayment {
                 String[] part = bankMovement.getReferencePeriod().split("/");
                 int movementMonth = Integer.parseInt(part[0]);
                 int movementYear = Integer.parseInt(part[1]);
-                if (expense.getHasSplitExpense()) {
+                if (expense.getHasSplitExpense() && !expense.getPaymentForm().equalsIgnoreCase("crédito")) {
                     if (expense.getFrequency().equalsIgnoreCase("Mensal")) {
                         if (expense.getInitialDate().after(date)) {
                             return "Não Iniciada";
