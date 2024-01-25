@@ -1,5 +1,6 @@
 package com.leron.api.model.DTO.BankMovement;
 
+import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import lombok.Data;
 
 import java.util.List;
@@ -15,5 +16,6 @@ public class PaymentRequest {
     private Long bankId;
     private Long accountId;
     private List<Long> cardId;
+    private List<ExpensePeriodResponse> expenseList;
 
 }

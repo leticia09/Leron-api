@@ -1,5 +1,6 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
@@ -43,6 +44,15 @@ public class ExpenseController {
                                                   @PathVariable(value = "year", required = true) int year,
                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
         return service.list(userAuthId, month, year, owners);
+    }
+
+    @GetMapping("period/{userAuthId}/{month}/{year}/{owner}/{cards}")
+    public DataListResponse<ExpensePeriodResponse> listPeriod(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                              @PathVariable(value = "month", required = true) int month,
+                                                              @PathVariable(value = "year", required = true) int year,
+                                                              @PathVariable(value = "owner", required = true) Long owner,
+                                                              @PathVariable(value = "cards", required = true) List<Long> cards) {
+        return service.listPeriod(userAuthId, month + "/" + year, owner, cards);
     }
 
     @GetMapping("/{userAuthId}")

@@ -4,6 +4,7 @@ import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.PaymentRequest;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
@@ -90,7 +91,7 @@ public class BankMovementMapper {
         return bankMovement;
     }
 
-    public static BankMovement paymentCreditToBankMovement(PaymentRequest request, Expense expense, Long userAuth, Account account, Card card) {
+    public static BankMovement paymentCreditToBankMovement(PaymentRequest request, Expense expense, Long userAuth, Account account, Card card, ExpensePeriodResponse expensePeriodResponse) {
 
         BankMovement bankMovement = new BankMovement();
         bankMovement.setDateMovement(FormatDate.formatDate(request.getPaymentDate()));
@@ -100,21 +101,10 @@ public class BankMovementMapper {
         bankMovement.setDeleted(false);
         bankMovement.setCreatedIn(new Date());
         bankMovement.setUserAuthId(userAuth);
-        String salaryText = request.getValue();
-
-        salaryText = salaryText.replaceAll("[^\\d.,]", "");
-        salaryText = salaryText.replaceAll("\\.", "");
-        salaryText = salaryText.replace(",", ".");
-        BigDecimal salary = new BigDecimal(salaryText);
-
-        if(expense.getHasSplitExpense()) {
-            BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
-            bankMovement.setValue(c);
-        } else {
-            bankMovement.setValue(expense.getValue());
-        }
-
-
+        String value = expensePeriodResponse.getValue();
+        value = value.replace(",", ".");
+        value = value.replaceAll("[^\\d.]", "");
+        bankMovement.setValue(new BigDecimal(value));
         bankMovement.setObs("Pagamento Fatura Cartão: " + card.getFinalNumber());
 
         bankMovement.setExpenseId(expense.getId());

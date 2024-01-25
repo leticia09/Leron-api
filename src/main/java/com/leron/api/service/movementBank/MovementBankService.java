@@ -5,6 +5,7 @@ import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
 import com.leron.api.model.DTO.BankMovement.PaymentRequest;
 import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
 import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.graphic.LabelTooltip;
@@ -332,6 +333,9 @@ public class MovementBankService {
                     List<Expense> expenseList = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, res.getBankId(), res.getAccountId(), card);
 
                     for (Expense ex : expenseList) {
+
+                        Optional<ExpensePeriodResponse> expensePeriodResponse = res.getExpenseList().stream().filter(exp -> ex.getId().equals(exp.getId())).findFirst();
+
                         List<BankMovement> bankMovementList1 = bankMovementList.stream()
                                 .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
                                         bm.getUserAuthId().equals(userAuthId) &&
@@ -346,9 +350,10 @@ public class MovementBankService {
                                 !status.equalsIgnoreCase("")) {
                             Card card1 = cardRepository.findCardByFinalNumber(card);
 
-                            BankMovement bankMovements = BankMovementMapper.paymentCreditToBankMovement(res, ex, userAuthId, account, card1);
-                            bankMovementRepository.save(bankMovements);
-
+                            if (expensePeriodResponse.isPresent()) {
+                                BankMovement bankMovements = BankMovementMapper.paymentCreditToBankMovement(res, ex, userAuthId, account, card1, expensePeriodResponse.get());
+                                bankMovementRepository.save(bankMovements);
+                            }
                         }
                     }
                 }

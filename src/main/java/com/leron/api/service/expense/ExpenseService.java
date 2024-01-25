@@ -1,6 +1,7 @@
 package com.leron.api.service.expense;
 
 import com.leron.api.mapper.expense.ExpenseMapper;
+import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
@@ -131,6 +132,49 @@ public class ExpenseService {
         List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<CardFinancialEntity> cardFinancialEntityList = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year, accounts, moneyList, cardFinancialEntityList);
+    }
+
+    public DataListResponse<ExpensePeriodResponse> listPeriod(Long userAuthId, String period, Long owner, List<Long> cards) {
+        DataListResponse<ExpensePeriodResponse> response = new DataListResponse<>();
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<ExpensePeriodResponse> responseList = new ArrayList<>();
+
+        cards.forEach(card -> {
+            String[] part = period.split("/");
+            int month = Integer.parseInt(part[0]);
+            int year = Integer.parseInt(part[1]);
+
+            String monthToSend = (month < 10) ? "0" + month : String.valueOf(month);
+
+            Card card1 = cardRepository.findCardByFinalNumber(card);
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, card1.getAccount().getBank().getId(), card1.getAccount().getId(), card);
+
+            for (Expense ex : expenses) {
+                ExpensePeriodResponse expensePeriodResponse = new ExpensePeriodResponse();
+                List<BankMovement> bankMovementList = bankMovements.stream()
+                        .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
+                                bm.getUserAuthId().equals(userAuthId) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(monthToSend + "/" + year) &&
+                                bm.getType().equalsIgnoreCase("Saída")
+                        ).collect(Collectors.toList());
+
+                String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
+                if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
+                    if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
+                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
+                        expensePeriodResponse.setId(ex.getId());
+                        expensePeriodResponse.setLocal(ex.getLocal());
+                        expensePeriodResponse.setFinalCard(ex.getFinalCard());
+                        expensePeriodResponse.setOwnerId(ex.getOwnerId());
+                        expensePeriodResponse.setValue(partValue.toString());
+                        expensePeriodResponse.setCurrency(card1.getAccount().getCurrency());
+                        responseList.add(expensePeriodResponse);
+                    }
+                }
+            }
+        });
+        response.setData(responseList);
+        return response;
     }
 
     public DataListResponse<ExpenseResponse> list(Long userAuthId) {
