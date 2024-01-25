@@ -348,7 +348,7 @@ public class MovementBankService {
                                 !status.equalsIgnoreCase("Não Iniciada") &&
                                 !status.equalsIgnoreCase("Confirmado") &&
                                 !status.equalsIgnoreCase("")) {
-                            Card card1 = cardRepository.findCardByFinalNumber(card);
+                            Card card1 = cardRepository.findCardByFinalNumber(userAuthId, card);
 
                             if (expensePeriodResponse.isPresent()) {
                                 BankMovement bankMovements = BankMovementMapper.paymentCreditToBankMovement(res, ex, userAuthId, account, card1, expensePeriodResponse.get());
@@ -358,7 +358,7 @@ public class MovementBankService {
                     }
                 }
 
-                BigDecimal value = new BigDecimal(res.getValue());
+                BigDecimal value = new BigDecimal(res.getValue().replace(",","."));
                 BigDecimal oldValue = account.getValue();
                 BigDecimal newValue = oldValue.subtract(value);
                 account.setChangedIn(new Date());

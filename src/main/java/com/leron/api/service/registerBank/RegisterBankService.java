@@ -129,16 +129,16 @@ public class RegisterBankService {
         Bank bank = bankRepository.findById(bankId).orElse(null);
         if (bank != null) {
 
-            List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(),bankId);
-            if(!bankMovementList.isEmpty()) {
+            List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(), bankId);
+            if (!bankMovementList.isEmpty()) {
                 bankMovementList.forEach(bankMovement -> {
                     bankMovement.setDeleted(true);
                 });
                 bankMovementRepository.saveAll(bankMovementList);
             }
 
-            List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(),bankId);
-            if(!entrances.isEmpty()) {
+            List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(), bankId);
+            if (!entrances.isEmpty()) {
                 entrances.forEach(entrance -> {
                     entrance.setDeleted(true);
                 });
@@ -146,7 +146,7 @@ public class RegisterBankService {
             }
 
             List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankId(bank.getUserAuthId(), bankId);
-            if(!expenses.isEmpty()) {
+            if (!expenses.isEmpty()) {
                 expenses.forEach(expense -> {
                     expense.setDeleted(true);
                 });
@@ -195,8 +195,14 @@ public class RegisterBankService {
         DataResponse<RegisterBankResponse> response = new DataResponse<>();
         Card card = cardRepository.findById(cardId).orElse(null);
         if (card != null) {
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndFinalCard(card.getUserAuthId(), card.getFinalNumber());
+            expenses.forEach(ex -> {
+                ex.setDeleted(true);
+            });
+
             card.setDeleted(true);
             cardRepository.save(card);
+            expenseRepository.saveAll(expenses);
         }
 
         response.setSeverity("success");
@@ -229,6 +235,7 @@ public class RegisterBankService {
         bank.setAccounts(saveAccount(bankSave.getAccounts()));
         for (Account account : bank.getAccounts()) {
             for (Card card : account.getCards()) {
+                card.setOwner(account.getMemberId());
                 card.setAccount(account);
                 card.setUserAuthId(userId);
             }

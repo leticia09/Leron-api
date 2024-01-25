@@ -14,6 +14,6 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     List<Card> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
     Card findCardByIdAndUserAuthId(Long userAuthId, Long id);
-    @Query("SELECT b FROM Card b WHERE b.finalNumber = :finalNumber AND b.deleted = false")
-    Card findCardByFinalNumber(Long finalNumber);
+    @Query("SELECT b FROM Card b WHERE b.userAuthId = :userAuthId AND b.finalNumber = :finalNumber AND b.deleted = false")
+    Card findCardByFinalNumber(Long userAuthId, Long finalNumber);
 }

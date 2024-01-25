@@ -105,7 +105,7 @@ public class BankMovementMapper {
         value = value.replace(",", ".");
         value = value.replaceAll("[^\\d.]", "");
         bankMovement.setValue(new BigDecimal(value));
-        bankMovement.setObs("Pagamento Fatura Cartão: " + card.getFinalNumber());
+        bankMovement.setObs("Pagamento Fatura Cartão: " + card.getName() + "/" + card.getFinalNumber());
 
         bankMovement.setExpenseId(expense.getId());
         bankMovement.setAccountId(expense.getAccountId());

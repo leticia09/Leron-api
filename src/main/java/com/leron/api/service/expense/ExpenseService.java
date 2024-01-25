@@ -146,7 +146,7 @@ public class ExpenseService {
 
             String monthToSend = (month < 10) ? "0" + month : String.valueOf(month);
 
-            Card card1 = cardRepository.findCardByFinalNumber(card);
+            Card card1 = cardRepository.findCardByFinalNumber(userAuthId, card);
             List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, card1.getAccount().getBank().getId(), card1.getAccount().getId(), card);
 
             for (Expense ex : expenses) {
