@@ -11,6 +11,7 @@ public class DataSet {
     private String label;
     private String backgroundColor;
     private String borderColor;
+    private Boolean fill;
 }
 
 

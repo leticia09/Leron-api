@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Component
@@ -63,6 +64,23 @@ public class FormatDate {
             default:
                 throw new IllegalArgumentException("Mês inválido: " + month);
         }
+    }
+
+    public static ArrayList<String> populateMonths() {
+        ArrayList<String> months = new ArrayList<>();
+        months.add("Janeiro");
+        months.add("Fevereiro");
+        months.add("Março");
+        months.add("Abril");
+        months.add("Maio");
+        months.add("Junho");
+        months.add("Julho");
+        months.add("Agosto");
+        months.add("Setembro");
+        months.add("Outubro");
+        months.add("Novembro");
+        months.add("Dezembro");
+        return months;
     }
 
 }

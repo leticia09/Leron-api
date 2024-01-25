@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static com.leron.api.utils.FormatDate.populateMonths;
+
 @Service
 public class ExpenseService {
     final ExpenseRepository expenseRepository;
@@ -185,7 +187,7 @@ public class ExpenseService {
         return ExpenseMapper.entityToResponse(expense, members, banks, bankMovements);
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
+    public DataResponse<GraphicResponse> getDataDetails(Long authId, int month, int year, List<Long> owners) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
@@ -290,6 +292,127 @@ public class ExpenseService {
 
         return response;
     }
+
+    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
+        DataResponse<GraphicResponse> response = new DataResponse<>();
+
+        List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+
+        BigDecimal receiveTotal = BigDecimal.ZERO;
+        BigDecimal receiveOk = BigDecimal.ZERO;
+        BigDecimal receiveHoldOn = BigDecimal.ZERO;
+        BigDecimal receiveNotOk = BigDecimal.ZERO;
+
+        GraphicResponse graphicResponse = new GraphicResponse();
+
+        ArrayList<DataSet> dataSets = new ArrayList<>();
+        ArrayList<String> labels = populateMonths();
+
+
+        for (Member member : members) {
+            BigDecimal[] months = new BigDecimal[12];
+
+            for (int i = 0; i < 12; i++) {
+                months[i] = new BigDecimal(BigInteger.ZERO);
+            }
+            DataSet dataSet = new DataSet();
+            ArrayList<BigDecimal> data = new ArrayList<>();
+
+            for (int i = 0; i < 12; i++) {
+                for (Expense expense : expenses) {
+                    int monthValue = i + 1;
+
+                    if (member.getId().equals(expense.getOwnerId())) {
+                        String monthValidate = (monthValue < 10) ? "0" + monthValue : "" + monthValue;
+                        String period = monthValidate + "/" + year;
+
+                        List<BankMovement> bankMovementList = bankMovements.stream()
+                                .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
+                                        bm.getUserAuthId().equals(authId) &&
+                                        bm.getReferencePeriod().equalsIgnoreCase(period) &&
+                                        bm.getType().equalsIgnoreCase("Saída")
+                                ).collect(Collectors.toList());
+
+                        BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                        String status = GetStatusPayment.getStatus(expense, bankMovementList, i + 1, year);
+
+                        if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
+                            expense.setStatus(status);
+                            if (status.equalsIgnoreCase("Confirmado")) {
+                                months[i] = months[i].add(value);
+                            } else {
+                                BigDecimal valueToAdd = expense.getHasSplitExpense() ?
+                                        expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32) :
+                                        expense.getValue();
+
+                                months[i] = months[i].add(valueToAdd);
+                            }
+
+                        }
+
+                        if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty() && month == monthValue) {
+                            if (status.equalsIgnoreCase("Confirmado")) {
+                                receiveTotal = receiveTotal.add(value);
+                            } else if (expense.getHasSplitExpense()) {
+                                BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                                receiveTotal = receiveTotal.add(c);
+                            } else {
+                                receiveTotal = receiveTotal.add(expense.getValue());
+                            }
+
+                        }
+
+                        if (status.equalsIgnoreCase("Confirmado") && month == monthValue) {
+                            receiveOk = receiveOk.add(value);
+                        }
+
+                        if (status.equalsIgnoreCase("Aguardando") && month == monthValue) {
+                            if (expense.getHasSplitExpense()) {
+                                BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                                receiveHoldOn = receiveHoldOn.add(c);
+                            } else {
+                                receiveHoldOn = receiveHoldOn.add(expense.getValue());
+                            }
+                        }
+
+                        if (status.equalsIgnoreCase("pendente") && month == monthValue) {
+                            if (expense.getHasSplitExpense()) {
+                                BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
+                                receiveNotOk = receiveNotOk.add(c);
+                            } else {
+                                receiveNotOk = receiveNotOk.add(expense.getValue());
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            data.addAll(Arrays.asList(months));
+
+            dataSet.setLabel(member.getName());
+            dataSet.setBackgroundColor(member.getColor().replace("1)", "0.6)"));
+            dataSet.setBorderColor(member.getColor());
+            dataSet.setFill(true);
+            dataSet.setData(data);
+            dataSets.add(dataSet);
+        }
+
+        graphicResponse.setDataSet(dataSets);
+        graphicResponse.setLabels(labels);
+        graphicResponse.setTotal1(receiveTotal);
+        graphicResponse.setTotal2(receiveOk);
+        graphicResponse.setTotal3(receiveHoldOn);
+        graphicResponse.setTotal4(receiveNotOk);
+
+        response.setData(graphicResponse);
+
+        return response;
+    }
+
 
     public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest, String period) {
         DataResponse<BigDecimal> response = new DataResponse<>();

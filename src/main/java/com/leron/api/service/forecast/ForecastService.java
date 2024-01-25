@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.leron.api.utils.FormatDate.populateMonths;
+
 @Service
 public class ForecastService {
     final ForecastRepository forecastRepository;
@@ -129,23 +131,6 @@ public class ForecastService {
         response.setData(graphicResponse);
 
         return response;
-    }
-
-    private static ArrayList<String> populateMonths() {
-        ArrayList<String> months = new ArrayList<>();
-        months.add("Janeiro");
-        months.add("Fevereiro");
-        months.add("Março");
-        months.add("Abril");
-        months.add("Maio");
-        months.add("Junho");
-        months.add("Julho");
-        months.add("Agosto");
-        months.add("Setembro");
-        months.add("Outubro");
-        months.add("Novembro");
-        months.add("Dezembro");
-        return months;
     }
 
     private static DataSet populateEntrances(List<Entrance> entrances, int month, int year, List<Long> owners) {
