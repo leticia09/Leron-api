@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.leron.api.utils.GetStatusPayment.getMonthFinished;
+
 @Component
 public class ExpenseMapper {
 
@@ -257,6 +259,7 @@ public class ExpenseMapper {
                     expenseResponse.setHasFixed(expense.getHasFixed());
                     expenseResponse.setDateBuy(expense.getDateBuy());
                     expenseResponse.setValue(expense.getValue());
+                    expenseResponse.setHasSplitExpense(expense.getHasSplitExpense());
 
                     if (Objects.nonNull(expense.getObs())) {
                         expenseResponse.setObs(expense.getObs());
@@ -316,15 +319,28 @@ public class ExpenseMapper {
                         dateBuy = expense.getDateBuy().toLocalDateTime().toLocalDate();
                     }
 
-                    if (expense.getHasSplitExpense()) {
+                    if (expense.getHasSplitExpense() && (status.equalsIgnoreCase("aguardando") || status.equalsIgnoreCase("confirmado") || status.equalsIgnoreCase("pendente"))) {
+                        LocalDate data = LocalDate.of(year, month, 1);
                         int part = month - dateBuy.getMonthValue() + 1;
                         expenseResponse.setPartNumber(part);
-                        if ((status.equalsIgnoreCase("aguardando") || status.equalsIgnoreCase("pendente")) && expense.getPaymentForm().equalsIgnoreCase("crédito")) {
-                            LocalDate buyDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-                            if (dateBuy.getMonthValue() < month && cardOptional.isPresent() && cardOptional.get().getClosingDate() < buyDate.getDayOfMonth()) {
+
+                        if (expense.getPaymentForm().equalsIgnoreCase("crédito") &&
+                                dateBuy.isBefore(data) &&
+                                cardOptional.isPresent() &&
+                                cardOptional.get().getClosingDate() < dateBuy.getDayOfMonth()) {
+
+                            int monthFinished = getMonthFinished(expense, dateBuy, cardOptional.get());
+                            int numberOfParts = Math.toIntExact(expense.getQuantityPart());
+
+                            if (expense.getQuantityPart() == 1) {
+                                expenseResponse.setPartNumber(1);
+                            } else if (numberOfParts == 1 || month - 1 == 0 || monthFinished >= month) {
+                                expenseResponse.setPartNumber(month);
+                            } else {
                                 expenseResponse.setPartNumber(month - 1);
                             }
                         }
+
 
                         BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                         expenseResponse.setPartValue(c);

@@ -17,6 +17,7 @@ public class ExpenseResponse {
     private String specificGroup;
     private Long ownerId;
     private String paymentForm;
+    private Boolean hasSplitExpense;
     private Long finalCard;
     private Long quantityPart;
     private Boolean hasFixed;

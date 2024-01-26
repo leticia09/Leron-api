@@ -250,6 +250,8 @@ public class GetStatusPayment {
                         int lastYear = year;
                         if (lastMonth == 0) {
                             lastMonth = 12;
+                        }
+                        if (buyDate.getMonthValue() == 12 || lastMonth == 12) {
                             lastYear = year - 1;
                         }
                         LocalDate lastDayMonthPrevious = LocalDate.of(lastYear, lastMonth, card.getClosingDate());
@@ -257,10 +259,7 @@ public class GetStatusPayment {
 
                         if (buyDate.isAfter(lastDayMonthPrevious)) {
                             if (buyDate.isBefore(currentDateWithParameter)) {
-                                int monthFinished = buyDate.getMonthValue() + Math.toIntExact(expense.getQuantityPart());
-                                if (card.getClosingDate() > buyDate.getDayOfMonth()) {
-                                    monthFinished = monthFinished - 1;
-                                }
+                                int monthFinished = getMonthFinished(expense, buyDate, card);
                                 if (month <= monthFinished) {
                                     if (card.getDueDate() < currentDay && month == currentMonth && year == currentYear) {
                                         return "Pendente";
@@ -282,6 +281,20 @@ public class GetStatusPayment {
 
         }
         return "";
+    }
+
+    public static int getMonthFinished(Expense expense, LocalDate buyDate, Card card) {
+        int monthFinished = 0;
+        if(buyDate.getMonthValue() == 12) {
+            monthFinished = Math.toIntExact(expense.getQuantityPart());
+        } else {
+            monthFinished = buyDate.getMonthValue() + Math.toIntExact(expense.getQuantityPart());
+        }
+
+        if (card.getClosingDate() > buyDate.getDayOfMonth()) {
+            monthFinished = monthFinished - 1;
+        }
+        return monthFinished;
     }
 
     private static ArrayList<ArrayList<Integer>> getArrayLists() {
