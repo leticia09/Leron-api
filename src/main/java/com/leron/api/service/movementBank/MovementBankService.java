@@ -251,8 +251,10 @@ public class MovementBankService {
 
                 bankMovementRepository.save(bankMovements);
 
-                assert accountList != null;
-                accountRepository.save(accountList);
+                if (accountList != null) {
+
+                }
+
 
                 if (cardFinancialEntityList != null) {
                     cardFinancialRepository.save(cardFinancialEntityList);
@@ -358,7 +360,7 @@ public class MovementBankService {
                     }
                 }
 
-                BigDecimal value = new BigDecimal(res.getValue().replace(",","."));
+                BigDecimal value = new BigDecimal(res.getValue().replace(",", "."));
                 BigDecimal oldValue = account.getValue();
                 BigDecimal newValue = oldValue.subtract(value);
                 account.setChangedIn(new Date());

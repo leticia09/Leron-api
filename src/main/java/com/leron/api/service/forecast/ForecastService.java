@@ -263,8 +263,9 @@ public class ForecastService {
         data.add(month12);
 
         dataSet.setLabel("Receita");
-        dataSet.setBackgroundColor("#01b8aa");
+        dataSet.setBackgroundColor("rgba(1,184,170,0.4)");
         dataSet.setBorderColor("#01b8aa");
+        dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
 
@@ -344,8 +345,9 @@ public class ForecastService {
         data.addAll(Arrays.asList(months));
 
         dataSet.setLabel("Despesa");
-        dataSet.setBackgroundColor("red");
+        dataSet.setBackgroundColor("rgba(255,0,0,0.4)");
         dataSet.setBorderColor("red");
+        dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
     }
@@ -362,8 +364,9 @@ public class ForecastService {
         }
 
         dataSet.setLabel("Sobra");
-        dataSet.setBackgroundColor("#0195f5");
+        dataSet.setBackgroundColor("rgba(1,149,245,0.4)");
         dataSet.setBorderColor("#0195f5");
+        dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
     }
@@ -387,6 +390,7 @@ public class ForecastService {
         dataSet.setLabel("Sobra");
         dataSet.setBackgroundColor("#0195f5");
         dataSet.setBorderColor("#0195f5");
+        dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
     }

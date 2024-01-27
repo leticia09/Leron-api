@@ -62,6 +62,7 @@ public class ExpenseService {
                 saveValuesToExpenses(res, cards, accounts, moneyList, cardFinancialEntityList);
             } else {
                 expenseRepository.save(ExpenseMapper.requestToEntity(res, cards, moneyList, cardFinancialEntityList));
+
             }
         });
 
@@ -297,7 +298,7 @@ public class ExpenseService {
         DataResponse<GraphicResponse> response = new DataResponse<>();
 
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
         BigDecimal receiveTotal = BigDecimal.ZERO;
@@ -355,7 +356,12 @@ public class ExpenseService {
 
                         if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty() && month == monthValue) {
                             if (status.equalsIgnoreCase("Confirmado")) {
-                                receiveTotal = receiveTotal.add(value);
+                                if (expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                                    receiveTotal = receiveTotal.add(expense.getValue());
+                                } else {
+                                    receiveTotal = receiveTotal.add(value);
+                                }
+
                             } else if (expense.getHasSplitExpense()) {
                                 BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                                 receiveTotal = receiveTotal.add(c);
@@ -366,7 +372,11 @@ public class ExpenseService {
                         }
 
                         if (status.equalsIgnoreCase("Confirmado") && month == monthValue) {
-                            receiveOk = receiveOk.add(value);
+                            if (expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                                receiveOk = receiveOk.add(expense.getValue());
+                            } else {
+                                receiveOk = receiveOk.add(value);
+                            }
                         }
 
                         if (status.equalsIgnoreCase("Aguardando") && month == monthValue) {

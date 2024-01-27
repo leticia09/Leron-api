@@ -275,6 +275,12 @@ public class GetStatusPayment {
                             }
                         }
                     }
+                } else if (expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                    if (initialDate.getMonthValue() == month && initialDate.getYear() == year) {
+                        return "Confirmado";
+                    } else {
+                        return "Não Iniciada";
+                    }
                 }
             }
 
@@ -285,7 +291,7 @@ public class GetStatusPayment {
 
     public static int getMonthFinished(Expense expense, LocalDate buyDate, Card card) {
         int monthFinished = 0;
-        if(buyDate.getMonthValue() == 12) {
+        if (buyDate.getMonthValue() == 12) {
             monthFinished = Math.toIntExact(expense.getQuantityPart());
         } else {
             monthFinished = buyDate.getMonthValue() + Math.toIntExact(expense.getQuantityPart());

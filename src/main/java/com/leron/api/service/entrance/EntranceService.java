@@ -129,6 +129,7 @@ public class EntranceService {
                 dataSet.setLabel(member.getName());
                 dataSet.setBackgroundColor(member.getColor());
                 dataSet.setBorderColor(member.getColor());
+                dataSet.setFill(true);
                 dataSet.setData(data);
                 dataSets.add(dataSet);
             }

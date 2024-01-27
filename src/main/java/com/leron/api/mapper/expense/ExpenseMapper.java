@@ -369,7 +369,12 @@ public class ExpenseMapper {
 
                         BigDecimal value = bankMovement1.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                        expenseResponse.setValuePaid(value);
+                        if(expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                            expenseResponse.setValuePaid(expense.getValue());
+                        } else {
+                            expenseResponse.setValuePaid(value);
+                        }
+
                     }
 
                     expenseList.add(expenseResponse);
