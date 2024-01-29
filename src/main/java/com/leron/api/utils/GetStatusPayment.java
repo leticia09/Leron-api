@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Component
@@ -94,10 +95,14 @@ public class GetStatusPayment {
             if (entrance.getFrequency().equalsIgnoreCase("Mensal")) {
                 if (entrance.getInitialDate().after(date)) {
                     return "Não Iniciada";
-                } else if (entrance.getDayReceive() >= currentDay && month >= currentMonth && year >= currentYear) {
+                } else if(month == currentMonth && year == currentYear) {
+                    if (entrance.getDayReceive() <= currentDay) {
+                        return "Pendente";
+                    } else {
+                        return "Aguardando";
+                    }
+                } else if(month > currentMonth && year >= currentYear) {
                     return "Aguardando";
-                } else {
-                    return "Pendente";
                 }
             } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
                 if (entrance.getInitialDate().after(date) || initialMonth < month || initialYear < year) {

@@ -13,7 +13,6 @@ import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.expense.ValidatorExpense;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,7 +20,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -422,7 +420,6 @@ public class ExpenseService {
 
         return response;
     }
-
 
     public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest, String period) {
         DataResponse<BigDecimal> response = new DataResponse<>();

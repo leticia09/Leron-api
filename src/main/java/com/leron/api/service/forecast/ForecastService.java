@@ -133,7 +133,7 @@ public class ForecastService {
         return response;
     }
 
-    private static DataSet populateEntrances(List<Entrance> entrances, int month, int year, List<Long> owners) {
+    public static DataSet populateEntrances(List<Entrance> entrances, int month, int year, List<Long> owners) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
@@ -270,6 +270,18 @@ public class ForecastService {
         return dataSet;
 
     }
+    public static boolean isMonthlyEntrance(Entrance entrance, int initialMonth, int initialYear, int month, int year) {
+        return entrance.getFrequency().equalsIgnoreCase("mensal") && (initialMonth <= 1 || initialYear < year);
+    }
+
+    public static boolean isAnnualEntrance(Entrance entrance, int initialMonth, int initialYear, int month, int year) {
+        return entrance.getFrequency().equalsIgnoreCase("anual") && initialMonth <= month && year == initialYear;
+    }
+
+    public static boolean isOneTimeEntrance(Entrance entrance, int initialMonth, int month, int year) {
+        return entrance.getFrequency().equalsIgnoreCase("única") && initialMonth <= month;
+    }
+
 
     private DataSet populateExpenses(List<Expense> expenses, List<BankMovement> bankMovements, int month, int year, List<Long> owners, List<Forecast> forecasts, List<SpecificGroup> specificGroups, Long userAuthId) {
         DataSet dataSet = new DataSet();
@@ -301,7 +313,12 @@ public class ForecastService {
                     if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
                         expense.setStatus(status);
                         if (status.equalsIgnoreCase("Confirmado")) {
-                            months[i] = months[i].add(value);
+                            if(expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                                months[i] = months[i].add(expense.getValue());
+                            } else {
+                                months[i] = months[i].add(value);
+                            }
+
                         } else {
                             BigDecimal valueToAdd = expense.getHasSplitExpense() ?
                                     expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32) :
