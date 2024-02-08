@@ -103,6 +103,8 @@ public class GetStatusPayment {
                     }
                 } else if(month > currentMonth && year >= currentYear) {
                     return "Aguardando";
+                } else {
+                    return "Pendente";
                 }
             } else if (entrance.getFrequency().equalsIgnoreCase("Única")) {
                 if (entrance.getInitialDate().after(date) || initialMonth < month || initialYear < year) {

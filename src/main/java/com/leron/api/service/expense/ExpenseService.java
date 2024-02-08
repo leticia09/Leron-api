@@ -460,28 +460,25 @@ public class ExpenseService {
         return expenseRepository.getById(id);
     }
 
-    public List<Expense> getExpenseFixed(Long userAuthId) {
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasFixedTrue(userAuthId);
+    public List<Expense> getExpenseFixed(Long userAuthId, int month, int year, Long owner) {
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasFixedTrueAndOwnerId(userAuthId, owner);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
 
-        LocalDate currentDate = LocalDate.now();
-        int currentMonth = currentDate.getMonthValue();
-        int currentYear = currentDate.getYear();
-
         expenses.forEach(ex -> {
-            String monthValidate = "" + currentMonth;
-            if (currentMonth < 10) {
-                monthValidate = "0" + currentMonth;
+            String monthValidate = "" + month;
+            if (month < 10) {
+                monthValidate = "0" + month;
             }
-            String period = monthValidate + "/" + currentYear;
+            String period = monthValidate + "/" + year;
             List<BankMovement> bankMovementList = bankMovements
                     .stream()
                     .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
                             bm.getReferencePeriod().equalsIgnoreCase(period) &&
                             bm.getExpenseId().equals(ex.getId()
                             )).collect(Collectors.toList());
-            String status = GetStatusPayment.getStatus(ex, bankMovementList, currentMonth, currentYear);
+            String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
             ex.setStatus(status);
+
         });
         return expenses.stream().filter(ex -> (
                 Objects.isNull(ex.getStatus()) ||
@@ -490,29 +487,27 @@ public class ExpenseService {
         )).collect(Collectors.toList());
     }
 
-    public List<Expense> getExpenseHasSplit(Long userAuthId) {
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrue(userAuthId);
+    public List<Expense> getExpenseHasSplit(Long userAuthId, int month, int year, Long owner) {
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerId(userAuthId, owner);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
 
-        LocalDate currentDate = LocalDate.now();
-        int currentMonth = currentDate.getMonthValue();
-        int currentYear = currentDate.getYear();
-
         expenses.forEach(ex -> {
-            String monthValidate = "" + currentMonth;
-            if (currentMonth < 10) {
-                monthValidate = "0" + currentMonth;
+            String monthValidate = "" + month;
+            if (month < 10) {
+                monthValidate = "0" + month;
             }
-            String period = monthValidate + "/" + currentYear;
+            String period = monthValidate + "/" + year;
             List<BankMovement> bankMovementList = bankMovements
                     .stream()
                     .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
                             bm.getReferencePeriod().equalsIgnoreCase(period) &&
                             bm.getExpenseId().equals(ex.getId()
                             )).collect(Collectors.toList());
-            String status = GetStatusPayment.getStatus(ex, bankMovementList, currentMonth, currentYear);
+            String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
             ex.setStatus(status);
+
         });
+
 
         return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando") ||
                 ex.getStatus().equalsIgnoreCase("Pendente")

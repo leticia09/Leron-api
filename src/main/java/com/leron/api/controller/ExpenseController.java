@@ -70,9 +70,9 @@ public class ExpenseController {
 
     @GetMapping("data-details/{userAuthId}/{month}/{year}/{owners}")
     public DataResponse<GraphicResponse> getProgramsDataDetails(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                         @PathVariable(value = "month", required = true) int month,
-                                                         @PathVariable(value = "year", required = true) int year,
-                                                         @PathVariable(value = "owners", required = true) List<Long> owners) {
+                                                                @PathVariable(value = "month", required = true) int month,
+                                                                @PathVariable(value = "year", required = true) int year,
+                                                                @PathVariable(value = "owners", required = true) List<Long> owners) {
         return service.getDataDetails(userAuthId, month, year, owners);
     }
 
@@ -92,13 +92,20 @@ public class ExpenseController {
         return service.getById(id);
     }
 
-    @GetMapping("fixed/{userAuthId}")
-    public List<Expense> getExpenseFixed(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
-        return service.getExpenseFixed(userAuthId);
+    @GetMapping("fixed/{userAuthId}/{month}/{year}/{owner}")
+    public List<Expense> getExpenseFixed(
+            @PathVariable(value = "userAuthId", required = true) Long userAuthId,
+            @PathVariable(value = "month", required = true) int month,
+            @PathVariable(value = "year", required = true) int year,
+            @PathVariable(value = "owner", required = true) Long owner) {
+        return service.getExpenseFixed(userAuthId, month, year, owner);
     }
 
-    @GetMapping("split/{userAuthId}")
-    public List<Expense> getExpenseHasSplit(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
-        return service.getExpenseHasSplit(userAuthId);
+    @GetMapping("split/{userAuthId}/{month}/{year}/{owner}")
+    public List<Expense> getExpenseHasSplit(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                            @PathVariable(value = "month", required = true) int month,
+                                            @PathVariable(value = "year", required = true) int year,
+                                            @PathVariable(value = "owner", required = true) Long owner) {
+        return service.getExpenseHasSplit(userAuthId, month, year, owner);
     }
 }

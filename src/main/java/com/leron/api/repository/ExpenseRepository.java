@@ -19,9 +19,9 @@ public interface ExpenseRepository extends JpaRepository<Expense,Long> {
 
     List<Expense>  findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(@Param("userAuthId") Long userAuthId);
 
-    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasFixedTrue(@Param("userAuthId") Long userAuthId);
+    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasFixedTrueAndOwnerId(@Param("userAuthId") Long userAuthId, Long ownerId);
 
-    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrue(@Param("userAuthId") Long userAuthId);
+    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerId(@Param("userAuthId") Long userAuthId, Long ownerId);
 
     List<Expense> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);
 
