@@ -173,10 +173,10 @@ public class ExpenseMapper {
         expense.setOwnerId(res.getOwnerId());
         expense.setPaymentForm(res.getPaymentForm());
         expense.setHasFixed(res.getHasFixed());
+
         if (Objects.nonNull(res.getDateBuy())) {
             expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
         }
-
 
         expense.setUserAuthId(res.getUserAuthId());
         expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
@@ -369,7 +369,7 @@ public class ExpenseMapper {
 
                         BigDecimal value = bankMovement1.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                        if(expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                        if (expense.getPaymentForm().equalsIgnoreCase("vale")) {
                             expenseResponse.setValuePaid(expense.getValue());
                         } else {
                             expenseResponse.setValuePaid(value);
@@ -479,7 +479,9 @@ public class ExpenseMapper {
         if (Objects.nonNull(res.getDateBuy())) {
             bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
             LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+            String month = (initialDate.getMonthValue() < 10) ? "0" + initialDate.getMonthValue() : initialDate.getMonthValue() + "";
+
+            bankMovement.setReferencePeriod(month + "/" + initialDate.getYear());
         }
         if (Objects.nonNull(res.getInitialDate())) {
             bankMovement.setDateMovement(FormatDate.formatDate(res.getInitialDate()));

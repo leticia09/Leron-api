@@ -12,8 +12,10 @@ import java.util.List;
 public interface ExpenseRepository extends JpaRepository<Expense,Long> {
     List<Expense> findAllByUserAuthIdAndDeletedFalse (Long userAuthId);
 
-    List<Expense> findAllByUserAuthIdAndFinalCard(@Param("userAuthId") Long userAuthId, @Param("finalCard") Long finalCard);
+    @Query("SELECT e FROM Expense e WHERE e.userAuthId = :userAuthId AND YEAR(e.dateBuy) = :year AND MONTH(e.dateBuy) = :month AND e.deleted = false")
+    List<Expense> findByMonthAndYearAndUserAuthId(@Param("month") int month, @Param("year") int year, @Param("userAuthId") Long userAuthId);
 
+    List<Expense> findAllByUserAuthIdAndFinalCard(@Param("userAuthId") Long userAuthId, @Param("finalCard") Long finalCard);
 
     List<Expense> findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId, @Param("accountId") Long accountId, @Param("finalCard") Long finalCard);
 
