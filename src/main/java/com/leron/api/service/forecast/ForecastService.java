@@ -270,18 +270,6 @@ public class ForecastService {
         return dataSet;
 
     }
-    public static boolean isMonthlyEntrance(Entrance entrance, int initialMonth, int initialYear, int month, int year) {
-        return entrance.getFrequency().equalsIgnoreCase("mensal") && (initialMonth <= 1 || initialYear < year);
-    }
-
-    public static boolean isAnnualEntrance(Entrance entrance, int initialMonth, int initialYear, int month, int year) {
-        return entrance.getFrequency().equalsIgnoreCase("anual") && initialMonth <= month && year == initialYear;
-    }
-
-    public static boolean isOneTimeEntrance(Entrance entrance, int initialMonth, int month, int year) {
-        return entrance.getFrequency().equalsIgnoreCase("única") && initialMonth <= month;
-    }
-
 
     private DataSet populateExpenses(List<Expense> expenses, List<BankMovement> bankMovements, int month, int year, List<Long> owners, List<Forecast> forecasts, List<SpecificGroup> specificGroups, Long userAuthId) {
         DataSet dataSet = new DataSet();
@@ -344,7 +332,9 @@ public class ForecastService {
                     BigDecimal valueToAdd = new BigDecimal(BigInteger.ZERO);
 
                     if (forecastOptional.isPresent()) {
-                        valueToAdd = forecast.getValue().subtract(forecastOptional.get().getValuePaidForecast());
+                        if(Objects.nonNull(forecast.getValue()) && Objects.nonNull(forecastOptional.get().getValuePaidForecast())) {
+                            valueToAdd = forecast.getValue().subtract(forecastOptional.get().getValuePaidForecast());
+                        }
 
                         if (valueToAdd.compareTo(BigDecimal.ZERO) < 0) {
                             valueToAdd = valueToAdd.abs();

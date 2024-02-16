@@ -109,6 +109,8 @@ public class ForecastMapper {
                         forecastPrevResponse.setValuePaidForecast(value);
 
                         forecastPrevResponse.setDifference(forecast.getValue().subtract(value));
+                    } else {
+                        forecastPrevResponse.setDifference(new BigDecimal(0));
                     }
                 }
                 forecastPrevResponse.setValueForecast(forecast.getValue());

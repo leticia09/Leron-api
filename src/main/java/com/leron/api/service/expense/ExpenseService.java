@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -162,7 +163,7 @@ public class ExpenseService {
                 String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
                 if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
                     if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
-                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
+                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()), 2, RoundingMode.HALF_UP);
                         expensePeriodResponse.setId(ex.getId());
                         expensePeriodResponse.setLocal(ex.getLocal());
                         expensePeriodResponse.setFinalCard(ex.getFinalCard());
@@ -443,7 +444,7 @@ public class ExpenseService {
                 String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
                 if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
                     if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
-                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()));
+                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()), 2, RoundingMode.HALF_UP);
                         amount.updateAndGet(currentAmount -> currentAmount.add(partValue));
                     }
                 }
