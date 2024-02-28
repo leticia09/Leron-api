@@ -21,4 +21,5 @@ public class BankMovementResponse {
     private Long expenseId;
     private String referencePeriod;
     private String currency;
+    private Long moneyId;
 }

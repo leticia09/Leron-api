@@ -36,6 +36,9 @@ public class BankMovementMapper {
             bankMovementResponse.setOwnerId(res.getOwnerId());
             bankMovementResponse.setEntranceId(res.getEntranceId());
             bankMovementResponse.setCurrency(res.getCurrency());
+            if(Objects.nonNull(res.getMoneyId())) {
+                bankMovementResponse.setMoneyId(res.getMoneyId());
+            }
             responses.add(bankMovementResponse);
         });
         response.setData(responses);
@@ -233,6 +236,27 @@ public class BankMovementMapper {
         }
 
         return null;
+    }
+
+    public static BankMovement receiveMoney(ReceiveRequest request, Long userAuthId, Money money) {
+        BankMovement response = new BankMovement();
+
+        response.setCurrency(money.getCurrency());
+        response.setUserAuthId(userAuthId);
+        response.setReferencePeriod(request.getReferencePeriod());
+        response.setOwnerId(request.getOwnerId());
+        response.setMoneyId(money.getId());
+        String salaryText = request.getSalary();
+        salaryText = salaryText.replaceAll("[^\\d.,]", "");
+        salaryText = salaryText.replaceAll("\\.", "");
+        salaryText = salaryText.replace(",", ".");
+        response.setValue(new BigDecimal(salaryText));
+        response.setType("Entrada");
+        response.setDateMovement(FormatDate.formatDate(request.getReceiveDate()));
+        if(Objects.nonNull(request.getObs())) {
+            response.setObs(request.getObs());
+        }
+        return response;
     }
 
     public static Money payToMoney(PaymentRequest requests, List<Expense> expenses, Long userAuthId, List<Money> moneyList) {

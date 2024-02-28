@@ -78,8 +78,7 @@ public class MovementBankService {
         for (Member member : members) {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
-            ArrayList<Tooltip> tooltipList1 = new ArrayList<>();
-            ArrayList<List<String>> tooltipList = new ArrayList<>();
+            ArrayList<Tooltip> tooltipList = new ArrayList<>();
 
             LabelTooltip labelTooltipObject = new LabelTooltip();
             labelTooltipObject.setLabel(member.getName());
@@ -95,6 +94,8 @@ public class MovementBankService {
                         int labelIndex = labels.indexOf(bank.getName());
                         tooltip.setName(bank.getName());
                         tooltipLabel.add(account.getAccountNumber() + ": " + account.getCurrency() + " " + account.getValue());
+                        labelTooltipObject.setTooltipList(tooltipList);
+                        tooltips.add(labelTooltipObject);
                         totalAccount = totalAccount.add(account.getValue());
                         currency = account.getCurrency();
                         if (labelIndex == -1) {
@@ -117,7 +118,7 @@ public class MovementBankService {
                 if (!Objects.equals(currency, "")) {
                     tooltipLabel.add("Total: " + currency + " " + totalAccount);
                     tooltip.setTooltipLabel(tooltipLabel);
-                    tooltipList1.add(tooltip);
+                    tooltipList.add(tooltip);
                 }
 
 
@@ -158,7 +159,7 @@ public class MovementBankService {
                     if (!Objects.equals(currency, "")) {
                         tooltipLabel.add("Total: " + currency + " " + totalAccount);
                         tooltip.setTooltipLabel(tooltipLabel);
-                        tooltipList1.add(tooltip);
+                        tooltipList.add(tooltip);
                     }
 
                 }
@@ -198,7 +199,7 @@ public class MovementBankService {
                     if (!Objects.equals(currency, "")) {
                         tooltipLabel.add("Total: " + currency + " " + totalAccount);
                         tooltip.setTooltipLabel(tooltipLabel);
-                        tooltipList1.add(tooltip);
+                        tooltipList.add(tooltip);
                     }
 
 
@@ -212,8 +213,7 @@ public class MovementBankService {
                 dataSet.setData(data);
                 dataSets.add(dataSet);
             }
-            labelTooltipObject.setTooltipList(tooltipList1);
-            tooltips.add(labelTooltipObject);
+
         }
 
         graphicResponse.setDataSet(dataSets);
@@ -234,34 +234,35 @@ public class MovementBankService {
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Account> accounts = accountRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        List<CardFinancialEntity> cardFinancialEntity = cardFinancialRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        List<Money> money = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
 
         BankMovementValidator.validate(request, entrances, bankMovementList);
 
         request.forEach(res -> {
-            if ((Objects.isNull(res.getBankId()) || res.getBankId() == 0) && (Objects.isNull(res.getAccountId()) || res.getAccountId() == 0)) {
-                Account accountList = BankMovementMapper.receiveToAccount(res, accounts, entrances);
+            if (Objects.nonNull(res.getMoneyId())) {
+                Optional<Money> money = moneyRepository.findById(res.getMoneyId());
+                if (money.isPresent()) {
+                    BigDecimal value = getMoney(res.getSalary(), money.get());
+                    money.get().setValue(value);
+                    moneyRepository.save(money.get());
 
+                    BankMovement bankMovement = BankMovementMapper.receiveMoney(res, userAuthId, money.get());
+                    bankMovementRepository.save(bankMovement);
+                }
+            } else if ((Objects.nonNull(res.getEntrance())) && !res.getEntrance().equalsIgnoreCase("")) {
+                List<CardFinancialEntity> cardFinancialEntity = cardFinancialRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+                List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
                 CardFinancialEntity cardFinancialEntityList = BankMovementMapper.receiveToFinancial(res, cardFinancialEntity, entrances);
-
-                Money moneyList = BankMovementMapper.receiveToMoney(res, entrances, userAuthId, money);
-
-                BankMovement bankMovements = BankMovementMapper.receiveToBankMovement(res, entrances, userAuthId, accounts, cardFinancialEntity, moneyList);
+                Money moneyEntity = BankMovementMapper.receiveToMoney(res, entrances, userAuthId, moneyList);
+                BankMovement bankMovements = BankMovementMapper.receiveToBankMovement(res, entrances, userAuthId, accounts, cardFinancialEntity, moneyEntity);
 
                 bankMovementRepository.save(bankMovements);
-
-                if (accountList != null) {
-
-                }
-
 
                 if (cardFinancialEntityList != null) {
                     cardFinancialRepository.save(cardFinancialEntityList);
                 }
 
-                if (moneyList != null) {
-                    moneyRepository.save(moneyList);
+                if (moneyEntity != null) {
+                    moneyRepository.save(moneyEntity);
                 }
 
             } else {
@@ -276,7 +277,6 @@ public class MovementBankService {
 
             }
         });
-
 
         response.setSeverity("success");
         response.setMessage("success");
@@ -426,5 +426,16 @@ public class MovementBankService {
         response.setSeverity("success");
         response.setMessage("success");
         return response;
+    }
+
+    private static BigDecimal getMoney(String money, Money currentMoney) {
+            String salaryText = money;
+            salaryText = salaryText.replaceAll("[^\\d.,]", "");
+            salaryText = salaryText.replaceAll("\\.", "");
+            salaryText = salaryText.replace(",", ".");
+            BigDecimal salary = new BigDecimal(salaryText);
+            BigDecimal oldValue = currentMoney.getValue();
+
+        return salary.add(oldValue);
     }
 }

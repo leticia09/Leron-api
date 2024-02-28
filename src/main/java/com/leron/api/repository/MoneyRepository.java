@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface MoneyRepository extends JpaRepository<Money, Long> {
-
     List<Money> findAllByUserAuthIdAndDeletedFalse (Long userAuthId);
 }

@@ -186,7 +186,7 @@ public class EntranceMapper {
             entranceResponse.setSource(entrance.getSource());
             entranceResponse.setType(entrance.getType());
             entranceResponse.setAccountNumber(String.valueOf(entrance.getAccountId()));
-
+            entranceResponse.setAccountId(entrance.getAccountId());
 
             if (Objects.nonNull(entrance.getDayReceive())) {
                 entranceResponse.setDayReceive(entrance.getDayReceive());
@@ -223,6 +223,7 @@ public class EntranceMapper {
                             .findFirst();
                     account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
                     entranceResponse.setBankName(bank.get().getName());
+                    entranceResponse.setBankId(bank.get().getId());
                 }
 
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setFinancialCardName(cardFinancialEntity.getCardName()));

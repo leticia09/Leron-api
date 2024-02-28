@@ -89,7 +89,7 @@ public class ForecastMapper {
         List<ForecastPrevResponse> list = new ArrayList<>();
 
         for (Forecast forecast : forecastList) {
-            if (forecast.getMonths().contains(FormatDate.getMonth(month)) && forecast.getYears().contains(year)) {
+            if ((forecast.getMonths().contains(FormatDate.getMonth(month)) && forecast.getYears().contains(year)) || forecast.getHasFixed()) {
                 ForecastPrevResponse forecastPrevResponse = new ForecastPrevResponse();
                 forecastPrevResponse.setForecastId(forecast.getId());
                 forecastPrevResponse.setOwnerId(forecast.getOwnerId());

@@ -1,6 +1,5 @@
 package com.leron.api.model.DTO.entrance;
 
-import com.leron.api.model.entities.Bank;
 import com.leron.api.model.entities.Member;
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -28,4 +27,6 @@ public class EntranceResponse {
     private BigDecimal valueReceived;
     private String financialCardName;
     private String money;
+    private Long bankId;
+    private Long accountId;
 }

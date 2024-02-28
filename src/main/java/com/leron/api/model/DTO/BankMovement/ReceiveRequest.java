@@ -14,5 +14,6 @@ public class ReceiveRequest {
     private String obs;
     private Long bankId;
     private Long accountId;
+    private Long moneyId;
     private String value;
 }
