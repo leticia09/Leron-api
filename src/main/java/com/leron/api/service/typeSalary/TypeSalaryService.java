@@ -19,7 +19,7 @@ public class TypeSalaryService {
     }
 
     public List<TypeSalary> list(Long userAuthId){
-        return typeSalaryRepository.findAllByUserAuthId(userAuthId);
+        return typeSalaryRepository.findAllByUserAuthIdOrderByDescription(userAuthId);
     }
 
     public DataResponse<TypeSalary> edit(DataRequest<List<TypeSalaryRequest>> request) throws ApplicationBusinessException {

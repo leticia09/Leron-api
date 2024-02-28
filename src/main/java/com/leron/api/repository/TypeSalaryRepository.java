@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface TypeSalaryRepository extends JpaRepository<TypeSalary, Long> {
-    List<TypeSalary> findAllByUserAuthId(Long userAuthId);
+    List<TypeSalary> findAllByUserAuthIdOrderByDescription(Long userAuthId);
 
 }

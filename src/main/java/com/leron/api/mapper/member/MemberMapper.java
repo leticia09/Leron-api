@@ -4,6 +4,7 @@ import com.leron.api.model.DTO.user.MemberRequest;
 import com.leron.api.model.DTO.user.MemberResponse;
 import com.leron.api.model.entities.Member;
 import com.leron.api.responses.DataListResponse;
+import com.leron.api.utils.FormatName;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class MemberMapper {
         userRequest.forEach(user -> {
             Member entity = new Member();
             entity.setColor(user.getColor());
-            entity.setName(user.getName().substring(0, 1).toUpperCase() + user.getName().substring(1).toLowerCase());
+            entity.setName(FormatName.firstUpper(user.getName()));
             entity.setStatus("ACTIVE");
             entity.setCreatedIn(new Date());
             entity.setUserAuthId(user.getUserAuthId());
@@ -53,7 +54,7 @@ public class MemberMapper {
     }
 
     public static Member createUserFromMemberEditRequest(MemberResponse request, Member currentMember) {
-        currentMember.setName(request.getName().substring(0, 1).toUpperCase() + request.getName().substring(1).toLowerCase());
+        currentMember.setName(FormatName.firstUpper(request.getName()));
         currentMember.setChangedIn(new Date());
         currentMember.setColor(request.getColor());
         if(request.getStatus() == 1L) {
@@ -101,4 +102,5 @@ public class MemberMapper {
         response.setUserAuthId(entity.getUserAuthId());
         return response;
     }
+
 }
