@@ -64,6 +64,12 @@ public class EntranceController {
         return service.list(userAuthId);
     }
 
+    @GetMapping("/{userAuthId}/{id}")
+    public DataResponse<EntranceResponse> getById(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                  @PathVariable(value = "id", required = true) Long id) {
+        return service.getById(userAuthId, id);
+    }
+
     @DeleteMapping("/{id}")
     public DataResponse<EntranceResponse> delete(@PathVariable Long id)  {
         return service.delete(id);

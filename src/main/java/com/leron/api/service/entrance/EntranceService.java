@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.leron.api.service.forecast.ForecastService.*;
 import static com.leron.api.utils.FormatDate.populateMonths;
 
 @Service
@@ -35,16 +34,19 @@ public class EntranceService {
 
     final AccountRepository accountRepository;
 
+    final FinancialEntityRepository financialEntityRepository;
+
     final CardFinancialEntityRepository cardFinancialEntityRepository;
 
     final MoneyRepository moneyRepository;
 
-    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
+    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
         this.entranceRepository = entranceRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.bankMovementRepository = bankMovementRepository;
         this.accountRepository = accountRepository;
+        this.financialEntityRepository = financialEntityRepository;
         this.cardFinancialEntityRepository = cardFinancialEntityRepository;
         this.moneyRepository = moneyRepository;
     }
@@ -240,6 +242,18 @@ public class EntranceService {
         List<CardFinancialEntity> cardFinancial = cardFinancialEntityRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
         return EntranceMapper.entityToResponse(moneyList, cardFinancial, entrances, members, banks);
+    }
+
+    public DataResponse<EntranceResponse> getById(Long userAuthId, Long id) {
+        DataResponse<EntranceResponse> response = new DataResponse<>();
+        Optional<Entrance> entrance = entranceRepository.findByUserAuthIdAndId(userAuthId, id);
+        if (entrance.isPresent()) {
+            Optional<Account> account = accountRepository.findById(entrance.get().getAccountId());
+            Optional<Member> member = memberRepository.findById(entrance.get().getOwnerId());
+            response.setData(EntranceMapper.entityToResponse(entrance.get(), member, account));
+        }
+
+        return response;
     }
 
     public DataResponse<EntranceResponse> delete(Long id) {

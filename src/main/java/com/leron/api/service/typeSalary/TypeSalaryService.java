@@ -24,9 +24,9 @@ public class TypeSalaryService {
 
     public DataResponse<TypeSalary> edit(DataRequest<List<TypeSalaryRequest>> request) throws ApplicationBusinessException {
         DataResponse<TypeSalary> response = new DataResponse<>();
-        typeSalaryRepository.deleteAll();
+        List<TypeSalary> typeSalaryList = typeSalaryRepository.findAllByUserAuthIdOrderByDescription(request.getData().get(0).getUserAuthId());
+        typeSalaryRepository.deleteAll(typeSalaryList);
         List<TypeSalary> typeSalaries = TypeSalaryMapper.requestToEntity(request.getData());
-
         typeSalaryRepository.saveAll(typeSalaries);
 
         response.setMessage("success");

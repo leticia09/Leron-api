@@ -26,6 +26,9 @@ public class EntranceResponse {
     private String currency;
     private BigDecimal valueReceived;
     private String financialCardName;
+    private Long financialEntityId;
+    private Long financialEntityCardId;
+    private Long moneyId;
     private String money;
     private Long bankId;
     private Long accountId;

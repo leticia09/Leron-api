@@ -4,6 +4,7 @@ import com.leron.api.model.DTO.entrance.EntranceRequest;
 import com.leron.api.model.DTO.entrance.EntranceResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
+import com.leron.api.responses.DataResponse;
 import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;
 import org.springframework.stereotype.Component;
@@ -78,6 +79,55 @@ public class EntranceMapper {
         return response;
     }
 
+    public static EntranceResponse entityToResponse(Entrance entrance, Optional<Member> member, Optional<Account> account) {
+        EntranceResponse entranceResponse = new EntranceResponse();
+        entranceResponse.setId(entrance.getId());
+        entranceResponse.setFrequency(entrance.getFrequency());
+        entranceResponse.setSalary(entrance.getSalary());
+        entranceResponse.setSource(entrance.getSource());
+        entranceResponse.setType(entrance.getType());
+        member.ifPresent(entranceResponse::setOwner);
+        account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
+
+        if (Objects.nonNull(entrance.getBankId())) {
+            entranceResponse.setBankId(entrance.getBankId());
+        }
+
+        if (Objects.nonNull(entrance.getAccountId())) {
+            entranceResponse.setAccountId(entrance.getAccountId());
+        }
+
+        if (Objects.nonNull(entrance.getFinancialEntityId())) {
+            entranceResponse.setFinancialEntityId(entrance.getFinancialEntityId());
+        }
+
+        if (Objects.nonNull(entrance.getFinancialEntityCardId())) {
+            entranceResponse.setFinancialEntityCardId(entrance.getFinancialEntityCardId());
+        }
+
+        if (Objects.nonNull(entrance.getMoneyId())) {
+            entranceResponse.setMoneyId(entrance.getMoneyId());
+        }
+
+        if (Objects.nonNull(entrance.getDayReceive())) {
+            entranceResponse.setDayReceive(entrance.getDayReceive());
+        }
+
+        if (Objects.nonNull(entrance.getMonthReceive())) {
+            entranceResponse.setMonthReceive(entrance.getMonthReceive());
+        }
+
+        if (Objects.nonNull(entrance.getInitialDate())) {
+            entranceResponse.setInitialDate(entrance.getInitialDate());
+        }
+
+        if (Objects.nonNull(entrance.getFinalDate())) {
+            entranceResponse.setFinalDate(entrance.getFinalDate());
+        }
+
+        return entranceResponse;
+    }
+
 
     public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial, List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
         DataListResponse<EntranceResponse> response = new DataListResponse<>();
@@ -116,7 +166,7 @@ public class EntranceMapper {
             if (status.equalsIgnoreCase("Pendente")) {
                 entranceResponse.setStatus("Pendente");
             }
-            if(status.equalsIgnoreCase("Confirmado")) {
+            if (status.equalsIgnoreCase("Confirmado")) {
                 entranceResponse.setStatus("Confirmado");
 
                 Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(period) && bank.getEntranceId().equals(entrance.getId())).findFirst();

@@ -265,6 +265,13 @@ public class MovementBankService {
                     moneyRepository.save(moneyEntity);
                 }
 
+                Optional<Account> account = accountRepository.findById(res.getAccountId());
+                if (account.isPresent()) {
+                    account.get().setValue(getBigDecimal(res, account.get()));
+                    BigDecimal teste = account.get().getValue();
+                    accountRepository.save(account.get());
+                }
+
             } else {
                 Optional<Account> account = accountRepository.findById(res.getAccountId());
                 if (account.isPresent()) {
