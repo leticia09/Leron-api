@@ -14,7 +14,6 @@ import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -424,7 +423,7 @@ public class EntranceService {
 
         Optional<Entrance> entrance = entranceRepository.findById(entranceResponse.getId());
 
-        if(entrance.isPresent() && typeSalary.isPresent()) {
+        if (entrance.isPresent() && typeSalary.isPresent()) {
             Entrance entranceEntity = EntranceMapper.responseToEntity(entranceResponse, entrance.get(), typeSalary.get());
             entranceRepository.save(entranceEntity);
         }
