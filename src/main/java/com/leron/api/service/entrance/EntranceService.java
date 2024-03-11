@@ -14,6 +14,7 @@ import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -26,6 +27,9 @@ import static com.leron.api.utils.FormatDate.populateMonths;
 public class EntranceService {
 
     final EntranceRepository entranceRepository;
+
+    final TypeSalaryRepository typeSalaryRepository;
+
     final MemberRepository memberRepository;
 
     final RegisterBankRepository bankRepository;
@@ -40,8 +44,9 @@ public class EntranceService {
 
     final MoneyRepository moneyRepository;
 
-    public EntranceService(EntranceRepository entranceRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
+    public EntranceService(EntranceRepository entranceRepository, TypeSalaryRepository typeSalaryRepository, MemberRepository memberRepository, RegisterBankRepository bankRepository, BankMovementRepository bankMovementRepository, AccountRepository accountRepository, FinancialEntityRepository financialEntityRepository, CardFinancialEntityRepository cardFinancialEntityRepository, MoneyRepository moneyRepository) {
         this.entranceRepository = entranceRepository;
+        this.typeSalaryRepository = typeSalaryRepository;
         this.memberRepository = memberRepository;
         this.bankRepository = bankRepository;
         this.bankMovementRepository = bankMovementRepository;
@@ -410,6 +415,24 @@ public class EntranceService {
         dataSet.setData(data);
         return dataSet;
 
+    }
+
+    public DataResponse<EntranceResponse> edit(EntranceResponse entranceResponse) {
+        DataResponse<EntranceResponse> response = new DataResponse<>();
+
+        Optional<TypeSalary> typeSalary = typeSalaryRepository.findById(Long.valueOf(entranceResponse.getType()));
+
+        Optional<Entrance> entrance = entranceRepository.findById(entranceResponse.getId());
+
+        if(entrance.isPresent() && typeSalary.isPresent()) {
+            Entrance entranceEntity = EntranceMapper.responseToEntity(entranceResponse, entrance.get(), typeSalary.get());
+            entranceRepository.save(entranceEntity);
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
     }
 
 }

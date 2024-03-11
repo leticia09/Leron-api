@@ -13,13 +13,13 @@ public class EntranceResponse {
     private Long id;
     private String source;
     private String type;
-    private Member owner;
+    private Long ownerId;
     private BigDecimal salary;
     private String bankName;
     private String accountNumber;
     private String frequency;
-    private Timestamp initialDate;
-    private Timestamp finalDate;
+    private String initialDate;
+    private String finalDate;
     private Long monthReceive;
     private Long dayReceive;
     private String status;

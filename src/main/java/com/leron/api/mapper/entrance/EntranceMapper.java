@@ -4,23 +4,12 @@ import com.leron.api.model.DTO.entrance.EntranceRequest;
 import com.leron.api.model.DTO.entrance.EntranceResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
-import com.leron.api.responses.DataResponse;
 import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
@@ -86,7 +75,7 @@ public class EntranceMapper {
         entranceResponse.setSalary(entrance.getSalary());
         entranceResponse.setSource(entrance.getSource());
         entranceResponse.setType(entrance.getType());
-        member.ifPresent(entranceResponse::setOwner);
+        member.ifPresent(value -> entranceResponse.setOwnerId(value.getId()));
         account.ifPresent(value -> entranceResponse.setCurrency(value.getCurrency()));
 
         if (Objects.nonNull(entrance.getBankId())) {
@@ -118,11 +107,11 @@ public class EntranceMapper {
         }
 
         if (Objects.nonNull(entrance.getInitialDate())) {
-            entranceResponse.setInitialDate(entrance.getInitialDate());
+            entranceResponse.setInitialDate(entrance.getInitialDate().toString());
         }
 
         if (Objects.nonNull(entrance.getFinalDate())) {
-            entranceResponse.setFinalDate(entrance.getFinalDate());
+            entranceResponse.setFinalDate(entrance.getFinalDate().toString());
         }
 
         return entranceResponse;
@@ -183,11 +172,11 @@ public class EntranceMapper {
             }
 
             if (Objects.nonNull(entrance.getInitialDate())) {
-                entranceResponse.setInitialDate(entrance.getInitialDate());
+                entranceResponse.setInitialDate(entrance.getInitialDate().toString());
             }
 
             if (Objects.nonNull(entrance.getFinalDate())) {
-                entranceResponse.setFinalDate(entrance.getFinalDate());
+                entranceResponse.setFinalDate(entrance.getFinalDate().toString());
             }
 
 
@@ -215,7 +204,7 @@ public class EntranceMapper {
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setFinancialCardName(cardFinancialEntity.getCardName()));
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setCurrency(cardFinancialEntity.getCurrency()));
                 money.ifPresent(mo -> entranceResponse.setCurrency(mo.getCurrency()));
-                entranceResponse.setOwner(ownerMember.get());
+                entranceResponse.setOwnerId(ownerMember.get().getId());
 
                 entranceList.add(entranceResponse);
             }
@@ -247,11 +236,11 @@ public class EntranceMapper {
             }
 
             if (Objects.nonNull(entrance.getInitialDate())) {
-                entranceResponse.setInitialDate(entrance.getInitialDate());
+                entranceResponse.setInitialDate(entrance.getInitialDate().toString());
             }
 
             if (Objects.nonNull(entrance.getFinalDate())) {
-                entranceResponse.setFinalDate(entrance.getFinalDate());
+                entranceResponse.setFinalDate(entrance.getFinalDate().toString());
             }
 
             Optional<Member> ownerMember = members.stream()
@@ -280,12 +269,70 @@ public class EntranceMapper {
                 card.ifPresent(cardFinancialEntity -> entranceResponse.setCurrency(cardFinancialEntity.getCurrency()));
                 money.ifPresent(mo -> entranceResponse.setCurrency(mo.getCurrency()));
 
-                entranceResponse.setOwner(ownerMember.get());
+                entranceResponse.setOwnerId(ownerMember.get().getId());
                 entranceList.add(entranceResponse);
             }
         }
         response.setData(entranceList);
         return response;
+    }
+
+    public static Entrance responseToEntity(EntranceResponse response, Entrance entrance, TypeSalary typeSalary) {
+        entrance.setSource(response.getSource());
+        entrance.setType(typeSalary.getDescription());
+        entrance.setOwnerId(response.getOwnerId());
+        entrance.setSalary(response.getSalary());
+        entrance.setDayReceive(response.getDayReceive());
+
+        if(response.getFrequency().equalsIgnoreCase("1")) {
+            entrance.setFrequency("Única");
+        }
+
+        if(response.getFrequency().equalsIgnoreCase("2")) {
+            entrance.setFrequency("Mensal");
+        }
+
+        if(response.getFrequency().equalsIgnoreCase("3")) {
+            entrance.setFrequency("Anual");
+        }
+
+        if(response.getFrequency().equalsIgnoreCase("4")) {
+            entrance.setFrequency("Outro");
+        }
+
+        if (Objects.nonNull(response.getMonthReceive()) && response.getMonthReceive() != 0) {
+            entrance.setMonthReceive(response.getMonthReceive());
+        }
+
+        if (Objects.nonNull(response.getInitialDate())) {
+            entrance.setInitialDate(FormatDate.formatDate(response.getInitialDate()));
+        }
+
+        if (Objects.nonNull(response.getFinalDate())) {
+            entrance.setFinalDate(FormatDate.formatDate(response.getFinalDate()));
+        }
+
+        if (Objects.nonNull(response.getMoney()) && response.getMoney() != "0") {
+            entrance.setMoneyId(response.getMoneyId());
+        }
+
+        if (Objects.nonNull(response.getBankId()) && response.getBankId() != 0) {
+            entrance.setBankId(response.getBankId());
+        }
+
+        if (Objects.nonNull(response.getAccountId()) && response.getAccountId() != 0) {
+            entrance.setAccountId(response.getAccountId());
+        }
+
+        if (Objects.nonNull(response.getFinancialEntityId()) && response.getFinancialEntityId() != 0) {
+            entrance.setFinancialEntityId(response.getFinancialEntityId());
+        }
+
+        if (Objects.nonNull(response.getFinancialEntityCardId()) && response.getFinancialEntityCardId() != 0) {
+            entrance.setFinancialEntityCardId(response.getFinancialEntityCardId());
+        }
+
+        return entrance;
     }
 
     private static ArrayList<ArrayList<Integer>> getArrayLists() {
@@ -317,6 +364,5 @@ public class EntranceMapper {
         }
         return false;
     }
-
 
 }
