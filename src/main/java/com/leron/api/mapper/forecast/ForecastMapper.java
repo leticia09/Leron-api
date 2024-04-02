@@ -1,19 +1,20 @@
 package com.leron.api.mapper.forecast;
 
-import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
-import com.leron.api.model.DTO.forecast.ForecastRequest;
-import com.leron.api.model.DTO.forecast.ForecastResponse;
+import com.leron.api.model.DTO.expense.ExpenseResponse;
+import com.leron.api.model.DTO.forecast.*;
 import com.leron.api.model.entities.Expense;
 import com.leron.api.model.entities.Forecast;
+import com.leron.api.model.entities.ForecastDate;
 import com.leron.api.model.entities.MacroGroup;
-import com.leron.api.model.entities.SpecificGroup;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
-import org.aspectj.apache.bcel.classfile.Module;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,102 +25,93 @@ public class ForecastMapper {
 
         requestList.forEach(res -> {
             Forecast forecast = new Forecast();
-            forecast.setCurrency(res.getCurrency());
-            forecast.setMonths(res.getMonths());
-            forecast.setValue(new BigDecimal(res.getValue().replace(",", ".")));
-            forecast.setYears(res.getYears());
             forecast.setOwnerId(res.getOwnerId());
             forecast.setMacroGroupId(res.getMacroGroup());
-            forecast.setHasFixed(res.getHasFixed());
             forecast.setSpecificGroupId(res.getSpecificGroup());
             forecast.setDeleted(false);
             forecast.setCreatedIn(new Date());
             forecast.setUserAuthId(res.getUserAuthId());
+            forecast.setMacroGroupName(res.getMacroGroupName());
+            forecast.setSpecificGroupName(res.getSpecificGroupName());
+            forecast.setForecastDates(forecastDateRequestToEntity(res.getForecastDateRequestList()));
             response.add(forecast);
         });
 
         return response;
     }
 
-    public static DataListResponse<ForecastResponse> entityToResponse(int month, int year, List<Forecast> forecastList, List<Long> owners) {
-        DataListResponse<ForecastResponse> response = new DataListResponse<>();
-        List<ForecastResponse> list = new ArrayList<>();
-        List<Forecast> forecastListFiltered = forecastList.stream().filter(forecast ->
-                (forecast.getMonths().contains(FormatDate.getMonth(month)) &&
-                        forecast.getYears().contains(year) &&
-                        owners.contains(forecast.getOwnerId())
-                ) || forecast.getHasFixed()).collect(Collectors.toList());
-        forecastListFiltered.forEach(forecast -> {
-            ForecastResponse forecastResponse = new ForecastResponse();
-            forecastResponse.setCurrency(forecast.getCurrency());
-            forecastResponse.setValue(forecast.getValue());
-            forecastResponse.setMonths(forecast.getMonths());
-            forecastResponse.setYears(forecast.getYears());
-            forecastResponse.setHasFixed(forecast.getHasFixed());
-            forecastResponse.setOwnerId(forecast.getOwnerId());
-            forecastResponse.setMacroGroup(forecast.getMacroGroupId());
-            forecastResponse.setSpecificGroup(forecast.getSpecificGroupId());
-            list.add(forecastResponse);
+    public static List<ForecastDate> forecastDateRequestToEntity(List<ForecastDateRequest> forecastDateRequestList) {
+        List<ForecastDate> response = new ArrayList<>();
+        forecastDateRequestList.forEach(forecastDateRequest -> {
+            ForecastDate forecastDate = new ForecastDate();
+            forecastDate.setValue(new BigDecimal(forecastDateRequest.getValue().replace(",", ".")));
+            forecastDate.setMonth(forecastDateRequest.getMonth());
+            forecastDate.setYear(forecastDateRequest.getYear());
+            forecastDate.setCurrency(forecastDateRequest.getCurrency());
+            response.add(forecastDate);
         });
-        response.setData(list);
+
         return response;
     }
 
-    public static DataListResponse<ForecastResponse> entityToResponse(List<Forecast> forecastList) {
-        DataListResponse<ForecastResponse> response = new DataListResponse<>();
-        List<ForecastResponse> list = new ArrayList<>();
+    public static List<ForecastPrevResponse> entityToForecastPrevResponse(List<Forecast> forecastList, List<ExpenseResponse> expenseResponses) {
+        List<ForecastPrevResponse> response = new ArrayList<>();
+        forecastList.forEach(forecast -> {
+            ForecastPrevResponse forecastResponse = new ForecastPrevResponse();
+            forecastResponse.setForecastId(forecast.getId());
+            forecastResponse.setOwnerId(forecast.getOwnerId());
+            forecastResponse.setMacroGroup(forecast.getMacroGroupName());
+            forecastResponse.setSpecificGroup(forecast.getSpecificGroupName());
+
+            forecastResponse.setCurrency(forecast.getForecastDates().get(0).getCurrency());
+            forecastResponse.setValueForecast(forecast.getForecastDates().get(0).getValue());
+
+            List<ExpenseResponse> expenseList = expenseResponses.stream().filter(
+                    expense -> Objects.nonNull(expense.getSpecificGroup()) &&
+                            expense.getSpecificGroup().equalsIgnoreCase(forecast.getSpecificGroupName())
+            ).collect(Collectors.toList());
+            BigDecimal value = expenseList.stream()
+                    .map(ExpenseResponse::getValue)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+            forecastResponse.setValuePaidForecast(value);
+
+            forecastResponse.setDifference(forecastResponse.getValueForecast().subtract(value));
+
+            response.add(forecastResponse);
+        });
+        return response;
+    }
+
+    public static List<ForecastResponse> entityToForecastResponse(List<Forecast> forecastList) {
+        List<ForecastResponse> response = new ArrayList<>();
         forecastList.forEach(forecast -> {
             ForecastResponse forecastResponse = new ForecastResponse();
-            forecastResponse.setCurrency(forecast.getCurrency());
-            forecastResponse.setValue(forecast.getValue());
-            forecastResponse.setMonths(forecast.getMonths());
-            forecastResponse.setYears(forecast.getYears());
-            forecastResponse.setHasFixed(forecast.getHasFixed());
+            forecastResponse.setId(forecast.getId());
             forecastResponse.setOwnerId(forecast.getOwnerId());
             forecastResponse.setMacroGroup(forecast.getMacroGroupId());
             forecastResponse.setSpecificGroup(forecast.getSpecificGroupId());
-            list.add(forecastResponse);
+            forecastResponse.setMacroGroupName(forecast.getMacroGroupName());
+            forecastResponse.setSpecificGroupName(forecast.getSpecificGroupName());
+            forecastResponse.setForecastDateResponseList(forecastDateEntityToResponse(forecast.getForecastDates()));
+            response.add(forecastResponse);
         });
-        response.setData(list);
         return response;
     }
 
-    public static DataListResponse<ForecastPrevResponse> entityToResponsePrev(int month, int year, List<Forecast> forecastList, List<Expense> expensesFiltered, List<MacroGroup> macroGroupList) {
-        DataListResponse<ForecastPrevResponse> response = new DataListResponse<>();
-        List<ForecastPrevResponse> list = new ArrayList<>();
+    public static List<ForecastDateResponse>  forecastDateEntityToResponse( List<ForecastDate> forecastDates) {
+        List<ForecastDateResponse> response = new ArrayList<>();
+        forecastDates.forEach(forecastDate -> {
+            ForecastDateResponse request = new ForecastDateResponse();
+            request.setId(forecastDate.getId());
+            request.setValue(forecastDate.getValue().toString());
+            request.setMonth(FormatDate.getMonth(forecastDate.getMonth()));
+            request.setYear(forecastDate.getYear());
+            request.setCurrency(forecastDate.getCurrency());
+            response.add(request);
+        });
 
-        for (Forecast forecast : forecastList) {
-            if ((forecast.getMonths().contains(FormatDate.getMonth(month)) && forecast.getYears().contains(year)) || forecast.getHasFixed()) {
-                ForecastPrevResponse forecastPrevResponse = new ForecastPrevResponse();
-                forecastPrevResponse.setForecastId(forecast.getId());
-                forecastPrevResponse.setOwnerId(forecast.getOwnerId());
-                forecastPrevResponse.setCurrency(forecast.getCurrency());
-                Optional<MacroGroup> macroGroupOptional = macroGroupList.stream().filter(group -> group.getId().equals(forecast.getMacroGroupId())).findFirst();
-                if (macroGroupOptional.isPresent()) {
-                    forecastPrevResponse.setMacroGroup(macroGroupOptional.get().getName());
-                    Optional<SpecificGroup> specificGroupOptional = macroGroupOptional.get().getSpecificGroups().stream().filter(sp -> sp.getId().equals(forecast.getSpecificGroupId())).findFirst();
-                    if (specificGroupOptional.isPresent()) {
-                        forecastPrevResponse.setSpecificGroup(specificGroupOptional.get().getName());
-                        List<Expense> expenseList = expensesFiltered.stream().filter(expense -> Objects.nonNull(expense.getSpecificGroup()) && expense.getSpecificGroup().equalsIgnoreCase(specificGroupOptional.get().getName())).collect(Collectors.toList());
-                        forecastPrevResponse.setExpensesDetails(expenseList);
-                        BigDecimal value = expenseList.stream()
-                                .map(Expense::getValue)
-                                .reduce(BigDecimal::add)
-                                .orElse(BigDecimal.ZERO);
-                        forecastPrevResponse.setValuePaidForecast(value);
-
-                        forecastPrevResponse.setDifference(forecast.getValue().subtract(value));
-                    } else {
-                        forecastPrevResponse.setDifference(new BigDecimal(0));
-                    }
-                }
-                forecastPrevResponse.setValueForecast(forecast.getValue());
-
-                list.add(forecastPrevResponse);
-            }
-        }
-
-        response.setData(list);
         return response;
     }
+
 }

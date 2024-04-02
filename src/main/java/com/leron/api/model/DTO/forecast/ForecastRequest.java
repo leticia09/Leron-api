@@ -10,12 +10,10 @@ import java.util.List;
 public class ForecastRequest {
     private Long id;
     private Long ownerId;
-    private String value;
     private Long macroGroup;
     private Long specificGroup;
-    private String currency;
-    private List<String> months;
-    private List<Integer> years;
     private Long userAuthId;
-    private Boolean hasFixed;
+    private String macroGroupName;
+    private String specificGroupName;
+    private List<ForecastDateRequest> forecastDateRequestList;
 }

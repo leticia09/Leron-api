@@ -6,13 +6,10 @@ import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -429,12 +426,24 @@ public class ExpenseMapper {
         if (Objects.nonNull(res.getDateBuy())) {
             bankMovement.setDateMovement(FormatDate.formatDate(res.getDateBuy()));
             LocalDate initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+            String valueReference = "";
+            if (initialDate.getMonthValue() < 10) {
+                valueReference = "0" + initialDate.getMonthValue();
+            } else {
+                valueReference = initialDate.getMonthValue() + "";
+            }
+            bankMovement.setReferencePeriod(valueReference + "/" + initialDate.getYear());
         }
         if (Objects.nonNull(res.getInitialDate())) {
             bankMovement.setDateMovement(FormatDate.formatDate(res.getInitialDate()));
             LocalDate initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
-            bankMovement.setReferencePeriod(initialDate.getMonthValue() + "/" + initialDate.getYear());
+            String valueReference = "";
+            if (initialDate.getMonthValue() < 10) {
+                valueReference = "0" + initialDate.getMonthValue();
+            } else {
+                valueReference = initialDate.getMonthValue() + "";
+            }
+            bankMovement.setReferencePeriod(valueReference + "/" + initialDate.getYear());
         }
         bankMovement.setUserAuthId(res.getUserAuthId());
         bankMovement.setCreatedIn(new Date());

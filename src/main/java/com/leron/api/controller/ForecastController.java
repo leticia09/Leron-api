@@ -1,9 +1,8 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
+import com.leron.api.model.DTO.forecast.ForecastManagementResponse;
 import com.leron.api.model.DTO.forecast.ForecastRequest;
 import com.leron.api.model.DTO.forecast.ForecastResponse;
-import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
@@ -31,32 +30,42 @@ public class ForecastController {
         return response;
     }
 
+//    @GetMapping("/{userAuthId}")
+//    public DataListResponse<ForecastResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
+//        return forecastService.list(userAuthId);
+//    }
+
     @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
-    public DataListResponse<ForecastResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                   @PathVariable(value = "month", required = true) int month,
-                                                   @PathVariable(value = "year", required = true) int year,
-                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return forecastService.list(userAuthId, month, year, owners);
+    public DataResponse<ForecastManagementResponse> listFiltered(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                                     @PathVariable(value = "month", required = true) int month,
+                                                                     @PathVariable(value = "year", required = true) Long year,
+                                                                     @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return forecastService.getManagementScreen(userAuthId, month, year, owners);
     }
 
-    @GetMapping("prev/{userAuthId}/{month}/{year}/{owners}")
-    public DataListResponse<ForecastPrevResponse> list1(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                        @PathVariable(value = "month", required = true) int month,
-                                                        @PathVariable(value = "year", required = true) int year,
-                                                        @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return forecastService.listPrev(userAuthId, month, year, owners);
-    }
+//    @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
+//    public DataListResponse<ForecastResponse> listFiltered(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+//                                                   @PathVariable(value = "month", required = true) int month,
+//                                                   @PathVariable(value = "year", required = true) int year,
+//                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
+//        return forecastService.list(userAuthId, month, year, owners);
+//    }
+//
+//    @GetMapping("prev/{userAuthId}/{month}/{year}/{owners}")
+//    public DataListResponse<ForecastPrevResponse> listPrev(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+//                                                        @PathVariable(value = "month", required = true) int month,
+//                                                        @PathVariable(value = "year", required = true) int year,
+//                                                        @PathVariable(value = "owners", required = true) List<Long> owners) {
+//        return forecastService.listPrev(userAuthId, month, year, owners);
+//    }
+//
 
-    @GetMapping("/{userAuthId}")
-    public DataListResponse<ForecastResponse> listWithFilters(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
-        return forecastService.list(userAuthId);
-    }
-
-    @GetMapping("data/{userAuthId}/{month}/{year}/{owners}")
-    public DataResponse<GraphicResponse> getData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                 @PathVariable(value = "month", required = true)int month,
-                                                 @PathVariable(value = "year", required = true) int year,
-                                                 @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return forecastService.getData(userAuthId, month,year, owners);
-    }
+//
+//    @GetMapping("data/{userAuthId}/{month}/{year}/{owners}")
+//    public DataResponse<GraphicResponse> getData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+//                                                 @PathVariable(value = "month", required = true)int month,
+//                                                 @PathVariable(value = "year", required = true) int year,
+//                                                 @PathVariable(value = "owners", required = true) List<Long> owners) {
+//        return forecastService.getData(userAuthId, month,year, owners);
+//    }
 }

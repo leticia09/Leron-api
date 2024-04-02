@@ -136,6 +136,7 @@ public class ExpenseService {
         return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year, accounts, moneyList, cardFinancialEntityList);
     }
 
+
     public DataListResponse<ExpensePeriodResponse> listPeriod(Long userAuthId, String period, Long owner, List<Long> cards) {
         DataListResponse<ExpensePeriodResponse> response = new DataListResponse<>();
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);

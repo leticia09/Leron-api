@@ -1,47 +1,57 @@
 package com.leron.api.service.forecast;
 
 import com.leron.api.mapper.forecast.ForecastMapper;
+import com.leron.api.model.DTO.entrance.EntranceResponse;
+import com.leron.api.model.DTO.expense.ExpenseResponse;
+import com.leron.api.model.DTO.forecast.ForecastManagementResponse;
 import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
 import com.leron.api.model.DTO.forecast.ForecastRequest;
 import com.leron.api.model.DTO.forecast.ForecastResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
-import com.leron.api.model.entities.*;
-import com.leron.api.repository.*;
+import com.leron.api.model.entities.Forecast;
+import com.leron.api.repository.BankMovementRepository;
+import com.leron.api.repository.ForecastDateRepository;
+import com.leron.api.repository.ForecastRepository;
+import com.leron.api.repository.MacroGroupRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
-import com.leron.api.utils.FormatDate;
-import com.leron.api.utils.GetStatusPayment;
+import com.leron.api.service.entrance.EntranceService;
+import com.leron.api.service.expense.ExpenseService;
 import com.leron.api.validator.forecast.ValidatorForecast;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.leron.api.utils.FormatDate.getMonth;
 import static com.leron.api.utils.FormatDate.populateMonths;
 
 @Service
 public class ForecastService {
-    final ForecastRepository forecastRepository;
-    final EntranceRepository entranceRepository;
-    final ExpenseRepository expenseRepository;
-    final BankMovementRepository bankMovementRepository;
-    final SpecificGroupRepository specificGroupRepository;
-    final MacroGroupRepository macroGroupRepository;
 
-    public ForecastService(ForecastRepository forecastRepository, EntranceRepository entranceRepository, ExpenseRepository expenseRepository, BankMovementRepository bankMovementRepository, SpecificGroupRepository specificGroupRepository, MacroGroupRepository macroGroupRepository) {
+    @Autowired
+    ExpenseService expenseService;
+
+    @Autowired
+    EntranceService entranceService;
+
+    final ForecastRepository forecastRepository;
+    final BankMovementRepository bankMovementRepository;
+    final MacroGroupRepository macroGroupRepository;
+    final ForecastDateRepository forecastDateRepository;
+
+    public ForecastService(ForecastRepository forecastRepository, BankMovementRepository bankMovementRepository, MacroGroupRepository macroGroupRepository, ForecastDateRepository forecastDateRepository) {
         this.forecastRepository = forecastRepository;
-        this.entranceRepository = entranceRepository;
-        this.expenseRepository = expenseRepository;
         this.bankMovementRepository = bankMovementRepository;
-        this.specificGroupRepository = specificGroupRepository;
         this.macroGroupRepository = macroGroupRepository;
+        this.forecastDateRepository = forecastDateRepository;
     }
 
     public DataResponse<ForecastResponse> createForecast(List<ForecastRequest> forecastRequest) throws ApplicationBusinessException {
@@ -50,8 +60,15 @@ public class ForecastService {
         List<Forecast> forecasts = forecastRepository.findAllByUserAuthIdAndDeletedFalse(forecastRequest.get(0).getUserAuthId());
 
         ValidatorForecast.validateCreation(forecastRequest, forecasts);
+        List<Forecast> forecastToSave = ForecastMapper.requestToEntity(forecastRequest);
 
-        forecastRepository.saveAll(ForecastMapper.requestToEntity(forecastRequest));
+        forecastToSave.forEach(forecast -> {
+            Forecast forecastSaved = forecastRepository.save(forecast);
+            forecast.getForecastDates().forEach(forecastDate -> {
+                forecastDate.setForecast(forecastSaved);
+                forecastDateRepository.save(forecastDate);
+            });
+        });
 
         response.setSeverity("success");
         response.setMessage("success");
@@ -59,208 +76,87 @@ public class ForecastService {
         return response;
     }
 
-    public DataListResponse<ForecastResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
-        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return ForecastMapper.entityToResponse(month, year, forecastList, owners);
+//    public DataListResponse<ForecastResponse> list(Long userAuthId) {
+//        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+//        return ForecastMapper.entityToResponse(forecastList);
+//    }
+
+    public DataResponse<ForecastManagementResponse> getManagementScreen(Long userAuthId, int month, Long year, List<Long> owners) {
+        DataResponse<ForecastManagementResponse> response = new DataResponse<>();
+        ForecastManagementResponse forecastManagementResponse = new ForecastManagementResponse();
+
+        List<Forecast> forecasts = listForecast(userAuthId, month, year, owners);
+        DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, month, year.intValue(), owners);
+
+        forecastManagementResponse.setGraphicResponse(graphic(userAuthId, month, year, owners));
+        forecastManagementResponse.setForecastPrevResponseList(forecastPrev(forecasts, expenses));
+        forecastManagementResponse.setForecastResponseList(forecastList(forecasts));
+
+        response.setData(forecastManagementResponse);
+        return response;
     }
 
-    public DataListResponse<ForecastPrevResponse> listPrev(Long userAuthId, int month, int year, List<Long> owners) {
-        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(userAuthId, owners);
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndOwnersId(userAuthId, owners);
-        String period = (month < 10) ? "0" + month + "/" + year : month + "/" + year;
-        List<BankMovement> bankMovementList = bankMovementRepository.findAllByUserAuthIdAndDeletedFalseAndReferencePeriodAndOwnersId(userAuthId, period, owners);
-        List<MacroGroup> macroGroupList = macroGroupRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
-        List<Expense> expensesFiltered = new ArrayList<>();
-        for (Expense expense : expenses) {
-            String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
-            if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                LocalDate initialDate;
-                if (Objects.nonNull(expense.getInitialDate())) {
-                    initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
-                } else {
-                    initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
-                }
-                int initialMonth = initialDate.getMonthValue();
-                int initialYear = initialDate.getYear();
-                if (status.equalsIgnoreCase("Confirmado")) {
-                    if (initialMonth == month && initialYear == year) {
-                        expense.setStatus(status);
-                        expensesFiltered.add(expense);
-                    }
-                } else {
-                    expense.setStatus(status);
-                    expensesFiltered.add(expense);
-                }
-            }
-        }
-
-
-        return ForecastMapper.entityToResponsePrev(month, year, forecastList, expensesFiltered, macroGroupList);
+    public List<Forecast> listForecast(Long userAuthId, int month, Long year, List<Long> owners) {
+        return forecastRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(userAuthId, getMonth(month), year, owners);
     }
 
-    public DataListResponse<ForecastResponse> list(Long userAuthId) {
-        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return ForecastMapper.entityToResponse(forecastList);
-    }
-
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
-        DataResponse<GraphicResponse> response = new DataResponse<>();
-        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndOwnersId(authId, owners);
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndOwnersId(authId, owners);
-        List<Forecast> forecasts = forecastRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(authId, owners);
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalseAndOwnersId(authId, owners);
-        List<SpecificGroup> specificGroups = specificGroupRepository.findAllByUserAuthIdAndDeletedFalse(authId);
-        GraphicResponse graphicResponse = new GraphicResponse();
+    public GraphicResponse graphic(Long userAuthId, int month, Long year, List<Long> owners) {
+        GraphicResponse response = new GraphicResponse();
 
         ArrayList<String> labels = populateMonths();
         ArrayList<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(populateEntrances(entrances, month, year, owners));
-        dataSets.add(populateExpenses(expenses, bankMovements, month, year, owners, forecasts, specificGroups, authId));
+        dataSets.add(populateEntrances(userAuthId, year.intValue(), owners));
+        dataSets.add(populateExpenses(userAuthId, year.intValue(), owners));
         dataSets.add(populateLeft(dataSets.get(0), dataSets.get(1)));
 
         DataSet percent = populateLeftPercent(dataSets.get(0), dataSets.get(1));
-        graphicResponse.setDataSet(dataSets);
-        graphicResponse.setLabels(labels);
-        graphicResponse.setTotal1(getTotal(dataSets.get(0).getData(), month));
-        graphicResponse.setTotal2(getTotal(dataSets.get(1).getData(), month));
-        graphicResponse.setTotal3(getTotal(dataSets.get(2).getData(), month));
-        graphicResponse.setTotal4(getTotal(percent.getData(), month));
-        graphicResponse.setTotal5(getTotalLeft(dataSets.get(2).getData()));
 
-        response.setData(graphicResponse);
+        response.setDataSet(dataSets);
+        response.setLabels(labels);
+        response.setTotal1(getTotal(dataSets.get(0).getData(), month));
+        response.setTotal2(getTotal(dataSets.get(1).getData(), month));
+        response.setTotal3(getTotal(dataSets.get(2).getData(), month));
+        response.setTotal4(getTotal(percent.getData(), month));
+        response.setTotal5(getTotalLeft(dataSets.get(2).getData()));
 
         return response;
     }
 
-    public static DataSet populateEntrances(List<Entrance> entrances, int month, int year, List<Long> owners) {
+    public List<ForecastPrevResponse> forecastPrev(List<Forecast> forecasts, DataListResponse<ExpenseResponse> expenses) {
+        return ForecastMapper.entityToForecastPrevResponse(forecasts, expenses.getData());
+    }
+
+    public List<ForecastResponse> forecastList(List<Forecast> forecasts) {
+        return ForecastMapper.entityToForecastResponse(forecasts);
+    }
+
+    public DataSet populateEntrances(Long userAuthId, int year, List<Long> owners) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
-        BigDecimal month1 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month2 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month3 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month4 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month5 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month6 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month7 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month8 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month9 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month10 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month11 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month12 = new BigDecimal(BigInteger.ZERO);
+        for (int i = 1; i <= 12; i++) {
+            DataListResponse<EntranceResponse> entrances = entranceService.list(userAuthId, i, year, owners);
+            List<EntranceResponse> entranceFilteredReceived = entrances.getData().stream().filter(entrance ->
+                    entrance.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
 
-        for (Entrance entrance : entrances) {
-            LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
-            int initialMonth = initialDate.getMonthValue();
-            int initialYear = initialDate.getYear();
-            if (entrance.getFrequency().equalsIgnoreCase("mensal") && owners.contains(entrance.getOwnerId())) {
-                if (initialMonth <= 1 || initialYear < year) {
-                    month1 = month1.add(entrance.getSalary());
-                }
-                if (initialMonth <= 2 || initialYear < year) {
-                    month2 = month2.add(entrance.getSalary());
-                }
-                if (initialMonth <= 3 || initialYear < year) {
-                    month3 = month3.add(entrance.getSalary());
-                }
-                if (initialMonth <= 4 || initialYear < year) {
-                    month4 = month4.add(entrance.getSalary());
-                }
-                if (initialMonth <= 5 || initialYear < year) {
-                    month5 = month5.add(entrance.getSalary());
-                }
-                if (initialMonth <= 6 || initialYear < year) {
-                    month6 = month6.add(entrance.getSalary());
-                }
-                if (initialMonth <= 7 || initialYear < year) {
-                    month7 = month7.add(entrance.getSalary());
-                }
-                if (initialMonth <= 8 || initialYear < year) {
-                    month8 = month8.add(entrance.getSalary());
-                }
-                if (initialMonth <= 9 || initialYear < year) {
-                    month9 = month9.add(entrance.getSalary());
-                }
-                if (initialMonth <= 10 || initialYear < year) {
-                    month10 = month10.add(entrance.getSalary());
-                }
-                if (initialMonth <= 11 || initialYear < year) {
-                    month11 = month11.add(entrance.getSalary());
-                }
-                if (initialMonth <= 12 || initialYear < year) {
-                    month12 = month12.add(entrance.getSalary());
-                }
+            List<EntranceResponse> entranceFilteredForecast = entrances.getData().stream().filter(entrance ->
+                    !entrance.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
 
-            } else {
-                if (entrance.getFrequency().equalsIgnoreCase("anual") && owners.contains(entrance.getOwnerId()) && initialMonth <= month && year == initialYear) {
-                    if (entrance.getMonthReceive() == 1) {
-                        month1 = month1.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 2) {
-                        month2 = month2.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 3) {
-                        month3 = month3.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 4) {
-                        month4 = month4.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 5) {
-                        month5 = month5.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 6) {
-                        month6 = month6.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 7) {
-                        month7 = month7.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 8) {
-                        month8 = month8.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 9) {
-                        month9 = month9.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 10) {
-                        month10 = month10.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 11) {
-                        month11 = month11.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 12) {
-                        month12 = month12.add(entrance.getSalary());
-                    }
+            BigDecimal totalReceived = entranceFilteredReceived.stream()
+                    .map(EntranceResponse::getValueReceived)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
 
-                } else if (entrance.getFrequency().equalsIgnoreCase("única") && owners.contains(entrance.getOwnerId()) && initialMonth <= month) {
-                    if (initialMonth == 1 && initialYear == year) {
-                        month1 = month1.add(entrance.getSalary());
-                    } else if (initialMonth == 2 && initialYear == year) {
-                        month2 = month2.add(entrance.getSalary());
-                    } else if (initialMonth == 3 && initialYear == year) {
-                        month3 = month3.add(entrance.getSalary());
-                    } else if (initialMonth == 4 && initialYear == year) {
-                        month4 = month4.add(entrance.getSalary());
-                    } else if (initialMonth == 5 && initialYear == year) {
-                        month5 = month5.add(entrance.getSalary());
-                    } else if (initialMonth == 6 && initialYear == year) {
-                        month6 = month6.add(entrance.getSalary());
-                    } else if (initialMonth == 7 && initialYear == year) {
-                        month7 = month7.add(entrance.getSalary());
-                    } else if (initialMonth == 8 && initialYear == year) {
-                        month8 = month8.add(entrance.getSalary());
-                    } else if (initialMonth == 9 && initialYear == year) {
-                        month9 = month9.add(entrance.getSalary());
-                    } else if (initialMonth == 10 && initialYear == year) {
-                        month10 = month10.add(entrance.getSalary());
-                    } else if (initialMonth == 11 && initialYear == year) {
-                        month11 = month11.add(entrance.getSalary());
-                    } else if (initialMonth == 12 && initialYear == year) {
-                        month12 = month12.add(entrance.getSalary());
-                    }
-                }
-            }
+            BigDecimal totalForecast = entranceFilteredForecast.stream()
+                    .map(EntranceResponse::getSalary)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+
+            data.add(totalReceived.add(totalForecast));
         }
-        data.add(month1);
-        data.add(month2);
-        data.add(month3);
-        data.add(month4);
-        data.add(month5);
-        data.add(month6);
-        data.add(month7);
-        data.add(month8);
-        data.add(month9);
-        data.add(month10);
-        data.add(month11);
-        data.add(month12);
 
         dataSet.setLabel("Receita");
         dataSet.setBackgroundColor("rgba(1,184,170,0.4)");
@@ -268,88 +164,47 @@ public class ForecastService {
         dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
-
     }
 
-    private DataSet populateExpenses(List<Expense> expenses, List<BankMovement> bankMovements, int month, int year, List<Long> owners, List<Forecast> forecasts, List<SpecificGroup> specificGroups, Long userAuthId) {
+    public DataSet populateExpenses(Long userAuthId, int year, List<Long> owners) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
-        BigDecimal[] months = new BigDecimal[12];
+        for (int i = 1; i <= 12; i++) {
+            List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
+            DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, i, year, owners);
+            List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
+            BigDecimal totalForecast = new BigDecimal(BigInteger.ZERO);
 
-        for (int i = 0; i < 12; i++) {
-            months[i] = new BigDecimal(BigInteger.ZERO);
-        }
-
-        for (int i = 0; i < 12; i++) {
-
-            for (Expense expense : expenses) {
-                int monthValue = i + 1;
-                if (owners.contains(expense.getOwnerId())) {
-                    String monthValidate = (monthValue < 10) ? "0" + monthValue : "" + monthValue;
-                    String period = monthValidate + "/" + year;
-
-                    List<BankMovement> bankMovementList = bankMovements.stream()
-                            .filter(bm -> Objects.equals(bm.getExpenseId(), expense.getId()) &&
-                                    bm.getReferencePeriod().equalsIgnoreCase(period) &&
-                                    bm.getType().equalsIgnoreCase("Saída")
-                            ).collect(Collectors.toList());
-
-                    BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-                    String status = GetStatusPayment.getStatus(expense, bankMovementList, i + 1, year);
-
-                    if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                        expense.setStatus(status);
-                        if (status.equalsIgnoreCase("Confirmado")) {
-                            if(expense.getPaymentForm().equalsIgnoreCase("vale")) {
-                                months[i] = months[i].add(expense.getValue());
-                            } else {
-                                months[i] = months[i].add(value);
-                            }
-
-                        } else {
-                            BigDecimal valueToAdd = expense.getHasSplitExpense() ?
-                                    expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32) :
-                                    expense.getValue();
-
-                            months[i] = months[i].add(valueToAdd);
-                        }
-
-                    }
+            for (ForecastPrevResponse forecast : forecastPrevList) {
+                if (forecast.getDifference().compareTo(BigDecimal.ZERO) < 0) {
+                    BigDecimal difference = forecast.getDifference().negate();
+                    totalForecast = totalForecast.add(difference);
+                } else {
+                    totalForecast = totalForecast.add(forecast.getDifference());
                 }
             }
+
+            List<ExpenseResponse> expenseFilteredSplit = expenses.getData().stream().filter(
+                    ExpenseResponse::getHasSplitExpense
+            ).collect(Collectors.toList());
+
+            List<ExpenseResponse> expenseFilteredNotSplit = expenses.getData().stream().filter(expense ->
+                    !expense.getHasSplitExpense()
+            ).collect(Collectors.toList());
+
+            BigDecimal totalSplit = expenseFilteredSplit.stream()
+                    .map(ExpenseResponse::getPartValue)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+
+            BigDecimal totalNotSplit = expenseFilteredNotSplit.stream()
+                    .map(ExpenseResponse::getValue)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+
+            data.add(totalSplit.add(totalNotSplit).add(totalForecast));
         }
-        for (Forecast forecast : forecasts) {
-            List<String> monthNames = forecast.getMonths();
-            for (String monthName : monthNames) {
-                int index = Arrays.asList("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro").indexOf(monthName);
-
-
-                if (index != -1) {
-                    DataListResponse<ForecastPrevResponse> forecastPrevResponse = listPrev(userAuthId, index+1, year, owners);
-                    Optional<ForecastPrevResponse> forecastOptional = forecastPrevResponse.getData().stream().filter(f -> f.getForecastId().equals(forecast.getId())).findFirst();
-
-                    BigDecimal valueToAdd = new BigDecimal(BigInteger.ZERO);
-
-                    if (forecastOptional.isPresent()) {
-                        if(Objects.nonNull(forecast.getValue()) && Objects.nonNull(forecastOptional.get().getValuePaidForecast())) {
-                            valueToAdd = forecast.getValue().subtract(forecastOptional.get().getValuePaidForecast());
-                        }
-
-                        if (valueToAdd.compareTo(BigDecimal.ZERO) < 0) {
-                            valueToAdd = valueToAdd.abs();
-                        }
-                    } else {
-                        valueToAdd = valueToAdd.add(forecast.getValue());
-                    }
-
-                    months[index] = months[index].add(valueToAdd);
-                }
-            }
-        }
-
-
-        data.addAll(Arrays.asList(months));
 
         dataSet.setLabel("Despesa");
         dataSet.setBackgroundColor("rgba(255,0,0,0.4)");
@@ -358,6 +213,8 @@ public class ForecastService {
         dataSet.setData(data);
         return dataSet;
     }
+
+
 
     private static DataSet populateLeft(DataSet receive, DataSet expense) {
         DataSet dataSet = new DataSet();
@@ -377,7 +234,6 @@ public class ForecastService {
         dataSet.setData(data);
         return dataSet;
     }
-
 
     private static DataSet populateLeftPercent(DataSet receive, DataSet expense) {
         DataSet dataSet = new DataSet();
@@ -434,8 +290,8 @@ public class ForecastService {
 
     private static BigDecimal getTotalLeft(ArrayList<BigDecimal> dataList) {
         BigDecimal receiveTotal = new BigDecimal(BigInteger.ZERO);
-        for (int i = 0; i < dataList.size(); i++) {
-            receiveTotal = receiveTotal.add(dataList.get(i));
+        for (BigDecimal bigDecimal : dataList) {
+            receiveTotal = receiveTotal.add(bigDecimal);
         }
         return receiveTotal;
     }

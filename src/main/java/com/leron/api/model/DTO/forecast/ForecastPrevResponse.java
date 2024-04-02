@@ -18,5 +18,4 @@ public class ForecastPrevResponse {
     private BigDecimal valuePaidForecast;
     private BigDecimal difference;
     private String currency;
-    private List<Expense> expensesDetails;
 }
