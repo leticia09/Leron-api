@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -169,41 +170,51 @@ public class ForecastService {
     public DataSet populateExpenses(Long userAuthId, int year, List<Long> owners) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+
+        int currentMonth = calendar.get(Calendar.MONTH) + 1;
 
         for (int i = 1; i <= 12; i++) {
             List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
             DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, i, year, owners);
             List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
-            BigDecimal totalForecast = new BigDecimal(BigInteger.ZERO);
+            BigDecimal totalForecast = getTotalForecast(i, currentMonth, forecastPrevList);
 
-            for (ForecastPrevResponse forecast : forecastPrevList) {
-                if (forecast.getDifference().compareTo(BigDecimal.ZERO) < 0) {
-                    BigDecimal difference = forecast.getDifference().negate();
-                    totalForecast = totalForecast.add(difference);
-                } else {
-                    totalForecast = totalForecast.add(forecast.getDifference());
-                }
-            }
+            List<ExpenseResponse> expenseFilteredPaid = expenses.getData().stream().filter(expense ->
+                    expense.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
 
-            List<ExpenseResponse> expenseFilteredSplit = expenses.getData().stream().filter(
+            List<ExpenseResponse> expenseFilteredNotPaid = expenses.getData().stream().filter(expense ->
+                    !expense.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
+
+
+            List<ExpenseResponse> expenseFilteredSplitNotPaid = expenseFilteredNotPaid.stream().filter(
                     ExpenseResponse::getHasSplitExpense
             ).collect(Collectors.toList());
 
-            List<ExpenseResponse> expenseFilteredNotSplit = expenses.getData().stream().filter(expense ->
+            List<ExpenseResponse> expenseFilteredNotSplitNotPaid = expenseFilteredNotPaid.stream().filter(expense ->
                     !expense.getHasSplitExpense()
             ).collect(Collectors.toList());
 
-            BigDecimal totalSplit = expenseFilteredSplit.stream()
+            BigDecimal totalPaid = expenseFilteredPaid.stream()
+                    .map(ExpenseResponse::getValuePaid)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+
+
+            BigDecimal totalSplit = expenseFilteredSplitNotPaid.stream()
                     .map(ExpenseResponse::getPartValue)
                     .reduce(BigDecimal::add)
                     .orElse(BigDecimal.ZERO);
 
-            BigDecimal totalNotSplit = expenseFilteredNotSplit.stream()
+
+            BigDecimal totalNotSplitNotPaid = expenseFilteredNotSplitNotPaid.stream()
                     .map(ExpenseResponse::getValue)
                     .reduce(BigDecimal::add)
                     .orElse(BigDecimal.ZERO);
 
-            data.add(totalSplit.add(totalNotSplit).add(totalForecast));
+            data.add(totalPaid.add(totalSplit.add(totalNotSplitNotPaid).add(totalForecast)));
         }
 
         dataSet.setLabel("Despesa");
@@ -214,6 +225,21 @@ public class ForecastService {
         return dataSet;
     }
 
+    private static BigDecimal getTotalForecast(int i, int currentMonth, List<ForecastPrevResponse> forecastPrevList) {
+        BigDecimal totalForecast = new BigDecimal(BigInteger.ZERO);
+
+        if(i >= currentMonth) {
+            for (ForecastPrevResponse forecast : forecastPrevList) {
+                if (forecast.getDifference().compareTo(BigDecimal.ZERO) < 0) {
+                    BigDecimal difference = forecast.getDifference().negate();
+                    totalForecast = totalForecast.add(difference);
+                } else {
+                    totalForecast = totalForecast.add(forecast.getDifference());
+                }
+            }
+        }
+        return totalForecast;
+    }
 
 
     private static DataSet populateLeft(DataSet receive, DataSet expense) {
