@@ -10,6 +10,7 @@ import com.leron.api.model.DTO.forecast.ForecastResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.entities.Forecast;
+import com.leron.api.model.entities.ForecastDate;
 import com.leron.api.repository.BankMovementRepository;
 import com.leron.api.repository.ForecastDateRepository;
 import com.leron.api.repository.ForecastRepository;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -77,21 +79,17 @@ public class ForecastService {
         return response;
     }
 
-//    public DataListResponse<ForecastResponse> list(Long userAuthId) {
-//        List<Forecast> forecastList = forecastRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-//        return ForecastMapper.entityToResponse(forecastList);
-//    }
-
     public DataResponse<ForecastManagementResponse> getManagementScreen(Long userAuthId, int month, Long year, List<Long> owners) {
         DataResponse<ForecastManagementResponse> response = new DataResponse<>();
         ForecastManagementResponse forecastManagementResponse = new ForecastManagementResponse();
 
         List<Forecast> forecasts = listForecast(userAuthId, month, year, owners);
+        List<ForecastDate> forecastsAllYear = listForecastAllYear(userAuthId, owners, year);
         DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, month, year.intValue(), owners);
 
         forecastManagementResponse.setGraphicResponse(graphic(userAuthId, month, year, owners));
         forecastManagementResponse.setForecastPrevResponseList(forecastPrev(forecasts, expenses));
-        forecastManagementResponse.setForecastResponseList(forecastList(forecasts));
+        forecastManagementResponse.setForecastResponseList(forecastList(forecastsAllYear));
 
         response.setData(forecastManagementResponse);
         return response;
@@ -99,6 +97,11 @@ public class ForecastService {
 
     public List<Forecast> listForecast(Long userAuthId, int month, Long year, List<Long> owners) {
         return forecastRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(userAuthId, getMonth(month), year, owners);
+    }
+
+    public List<ForecastDate> listForecastAllYear(Long userAuthId, List<Long> owners, Long year) {
+        List<Long> forecastId = forecastRepository.findAllByUserAuthIdAndOwnersId(userAuthId, owners);
+        return forecastDateRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(forecastId, year);
     }
 
     public GraphicResponse graphic(Long userAuthId, int month, Long year, List<Long> owners) {
@@ -128,8 +131,8 @@ public class ForecastService {
         return ForecastMapper.entityToForecastPrevResponse(forecasts, expenses.getData());
     }
 
-    public List<ForecastResponse> forecastList(List<Forecast> forecasts) {
-        return ForecastMapper.entityToForecastResponse(forecasts);
+    public List<ForecastResponse> forecastList(List<ForecastDate> forecastDates) {
+        return ForecastMapper.entityToForecastResponse(forecastDates);
     }
 
     public DataSet populateEntrances(Long userAuthId, int year, List<Long> owners) {
@@ -228,7 +231,7 @@ public class ForecastService {
     private static BigDecimal getTotalForecast(int i, int currentMonth, List<ForecastPrevResponse> forecastPrevList) {
         BigDecimal totalForecast = new BigDecimal(BigInteger.ZERO);
 
-        if(i >= currentMonth) {
+        if (i >= currentMonth) {
             for (ForecastPrevResponse forecast : forecastPrevList) {
                 if (forecast.getDifference().compareTo(BigDecimal.ZERO) < 0) {
                     BigDecimal difference = forecast.getDifference().negate();

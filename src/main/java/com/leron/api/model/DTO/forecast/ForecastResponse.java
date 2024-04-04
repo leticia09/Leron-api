@@ -14,5 +14,9 @@ public class ForecastResponse {
     private Long specificGroup;
     private String macroGroupName;
     private String specificGroupName;
-    private List<ForecastDateResponse> forecastDateResponseList;
+    private Long forecastDataId;
+    private String month;
+    private String currency;
+    private String value;
+    private Long year;
 }

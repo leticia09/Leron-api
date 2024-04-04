@@ -30,4 +30,13 @@ public interface ForecastRepository extends JpaRepository<Forecast, Long> {
             @Param("year") Long year,
             @Param("ownerIds") List<Long> ownerIds
     );
+
+    @Query("SELECT DISTINCT f.id FROM Forecast f " +
+            "WHERE f.ownerId IN (:ownerIds) " +
+            "AND f.deleted = false " +
+            "AND f.userAuthId = :userAuthId ")
+    List<Long> findAllByUserAuthIdAndOwnersId(
+            @Param("userAuthId") Long userAuthId,
+            @Param("ownerIds") List<Long> ownerIds
+    );
 }

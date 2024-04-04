@@ -83,35 +83,23 @@ public class ForecastMapper {
         return response;
     }
 
-    public static List<ForecastResponse> entityToForecastResponse(List<Forecast> forecastList) {
+    public static List<ForecastResponse> entityToForecastResponse(List<ForecastDate> forecastDates) {
         List<ForecastResponse> response = new ArrayList<>();
-        forecastList.forEach(forecast -> {
+        forecastDates.forEach(forecast -> {
             ForecastResponse forecastResponse = new ForecastResponse();
-            forecastResponse.setId(forecast.getId());
-            forecastResponse.setOwnerId(forecast.getOwnerId());
-            forecastResponse.setMacroGroup(forecast.getMacroGroupId());
-            forecastResponse.setSpecificGroup(forecast.getSpecificGroupId());
-            forecastResponse.setMacroGroupName(forecast.getMacroGroupName());
-            forecastResponse.setSpecificGroupName(forecast.getSpecificGroupName());
-            forecastResponse.setForecastDateResponseList(forecastDateEntityToResponse(forecast.getForecastDates()));
+            forecastResponse.setId(forecast.getForecast().getId());
+            forecastResponse.setOwnerId(forecast.getForecast().getOwnerId());
+            forecastResponse.setMacroGroup(forecast.getForecast().getMacroGroupId());
+            forecastResponse.setSpecificGroup(forecast.getForecast().getSpecificGroupId());
+            forecastResponse.setMacroGroupName(forecast.getForecast().getMacroGroupName());
+            forecastResponse.setSpecificGroupName(forecast.getForecast().getSpecificGroupName());
+            forecastResponse.setForecastDataId(forecast.getId());
+            forecastResponse.setCurrency(forecast.getCurrency());
+            forecastResponse.setValue(String.valueOf(forecast.getValue()));
+            forecastResponse.setMonth(forecast.getMonth());
+            forecastResponse.setYear(forecast.getYear());
             response.add(forecastResponse);
         });
         return response;
     }
-
-    public static List<ForecastDateResponse>  forecastDateEntityToResponse( List<ForecastDate> forecastDates) {
-        List<ForecastDateResponse> response = new ArrayList<>();
-        forecastDates.forEach(forecastDate -> {
-            ForecastDateResponse request = new ForecastDateResponse();
-            request.setId(forecastDate.getId());
-            request.setValue(forecastDate.getValue().toString());
-            request.setMonth(FormatDate.getMonth(forecastDate.getMonth()));
-            request.setYear(forecastDate.getYear());
-            request.setCurrency(forecastDate.getCurrency());
-            response.add(request);
-        });
-
-        return response;
-    }
-
 }
