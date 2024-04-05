@@ -31,6 +31,7 @@ import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.leron.api.utils.FormatDate.getMonth;
@@ -101,7 +102,11 @@ public class ForecastService {
 
     public List<ForecastDate> listForecastAllYear(Long userAuthId, List<Long> owners, Long year) {
         List<Long> forecastId = forecastRepository.findAllByUserAuthIdAndOwnersId(userAuthId, owners);
-        return forecastDateRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(forecastId, year);
+        if(!forecastId.isEmpty()) {
+            return forecastDateRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(forecastId, year);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     public GraphicResponse graphic(Long userAuthId, int month, Long year, List<Long> owners) {
