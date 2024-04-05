@@ -1,6 +1,7 @@
 package com.leron.api.service.entrance;
 
 import com.leron.api.mapper.entrance.EntranceMapper;
+import com.leron.api.model.DTO.entrance.EntranceManagementResponse;
 import com.leron.api.model.DTO.entrance.EntranceRequest;
 import com.leron.api.model.DTO.entrance.EntranceResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
@@ -70,9 +71,19 @@ public class EntranceService {
         return response;
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
-        DataResponse<GraphicResponse> response = new DataResponse<>();
+    public DataResponse<EntranceManagementResponse> getManagementData(Long authId, int month, int year, List<Long> owners) {
+        DataResponse<EntranceManagementResponse> response = new DataResponse<>();
+        EntranceManagementResponse entranceManagementResponse = new EntranceManagementResponse();
 
+        entranceManagementResponse.setEntranceResponseList(list(authId, month, year, owners));
+        entranceManagementResponse.setGraphicResponseData(getData(authId, month, year, owners));
+        entranceManagementResponse.setGraphicResponseDetails(getDataDetails(authId, month, year, owners));
+
+        response.setData(entranceManagementResponse);
+        return response;
+    }
+
+    public GraphicResponse getData(Long authId, int month, int year, List<Long> owners) {
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
@@ -135,14 +146,10 @@ public class EntranceService {
         graphicResponse.setTotal3(receiveHoldOn);
         graphicResponse.setTotal4(receiveNotOk);
 
-        response.setData(graphicResponse);
-
-        return response;
+        return graphicResponse;
     }
 
-    public DataResponse<GraphicResponse> getDataDetails(Long authId, int month, int year, List<Long> owners) {
-        DataResponse<GraphicResponse> response = new DataResponse<>();
-
+    public GraphicResponse getDataDetails(Long authId, int month, int year, List<Long> owners) {
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
@@ -224,12 +231,10 @@ public class EntranceService {
         graphicResponse.setTotal3(receiveHoldOn);
         graphicResponse.setTotal4(receiveNotOk);
 
-        response.setData(graphicResponse);
-
-        return response;
+        return graphicResponse;
     }
 
-    public DataListResponse<EntranceResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
+    public List<EntranceResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
         List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalseOrderByInitialDateDesc(userAuthId);
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(userAuthId, owners);
         List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);

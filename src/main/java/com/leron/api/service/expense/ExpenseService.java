@@ -1,6 +1,7 @@
 package com.leron.api.service.expense;
 
 import com.leron.api.mapper.expense.ExpenseMapper;
+import com.leron.api.model.DTO.expense.ExpenseManagementResponse;
 import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
@@ -19,7 +20,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -125,7 +125,19 @@ public class ExpenseService {
         }
     }
 
-    public DataListResponse<ExpenseResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
+    public DataResponse<ExpenseManagementResponse> getManagementData(Long userAuthId, int month, int year, List<Long> owners) {
+        DataResponse<ExpenseManagementResponse> response = new DataResponse<>();
+        ExpenseManagementResponse expenseManagementResponse = new ExpenseManagementResponse();
+
+        expenseManagementResponse.setExpenseResponseList(list(userAuthId, month, year, owners));
+        expenseManagementResponse.setGraphicResponseData(getData(userAuthId, month, year, owners));
+        expenseManagementResponse.setGraphicResponseDetails(getDataDetails(userAuthId,month,year,owners));
+
+        response.setData(expenseManagementResponse);
+        return response;
+    }
+
+    public List<ExpenseResponse> list(Long userAuthId, int month, int year, List<Long> owners) {
         List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(userAuthId);
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(userAuthId, owners);
         List<Card> cards = cardRepository.findByUserAuthId(userAuthId);
@@ -136,60 +148,7 @@ public class ExpenseService {
         return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year, accounts, moneyList, cardFinancialEntityList);
     }
 
-
-    public DataListResponse<ExpensePeriodResponse> listPeriod(Long userAuthId, String period, Long owner, List<Long> cards) {
-        DataListResponse<ExpensePeriodResponse> response = new DataListResponse<>();
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        List<ExpensePeriodResponse> responseList = new ArrayList<>();
-
-        cards.forEach(card -> {
-            String[] part = period.split("/");
-            int month = Integer.parseInt(part[0]);
-            int year = Integer.parseInt(part[1]);
-
-            String monthToSend = (month < 10) ? "0" + month : String.valueOf(month);
-
-            Card card1 = cardRepository.findCardByFinalNumber(userAuthId, card);
-            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, card1.getAccount().getBank().getId(), card1.getAccount().getId(), card);
-
-            for (Expense ex : expenses) {
-                ExpensePeriodResponse expensePeriodResponse = new ExpensePeriodResponse();
-                List<BankMovement> bankMovementList = bankMovements.stream()
-                        .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
-                                bm.getUserAuthId().equals(userAuthId) &&
-                                bm.getReferencePeriod().equalsIgnoreCase(monthToSend + "/" + year) &&
-                                bm.getType().equalsIgnoreCase("Saída")
-                        ).collect(Collectors.toList());
-
-                String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
-                if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
-                    if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
-                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()), 2, RoundingMode.HALF_UP);
-                        expensePeriodResponse.setId(ex.getId());
-                        expensePeriodResponse.setLocal(ex.getLocal());
-                        expensePeriodResponse.setFinalCard(ex.getFinalCard());
-                        expensePeriodResponse.setOwnerId(ex.getOwnerId());
-                        expensePeriodResponse.setValue(partValue.toString());
-                        expensePeriodResponse.setCurrency(card1.getAccount().getCurrency());
-                        responseList.add(expensePeriodResponse);
-                    }
-                }
-            }
-        });
-        response.setData(responseList);
-        return response;
-    }
-
-    public DataListResponse<ExpenseResponse> list(Long userAuthId) {
-        List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
-        List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
-        return ExpenseMapper.entityToResponse(expense, members, banks, bankMovements);
-    }
-
-    public DataResponse<GraphicResponse> getDataDetails(Long authId, int month, int year, List<Long> owners) {
-        DataResponse<GraphicResponse> response = new DataResponse<>();
+    public GraphicResponse getDataDetails(Long authId, int month, int year, List<Long> owners) {
 
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
@@ -289,13 +248,10 @@ public class ExpenseService {
         graphicResponse.setTotal3(receiveHoldOn);
         graphicResponse.setTotal4(receiveNotOk);
 
-        response.setData(graphicResponse);
-
-        return response;
+        return graphicResponse;
     }
 
-    public DataResponse<GraphicResponse> getData(Long authId, int month, int year, List<Long> owners) {
-        DataResponse<GraphicResponse> response = new DataResponse<>();
+    public GraphicResponse getData(Long authId, int month, int year, List<Long> owners) {
 
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(authId);
@@ -418,9 +374,58 @@ public class ExpenseService {
         graphicResponse.setTotal3(receiveHoldOn);
         graphicResponse.setTotal4(receiveNotOk);
 
-        response.setData(graphicResponse);
+        return graphicResponse;
+    }
 
+    public DataListResponse<ExpensePeriodResponse> listPeriod(Long userAuthId, String period, Long owner, List<Long> cards) {
+        DataListResponse<ExpensePeriodResponse> response = new DataListResponse<>();
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<ExpensePeriodResponse> responseList = new ArrayList<>();
+
+        cards.forEach(card -> {
+            String[] part = period.split("/");
+            int month = Integer.parseInt(part[0]);
+            int year = Integer.parseInt(part[1]);
+
+            String monthToSend = (month < 10) ? "0" + month : String.valueOf(month);
+
+            Card card1 = cardRepository.findCardByFinalNumber(userAuthId, card);
+            List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndBankIdAndAccountIdAndFinalCard(userAuthId, card1.getAccount().getBank().getId(), card1.getAccount().getId(), card);
+
+            for (Expense ex : expenses) {
+                ExpensePeriodResponse expensePeriodResponse = new ExpensePeriodResponse();
+                List<BankMovement> bankMovementList = bankMovements.stream()
+                        .filter(bm -> Objects.equals(bm.getExpenseId(), ex.getId()) &&
+                                bm.getUserAuthId().equals(userAuthId) &&
+                                bm.getReferencePeriod().equalsIgnoreCase(monthToSend + "/" + year) &&
+                                bm.getType().equalsIgnoreCase("Saída")
+                        ).collect(Collectors.toList());
+
+                String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
+                if (!status.equalsIgnoreCase("Não Iniciada") && !status.equalsIgnoreCase("Confirmado") && !status.equalsIgnoreCase("")) {
+                    if ("Crédito".equalsIgnoreCase(ex.getPaymentForm())) {
+                        BigDecimal partValue = ex.getValue().divide(BigDecimal.valueOf(ex.getQuantityPart()), 2, RoundingMode.HALF_UP);
+                        expensePeriodResponse.setId(ex.getId());
+                        expensePeriodResponse.setLocal(ex.getLocal());
+                        expensePeriodResponse.setFinalCard(ex.getFinalCard());
+                        expensePeriodResponse.setOwnerId(ex.getOwnerId());
+                        expensePeriodResponse.setValue(partValue.toString());
+                        expensePeriodResponse.setCurrency(card1.getAccount().getCurrency());
+                        responseList.add(expensePeriodResponse);
+                    }
+                }
+            }
+        });
+        response.setData(responseList);
         return response;
+    }
+
+    public DataListResponse<ExpenseResponse> list(Long userAuthId) {
+        List<Expense> expense = expenseRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        List<Bank> banks = bankRepository.findByUserAuthId(userAuthId);
+        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
+        return ExpenseMapper.entityToResponse(expense, members, banks, bankMovements);
     }
 
     public DataResponse<BigDecimal> getAmountByRegisterBank(Long userAuthId, Long bankId, Long accountId, List<String> cardListRequest, String period) {

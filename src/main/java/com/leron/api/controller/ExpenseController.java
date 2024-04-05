@@ -1,5 +1,6 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.expense.ExpenseManagementResponse;
 import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.expense.ExpenseRequest;
 import com.leron.api.model.DTO.expense.ExpenseResponse;
@@ -39,11 +40,11 @@ public class ExpenseController {
     }
 
     @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
-    public DataListResponse<ExpenseResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                  @PathVariable(value = "month", required = true) int month,
-                                                  @PathVariable(value = "year", required = true) int year,
-                                                  @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.list(userAuthId, month, year, owners);
+    public DataResponse<ExpenseManagementResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                            @PathVariable(value = "month", required = true) int month,
+                                                            @PathVariable(value = "year", required = true) int year,
+                                                            @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return service.getManagementData(userAuthId, month, year, owners);
     }
 
     @GetMapping("period/{userAuthId}/{month}/{year}/{owner}/{cards}")
@@ -53,27 +54,6 @@ public class ExpenseController {
                                                               @PathVariable(value = "owner", required = true) Long owner,
                                                               @PathVariable(value = "cards", required = true) List<Long> cards) {
         return service.listPeriod(userAuthId, month + "/" + year, owner, cards);
-    }
-
-    @GetMapping("/{userAuthId}")
-    public DataListResponse<ExpenseResponse> listWithoutFilters(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
-        return service.list(userAuthId);
-    }
-
-    @GetMapping("data/{userAuthId}/{month}/{year}/{owners}")
-    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                         @PathVariable(value = "month", required = true) int month,
-                                                         @PathVariable(value = "year", required = true) int year,
-                                                         @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.getData(userAuthId, month, year, owners);
-    }
-
-    @GetMapping("data-details/{userAuthId}/{month}/{year}/{owners}")
-    public DataResponse<GraphicResponse> getProgramsDataDetails(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                                @PathVariable(value = "month", required = true) int month,
-                                                                @PathVariable(value = "year", required = true) int year,
-                                                                @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.getDataDetails(userAuthId, month, year, owners);
     }
 
     @PostMapping("/{userAuthId}/{bankId}/{accountId}/{month}/{year}")
@@ -86,6 +66,10 @@ public class ExpenseController {
         return service.getAmountByRegisterBank(userAuthId, bankId, accountId, cardListRequest, month + "/" + year);
     }
 
+    @GetMapping("/{userAuthId}")
+    public DataListResponse<ExpenseResponse> listWithoutFilters(@PathVariable(value = "userAuthId", required = true) Long userAuthId) {
+        return service.list(userAuthId);
+    }
 
     @GetMapping("id/{id}")
     public Expense getById(@PathVariable(value = "id", required = true) Long id) {

@@ -1,8 +1,8 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.entrance.EntranceManagementResponse;
 import com.leron.api.model.DTO.entrance.EntranceRequest;
 import com.leron.api.model.DTO.entrance.EntranceResponse;
-import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
@@ -34,28 +34,12 @@ public class EntranceController {
 
     }
 
-    @GetMapping("data/{userAuthId}/{month}/{year}/{owners}")
-    public DataResponse<GraphicResponse> getProgramsData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                         @PathVariable(value = "month", required = true) int month,
-                                                         @PathVariable(value = "year", required = true) int year,
-                                                         @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.getData(userAuthId, month, year, owners);
-    }
-
-    @GetMapping("data-details/{userAuthId}/{month}/{year}/{owners}")
-    public DataResponse<GraphicResponse> getProgramsDataDetails(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                                @PathVariable(value = "month", required = true) int month,
-                                                                @PathVariable(value = "year", required = true) int year,
-                                                                @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.getDataDetails(userAuthId, month, year, owners);
-    }
-
     @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
-    public DataListResponse<EntranceResponse> list(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
-                                                   @PathVariable(value = "month", required = true) int month,
-                                                   @PathVariable(value = "year", required = true) int year,
-                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
-        return service.list(userAuthId, month, year, owners);
+    public DataResponse<EntranceManagementResponse> getManagementData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                                      @PathVariable(value = "month", required = true) int month,
+                                                                      @PathVariable(value = "year", required = true) int year,
+                                                                      @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return service.getManagementData(userAuthId, month, year, owners);
     }
 
     @GetMapping("/{userAuthId}")

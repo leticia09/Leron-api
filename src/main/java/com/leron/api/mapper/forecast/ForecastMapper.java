@@ -1,13 +1,12 @@
 package com.leron.api.mapper.forecast;
 
 import com.leron.api.model.DTO.expense.ExpenseResponse;
-import com.leron.api.model.DTO.forecast.*;
-import com.leron.api.model.entities.Expense;
+import com.leron.api.model.DTO.forecast.ForecastDateRequest;
+import com.leron.api.model.DTO.forecast.ForecastPrevResponse;
+import com.leron.api.model.DTO.forecast.ForecastRequest;
+import com.leron.api.model.DTO.forecast.ForecastResponse;
 import com.leron.api.model.entities.Forecast;
 import com.leron.api.model.entities.ForecastDate;
-import com.leron.api.model.entities.MacroGroup;
-import com.leron.api.responses.DataListResponse;
-import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

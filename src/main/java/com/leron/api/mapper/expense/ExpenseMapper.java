@@ -236,8 +236,8 @@ public class ExpenseMapper {
         return expense;
     }
 
-    public static DataListResponse<ExpenseResponse> entityToResponse(List<Expense> expenses, List<Member> members, List<Card> cards, List<BankMovement> bankMovements, int month, int year, List<Account> accounts, List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
-        DataListResponse<ExpenseResponse> response = new DataListResponse<>();
+    public static List<ExpenseResponse> entityToResponse(List<Expense> expenses, List<Member> members, List<Card> cards, List<BankMovement> bankMovements, int month, int year, List<Account> accounts, List<Money> moneyList, List<CardFinancialEntity> cardFinancialEntityList) {
+
         List<ExpenseResponse> expenseList = new ArrayList<>();
         String monthValue;
         if (month < 10) {
@@ -382,8 +382,9 @@ public class ExpenseMapper {
             }
         });
 
-        response.setData(expenseList.stream().filter(expense -> Objects.nonNull(expense.getStatus()) && !expense.getStatus().equalsIgnoreCase("Não Iniciada") && !expense.getStatus().equalsIgnoreCase("Fechada")).collect(Collectors.toList()));
-        return response;
+        return expenseList.stream().filter(expense -> Objects.nonNull(expense.getStatus()) &&
+                !expense.getStatus().equalsIgnoreCase("Não Iniciada") &&
+                !expense.getStatus().equalsIgnoreCase("Fechada")).collect(Collectors.toList());
     }
 
     public static DataListResponse<ExpenseResponse> entityToResponse(List<Expense> expenses, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements) {

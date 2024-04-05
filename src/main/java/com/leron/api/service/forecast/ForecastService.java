@@ -85,7 +85,7 @@ public class ForecastService {
 
         List<Forecast> forecasts = listForecast(userAuthId, month, year, owners);
         List<ForecastDate> forecastsAllYear = listForecastAllYear(userAuthId, owners, year);
-        DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, month, year.intValue(), owners);
+        List<ExpenseResponse> expenses = expenseService.list(userAuthId, month, year.intValue(), owners);
 
         forecastManagementResponse.setGraphicResponse(graphic(userAuthId, month, year, owners));
         forecastManagementResponse.setForecastPrevResponseList(forecastPrev(forecasts, expenses));
@@ -127,8 +127,8 @@ public class ForecastService {
         return response;
     }
 
-    public List<ForecastPrevResponse> forecastPrev(List<Forecast> forecasts, DataListResponse<ExpenseResponse> expenses) {
-        return ForecastMapper.entityToForecastPrevResponse(forecasts, expenses.getData());
+    public List<ForecastPrevResponse> forecastPrev(List<Forecast> forecasts, List<ExpenseResponse> expenses) {
+        return ForecastMapper.entityToForecastPrevResponse(forecasts, expenses);
     }
 
     public List<ForecastResponse> forecastList(List<ForecastDate> forecastDates) {
@@ -140,12 +140,12 @@ public class ForecastService {
         ArrayList<BigDecimal> data = new ArrayList<>();
 
         for (int i = 1; i <= 12; i++) {
-            DataListResponse<EntranceResponse> entrances = entranceService.list(userAuthId, i, year, owners);
-            List<EntranceResponse> entranceFilteredReceived = entrances.getData().stream().filter(entrance ->
+            List<EntranceResponse> entrances = entranceService.list(userAuthId, i, year, owners);
+            List<EntranceResponse> entranceFilteredReceived = entrances.stream().filter(entrance ->
                     entrance.getStatus().equalsIgnoreCase("confirmado")
             ).collect(Collectors.toList());
 
-            List<EntranceResponse> entranceFilteredForecast = entrances.getData().stream().filter(entrance ->
+            List<EntranceResponse> entranceFilteredForecast = entrances.stream().filter(entrance ->
                     !entrance.getStatus().equalsIgnoreCase("confirmado")
             ).collect(Collectors.toList());
 
@@ -179,15 +179,15 @@ public class ForecastService {
 
         for (int i = 1; i <= 12; i++) {
             List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
-            DataListResponse<ExpenseResponse> expenses = expenseService.list(userAuthId, i, year, owners);
+            List<ExpenseResponse> expenses = expenseService.list(userAuthId, i, year, owners);
             List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
             BigDecimal totalForecast = getTotalForecast(i, currentMonth, forecastPrevList);
 
-            List<ExpenseResponse> expenseFilteredPaid = expenses.getData().stream().filter(expense ->
+            List<ExpenseResponse> expenseFilteredPaid = expenses.stream().filter(expense ->
                     expense.getStatus().equalsIgnoreCase("confirmado")
             ).collect(Collectors.toList());
 
-            List<ExpenseResponse> expenseFilteredNotPaid = expenses.getData().stream().filter(expense ->
+            List<ExpenseResponse> expenseFilteredNotPaid = expenses.stream().filter(expense ->
                     !expense.getStatus().equalsIgnoreCase("confirmado")
             ).collect(Collectors.toList());
 

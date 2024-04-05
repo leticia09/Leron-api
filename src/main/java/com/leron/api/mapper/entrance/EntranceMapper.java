@@ -118,8 +118,7 @@ public class EntranceMapper {
     }
 
 
-    public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial, List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
-        DataListResponse<EntranceResponse> response = new DataListResponse<>();
+    public static List<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial, List<Entrance> entrances, List<Member> members, List<Bank> banks, List<BankMovement> bankMovements, int month, int year) {
         List<EntranceResponse> entranceList = new ArrayList<>();
         for (Entrance entrance : entrances) {
             String monthValidate = "" + month;
@@ -209,9 +208,9 @@ public class EntranceMapper {
                 entranceList.add(entranceResponse);
             }
         }
-        response.setData(entranceList.stream().filter(entranceResponse -> Objects.nonNull(entranceResponse.getStatus()) && !entranceResponse.getStatus().equalsIgnoreCase("Não Iniciada")).collect(Collectors.toList()));
+        return entranceList.stream().filter(entranceResponse -> Objects.nonNull(entranceResponse.getStatus()) &&
+                !entranceResponse.getStatus().equalsIgnoreCase("Não Iniciada")).collect(Collectors.toList());
 
-        return response;
     }
 
     public static DataListResponse<EntranceResponse> entityToResponse(List<Money> moneyList, List<CardFinancialEntity> cardFinancial, List<Entrance> entrances, List<Member> members, List<Bank> banks) {
@@ -284,19 +283,19 @@ public class EntranceMapper {
         entrance.setSalary(response.getSalary());
         entrance.setDayReceive(response.getDayReceive());
 
-        if(response.getFrequency().equalsIgnoreCase("1")) {
+        if (response.getFrequency().equalsIgnoreCase("1")) {
             entrance.setFrequency("Única");
         }
 
-        if(response.getFrequency().equalsIgnoreCase("2")) {
+        if (response.getFrequency().equalsIgnoreCase("2")) {
             entrance.setFrequency("Mensal");
         }
 
-        if(response.getFrequency().equalsIgnoreCase("3")) {
+        if (response.getFrequency().equalsIgnoreCase("3")) {
             entrance.setFrequency("Anual");
         }
 
-        if(response.getFrequency().equalsIgnoreCase("4")) {
+        if (response.getFrequency().equalsIgnoreCase("4")) {
             entrance.setFrequency("Outro");
         }
 
