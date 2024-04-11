@@ -1,19 +1,21 @@
 package com.leron.api.service.expense;
 
 import com.leron.api.mapper.expense.ExpenseMapper;
-import com.leron.api.model.DTO.expense.ExpenseManagementResponse;
-import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
-import com.leron.api.model.DTO.expense.ExpenseRequest;
-import com.leron.api.model.DTO.expense.ExpenseResponse;
+import com.leron.api.model.DTO.expense.*;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
+import com.leron.api.model.DTO.graphic.LabelTooltip;
+import com.leron.api.model.DTO.graphic.Tooltip;
+import com.leron.api.model.DTO.macroGroup.MacroGroupResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
+import com.leron.api.service.macroGroup.MacroGroupService;
 import com.leron.api.utils.GetStatusPayment;
 import com.leron.api.validator.expense.ValidatorExpense;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,9 +27,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.leron.api.utils.FormatDate.populateMonths;
+import static com.leron.api.utils.GetStatusPayment.getExpensesWithStatus;
 
 @Service
 public class ExpenseService {
+    @Autowired
+    MacroGroupService macroGroupService;
+
     final ExpenseRepository expenseRepository;
     final MemberRepository memberRepository;
     final RegisterBankRepository bankRepository;
@@ -129,9 +135,11 @@ public class ExpenseService {
         DataResponse<ExpenseManagementResponse> response = new DataResponse<>();
         ExpenseManagementResponse expenseManagementResponse = new ExpenseManagementResponse();
 
-        expenseManagementResponse.setExpenseResponseList(list(userAuthId, month, year, owners));
+        List<ExpenseResponse> expenseResponses = list(userAuthId, month, year, owners);
+
+        expenseManagementResponse.setExpenseResponseList(expenseResponses);
         expenseManagementResponse.setGraphicResponseData(getData(userAuthId, month, year, owners));
-        expenseManagementResponse.setGraphicResponseDetails(getDataDetails(userAuthId,month,year,owners));
+        expenseManagementResponse.setGraphicResponseDetails(getDataDetails(userAuthId, month, year, owners, expenseResponses));
 
         response.setData(expenseManagementResponse);
         return response;
@@ -148,11 +156,11 @@ public class ExpenseService {
         return ExpenseMapper.entityToResponse(expense, members, cards, bankMovements, month, year, accounts, moneyList, cardFinancialEntityList);
     }
 
-    public GraphicResponse getDataDetails(Long authId, int month, int year, List<Long> owners) {
+    public GraphicResponse getDataDetails(Long authId, int month, int year, List<Long> owners, List<ExpenseResponse> expenses) {
 
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalse(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<MacroGroupResponse> macroGroupResponses = macroGroupService.listData(authId);
 
         BigDecimal receiveTotal = BigDecimal.ZERO;
         BigDecimal receiveOk = BigDecimal.ZERO;
@@ -163,12 +171,70 @@ public class ExpenseService {
 
         ArrayList<DataSet> dataSets = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
+        List<LabelTooltip> tooltips = new ArrayList<>();
 
         for (Member member : members) {
             DataSet dataSet = new DataSet();
             ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+            ArrayList<Tooltip> tooltipList = new ArrayList<>();
 
-            for (Expense expense : expenses) {
+            LabelTooltip labelTooltipObject = new LabelTooltip();
+            labelTooltipObject.setLabel(member.getName());
+
+            for (MacroGroupResponse macroGroup : macroGroupResponses) {
+                BigDecimal totalPerGroup = BigDecimal.ZERO;
+                ArrayList<String> tooltipLabel = new ArrayList<>();
+                Tooltip tooltip = new Tooltip();
+                List<ExpenseResponse> expenseResponseList = expenses.stream().filter(ex -> ex.getMacroGroup().equalsIgnoreCase(macroGroup.getName())).collect(Collectors.toList());
+                tooltipLabel.add("");
+                List<ObjectTemp> objectListTemp = new ArrayList<>();
+                for (ExpenseResponse expense : expenseResponseList) {
+                    if (member.getId().equals(expense.getOwnerId())) {
+                        tooltip.setName(expense.getMacroGroup());
+                        ObjectTemp objectTemp = new ObjectTemp();
+
+                        objectTemp.setSpecificGroup(expense.getSpecificGroup());
+                        objectTemp.setCurrency(expense.getCurrency());
+
+                        if (!expense.getHasSplitExpense() && !expense.getStatus().equalsIgnoreCase("confirmado")) {
+                            objectTemp.setValue(expense.getValue());
+                            totalPerGroup = totalPerGroup.add(expense.getValue());
+                        } else if (!expense.getStatus().equalsIgnoreCase("confirmado")) {
+                            objectTemp.setValue(expense.getPartValue());
+                            totalPerGroup = totalPerGroup.add(expense.getPartValue());
+                        } else {
+                            objectTemp.setValue(expense.getValuePaid());
+                            totalPerGroup = totalPerGroup.add(expense.getValuePaid());
+                        }
+                        objectListTemp.add(objectTemp);
+                    }
+                }
+
+                for (SpecificGroup specificGroup : macroGroup.getSpecificGroups()) {
+                    List<ObjectTemp> objectList = objectListTemp.stream()
+                            .filter(ob -> ob.getSpecificGroup().equalsIgnoreCase(specificGroup.getName()))
+                            .collect(Collectors.toList());
+
+                    BigDecimal totalPerSpecific = objectList.stream()
+                            .map(ObjectTemp::getValue)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    if (!objectList.isEmpty()) {
+                        tooltipLabel.add(objectList.get(0).getSpecificGroup() + ": " + objectList.get(0).getCurrency() + " " + totalPerSpecific);
+                    }
+                }
+
+
+                tooltip.setTooltipLabel(tooltipLabel);
+                tooltipList.add(tooltip);
+                tooltipLabel.add("TOTAL: " + totalPerGroup);
+            }
+
+            labelTooltipObject.setTooltipList(tooltipList);
+            tooltips.add(labelTooltipObject);
+
+
+            for (ExpenseResponse expense : expenses) {
                 String monthValidate = "" + month;
                 if (month < 10) {
                     monthValidate = "0" + month;
@@ -186,16 +252,16 @@ public class ExpenseService {
 
                 if (member.getId().equals(expense.getOwnerId())) {
                     int labelIndex = labels.indexOf(expense.getMacroGroup());
+
                     if (labelIndex == -1) {
                         labels.add(expense.getMacroGroup());
                         data.add(value);
                     } else {
                         data.set(labelIndex, data.get(labelIndex).add(value));
                     }
-                    String status = GetStatusPayment.getStatus(expense, bankMovementList, month, year);
 
-                    if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                        if (status.equalsIgnoreCase("Confirmado")) {
+                    if (!expense.getStatus().equalsIgnoreCase("Não Iniciada") && !expense.getStatus().isEmpty()) {
+                        if (expense.getStatus().equalsIgnoreCase("Confirmado")) {
                             receiveTotal = receiveTotal.add(value);
                         } else if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
@@ -206,11 +272,11 @@ public class ExpenseService {
 
                     }
 
-                    if (status.equalsIgnoreCase("Confirmado")) {
+                    if (expense.getStatus().equalsIgnoreCase("Confirmado")) {
                         receiveOk = receiveOk.add(value);
                     }
 
-                    if (status.equalsIgnoreCase("Aguardando")) {
+                    if (expense.getStatus().equalsIgnoreCase("Aguardando")) {
                         if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveHoldOn = receiveHoldOn.add(c);
@@ -219,7 +285,7 @@ public class ExpenseService {
                         }
                     }
 
-                    if (status.equalsIgnoreCase("pendente")) {
+                    if (expense.getStatus().equalsIgnoreCase("pendente")) {
                         if (expense.getHasSplitExpense()) {
                             BigDecimal c = expense.getValue().divide(new BigDecimal(expense.getQuantityPart()), MathContext.DECIMAL32);
                             receiveNotOk = receiveNotOk.add(c);
@@ -228,7 +294,6 @@ public class ExpenseService {
                         }
                     }
                 }
-
             }
 
             if (!data.isEmpty()) {
@@ -247,12 +312,12 @@ public class ExpenseService {
         graphicResponse.setTotal2(receiveOk);
         graphicResponse.setTotal3(receiveHoldOn);
         graphicResponse.setTotal4(receiveNotOk);
+        graphicResponse.setTooltipLabel(tooltips);
 
         return graphicResponse;
     }
 
     public GraphicResponse getData(Long authId, int month, int year, List<Long> owners) {
-
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseOrderByDateBuyDesc(authId);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
@@ -495,10 +560,11 @@ public class ExpenseService {
     }
 
     public List<Expense> getExpenseHasSplit(Long userAuthId, int month, int year, Long owner) {
-        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerId(userAuthId, owner);
+        List<Expense> expenses = expenseRepository.findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerIdAndStatusIsNull(userAuthId, owner);
+        List<Expense> expenseFiltered = expenses.stream().filter(ex -> !ex.getPaymentForm().equalsIgnoreCase("crédito")).collect(Collectors.toList());
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(userAuthId);
 
-        expenses.forEach(ex -> {
+        expenseFiltered.forEach(ex -> {
             String monthValidate = "" + month;
             if (month < 10) {
                 monthValidate = "0" + month;
@@ -508,15 +574,14 @@ public class ExpenseService {
                     .stream()
                     .filter(bm -> Objects.nonNull(bm.getExpenseId()) &&
                             bm.getReferencePeriod().equalsIgnoreCase(period) &&
-                            bm.getExpenseId().equals(ex.getId()
-                            )).collect(Collectors.toList());
+                            bm.getExpenseId().equals(ex.getId())
+                    ).collect(Collectors.toList());
             String status = GetStatusPayment.getStatus(ex, bankMovementList, month, year);
             ex.setStatus(status);
-
         });
 
 
-        return expenses.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando") ||
+        return expenseFiltered.stream().filter(ex -> (Objects.isNull(ex.getStatus()) || ex.getStatus().equalsIgnoreCase("Aguardando") ||
                 ex.getStatus().equalsIgnoreCase("Pendente")
         )).collect(Collectors.toList());
     }

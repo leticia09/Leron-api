@@ -296,6 +296,155 @@ public class GetStatusPayment {
         return "";
     }
 
+    public static List<Expense> getExpensesWithStatus(List<Expense> expenses, List<BankMovement> movements, int month, int year) {
+        LocalDate currentDate = LocalDate.now();
+        int currentDay = currentDate.getDayOfMonth();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
+
+        expenses.forEach(expense -> {
+            LocalDate initialDate;
+            if (Objects.nonNull(expense.getInitialDate())) {
+                initialDate = expense.getInitialDate().toLocalDateTime().toLocalDate();
+            } else {
+                initialDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+            }
+            int initialDay = initialDate.getDayOfMonth();
+            Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
+
+            if (!movements.isEmpty()) {
+
+                for (BankMovement bankMovement : movements) {
+                    String[] part = bankMovement.getReferencePeriod().split("/");
+                    int movementMonth = Integer.parseInt(part[0]);
+                    int movementYear = Integer.parseInt(part[1]);
+                    if (expense.getHasSplitExpense() && !expense.getPaymentForm().equalsIgnoreCase("crédito")) {
+                        if (expense.getFrequency().equalsIgnoreCase("Mensal")) {
+                            if (expense.getInitialDate().after(date)) {
+                                expense.setStatus("Não Iniciada");
+                            } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                                expense.setStatus("Confirmado");
+                            } else if (expense.getDayPayment() < currentDay && currentMonth == month) {
+                                expense.setStatus("Pendente");
+                            } else {
+                                expense.setStatus("Aguardando");
+                            }
+                        } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+                            if (expense.getInitialDate().after(date) || expense.getMonthPayment() >= month) {
+                                expense.setStatus("Não Iniciada");
+                            } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                                expense.setStatus("Confirmado");
+                            } else if (expense.getInitialDate().after(new Date())) {
+                                expense.setStatus("Pendente");
+                            } else {
+                                expense.setStatus("Aguardando");
+                            }
+                        }
+                    } else if (expense.getHasFixed()) {
+                        if (expense.getInitialDate().after(date)) {
+                            expense.setStatus("Não Iniciada");
+                        } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                            expense.setStatus("Confirmado");
+                        } else if (expense.getDayPayment() <= initialDay) {
+                            expense.setStatus("Aguardando");
+                        } else {
+                            expense.setStatus("Pendente");
+                        }
+                    } else {
+                        if (expense.getDateBuy().after(date)) {
+                            expense.setStatus("Não Iniciada");
+                        } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
+                            expense.setStatus("Confirmado");
+                        }
+                    }
+                }
+
+            } else {
+                if (expense.getHasSplitExpense() && !expense.getPaymentForm().equalsIgnoreCase("Crédito")) {
+                    int part = month - expense.getInitialDate().toLocalDateTime().toLocalDate().getMonthValue() + 1;
+                    if (expense.getFrequency().equalsIgnoreCase("Mensal")) {
+                        if (part <= expense.getQuantityPart()) {
+                            if (expense.getInitialDate().after(date)) {
+                                expense.setStatus("Não Iniciada");
+                            } else if (month > currentMonth && year >= currentYear) {
+                                expense.setStatus("Aguardando");
+                            } else if (expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear) {
+                                expense.setStatus("Aguardando");
+                            } else {
+                                expense.setStatus("Pendente");
+                            }
+                        }
+                    } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
+                        if (expense.getInitialDate().after(date) || expense.getMonthPayment() != month) {
+                            expense.setStatus("Não Iniciada");
+                        } else if (expense.getMonthPayment() == month) {
+                            if (expense.getDayPayment() < currentDay) {
+                                expense.setStatus("Pendente");
+                            } else {
+                                expense.setStatus("Aguardando");
+                            }
+                        }
+                    }
+                } else if (expense.getHasFixed()) {
+                    if (expense.getInitialDate().after(date)) {
+                        expense.setStatus("Não Iniciada");
+                    } else if (month > currentMonth && year >= currentYear) {
+                        expense.setStatus("Aguardando");
+                    } else if (expense.getDayPayment() >= currentDay && month == currentMonth && year == currentYear) {
+                        expense.setStatus("Aguardando");
+                    } else {
+                        expense.setStatus("Pendente");
+                    }
+                } else {
+                    if (expense.getDateBuy().after(date)) {
+                        expense.setStatus("Não Iniciada");
+                    } else if (expense.getPaymentForm().equalsIgnoreCase("Crédito")) {
+                        Card card = cardRepository.findCardByFinalNumber(expense.getUserAuthId(), expense.getFinalCard());
+                        if (Objects.nonNull(card)) {
+                            LocalDate buyDate = expense.getDateBuy().toLocalDateTime().toLocalDate();
+                            int lastMonth = buyDate.getMonthValue() - 1;
+                            int lastYear = year;
+                            if (lastMonth == 0) {
+                                lastMonth = 12;
+                            }
+                            if (buyDate.getMonthValue() == 12 || lastMonth == 12) {
+                                lastYear = year - 1;
+                            }
+                            LocalDate lastDayMonthPrevious = LocalDate.of(lastYear, lastMonth, card.getClosingDate());
+                            LocalDate currentDateWithParameter = LocalDate.of(year, month, card.getClosingDate());
+
+                            if (buyDate.isAfter(lastDayMonthPrevious)) {
+                                if (buyDate.isBefore(currentDateWithParameter)) {
+                                    int monthFinished = getMonthFinished(expense, buyDate, card);
+                                    if (month <= monthFinished) {
+                                        if (card.getDueDate() < currentDay && month == currentMonth && year == currentYear) {
+                                            expense.setStatus("Pendente");
+                                        } else if (month >= currentMonth && year >= currentYear) {
+                                            expense.setStatus("Aguardando");
+                                        }
+                                    } else {
+                                        expense.setStatus("Não Iniciada");
+                                    }
+
+                                } else {
+                                    expense.setStatus("Não Iniciada");
+                                }
+                            }
+                        }
+                    } else if (expense.getPaymentForm().equalsIgnoreCase("vale")) {
+                        if (initialDate.getMonthValue() == month && initialDate.getYear() == year) {
+                            expense.setStatus("Confirmado");
+                        } else {
+                            expense.setStatus("Não Iniciada");
+                        }
+                    }
+                }
+            }
+        });
+        return expenses;
+    }
+
     public static int getMonthFinished(Expense expense, LocalDate buyDate, Card card) {
         int monthFinished = 0;
         if (buyDate.getMonthValue() == 12) {

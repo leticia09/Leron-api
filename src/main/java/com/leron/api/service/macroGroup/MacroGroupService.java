@@ -35,6 +35,10 @@ public class MacroGroupService {
         return MacroGroupMapper.macroGroupEntitiesToDataListResponse(macroGroupRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId));
     }
 
+    public List<MacroGroupResponse> listData(Long userAuthId) {
+        return MacroGroupMapper.macroGroupEntitiesToResponse(macroGroupRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId));
+    }
+
     public DataResponse<MacroGroupResponse> create(DataRequest<MacroGroupRequest> request) throws ApplicationBusinessException {
         DataResponse<MacroGroupResponse> response = new DataResponse<>();
 

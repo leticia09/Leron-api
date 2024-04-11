@@ -68,6 +68,7 @@ public class ExpenseMapper {
         expense.setDeleted(false);
         expense.setCurrency(account.getCurrency());
         expense.setHasSplitExpense(res.getHasSplitExpense());
+        expense.setStatus("Quitado");
         if (Objects.nonNull(res.getFinalCard())) {
             expense.setFinalCard(res.getFinalCard());
         }
@@ -171,6 +172,7 @@ public class ExpenseMapper {
         expense.setOwnerId(res.getOwnerId());
         expense.setPaymentForm(res.getPaymentForm());
         expense.setHasFixed(res.getHasFixed());
+        expense.setStatus("Quitado");
 
         if (Objects.nonNull(res.getDateBuy())) {
             expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
@@ -263,6 +265,11 @@ public class ExpenseMapper {
                         expenseResponse.setObs(expense.getObs());
                     }
 
+                    if (Objects.nonNull(expense.getDayPayment())) {
+                        expenseResponse.setDayPayment(expense.getDayPayment());
+                    }
+
+
                     if (Objects.nonNull(expense.getQuantityPart())) {
                         expenseResponse.setQuantityPart(expense.getQuantityPart());
                     }
@@ -317,12 +324,14 @@ public class ExpenseMapper {
                         dateBuy = expense.getDateBuy().toLocalDateTime().toLocalDate();
                     }
 
-                    if (expense.getHasSplitExpense() && (status.equalsIgnoreCase("aguardando") || status.equalsIgnoreCase("confirmado") || status.equalsIgnoreCase("pendente"))) {
+                  if (expense.getHasSplitExpense() && (status.equalsIgnoreCase("aguardando") || status.equalsIgnoreCase("confirmado") || status.equalsIgnoreCase("pendente"))) {
                         LocalDate data = LocalDate.of(year, month, 1);
                         int part = month - dateBuy.getMonthValue() + 1;
                         expenseResponse.setPartNumber(part);
-
-                        if (expense.getPaymentForm().equalsIgnoreCase("crédito") &&
+                      if(expense.getQuantityPart() == 1) {
+                          expenseResponse.setPartNumber(1);
+                      } else
+                      if (expense.getPaymentForm().equalsIgnoreCase("crédito") &&
                                 dateBuy.isBefore(data) &&
                                 cardOptional.isPresent() &&
                                 cardOptional.get().getClosingDate() < dateBuy.getDayOfMonth()) {

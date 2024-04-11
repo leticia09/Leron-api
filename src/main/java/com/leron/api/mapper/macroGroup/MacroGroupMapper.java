@@ -36,6 +36,25 @@ public class MacroGroupMapper {
         return response;
     }
 
+    public static List<MacroGroupResponse> macroGroupEntitiesToResponse (List<MacroGroup> macroGroupEntityList) {
+        List<MacroGroupResponse> responseList = new ArrayList<>();
+
+        for (MacroGroup macro : macroGroupEntityList) {
+            MacroGroupResponse macroResponse = new MacroGroupResponse();
+
+            macroResponse.setId(macro.getId());
+            macroResponse.setName(macro.getName());
+            macroResponse.setUserAuthId(macro.getUserAuthId());
+            macroResponse.setSpecificGroups(macro.getSpecificGroups());
+            macroResponse.setSpecificNumbers(macro.getSpecificGroups().size());
+            macroResponse.setStatus(macro.getStatus());
+
+            responseList.add(macroResponse);
+        }
+
+        return responseList;
+    }
+
     public static MacroGroup createMacroGroupFromMacroGroupRequest(MacroGroupRequest macroGroupRequest) {
 
         MacroGroup macro = new MacroGroup();

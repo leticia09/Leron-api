@@ -23,7 +23,7 @@ public interface ExpenseRepository extends JpaRepository<Expense,Long> {
 
     List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasFixedTrueAndOwnerId(@Param("userAuthId") Long userAuthId, Long ownerId);
 
-    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerId(@Param("userAuthId") Long userAuthId, Long ownerId);
+    List<Expense>  findAllByUserAuthIdAndDeletedFalseAndHasSplitExpenseTrueAndOwnerIdAndStatusIsNull(@Param("userAuthId") Long userAuthId, Long ownerId);
 
     List<Expense> findAllByUserAuthIdAndBankId(@Param("userAuthId") Long userAuthId, @Param("bankId") Long bankId);
 
