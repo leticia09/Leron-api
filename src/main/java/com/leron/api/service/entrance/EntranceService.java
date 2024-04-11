@@ -16,8 +16,6 @@ import com.leron.api.validator.entrance.ValidatorEntrance;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,7 +83,7 @@ public class EntranceService {
 
     public GraphicResponse getData(Long authId, int month, int year, List<Long> owners) {
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
-        List<Entrance> entrances = entranceRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<EntranceResponse> entrances = list(authId, month, year, owners);
         List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
         BigDecimal receiveTotal = BigDecimal.ZERO;
@@ -100,43 +98,33 @@ public class EntranceService {
 
         for (Member member : members) {
 
-            dataSets.add(populateEntrances(entrances, month, year, member));
+            dataSets.add(populateEntrances(authId, year, member));
 
-            for (int i = 0; i < 12; i++) {
-                for (Entrance entrance : entrances) {
-                    int monthValue = i + 1;
 
-                    if (member.getId().equals(entrance.getOwnerId())) {
-                        String monthValidate = (monthValue < 10) ? "0" + monthValue : "" + monthValue;
-                        String period = monthValidate + "/" + year;
+            for (EntranceResponse entrance : entrances) {
+                if (member.getId().equals(entrance.getOwnerId())) {
 
-                        List<BankMovement> bankMovementList = bankMovements.stream().filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId()) && bm.getReferencePeriod().equalsIgnoreCase(period)).collect(Collectors.toList());
-
-                        BigDecimal value = bankMovementList.stream().map(BankMovement::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                        String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
-                        if (!status.equalsIgnoreCase("Não Iniciada") && !status.isEmpty()) {
-                            if (status.equalsIgnoreCase("Confirmado")) {
-                                receiveOk = receiveOk.add(value);
-                            }
-
-                        }
-
-                        if (!status.equalsIgnoreCase("Não Iniciada") && month == monthValue) {
-                            receiveTotal = receiveTotal.add(entrance.getSalary());
-                        }
-
-                        if (status.equalsIgnoreCase("Aguardando") && month == monthValue) {
-                            receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
-                        }
-
-                        if (status.equalsIgnoreCase("Pendente") && month == monthValue) {
-                            receiveNotOk = receiveNotOk.add(entrance.getSalary());
+                    if (!entrance.getStatus().equalsIgnoreCase("Não Iniciada") && !entrance.getStatus().isEmpty()) {
+                        if (entrance.getStatus().equalsIgnoreCase("Confirmado")) {
+                            receiveOk = receiveOk.add(entrance.getValueReceived());
                         }
                     }
-                }
 
+                    if (!entrance.getStatus().equalsIgnoreCase("Não Iniciada")) {
+                        receiveTotal = receiveTotal.add(entrance.getSalary());
+                    }
+
+                    if (entrance.getStatus().equalsIgnoreCase("Aguardando")) {
+                        receiveHoldOn = receiveHoldOn.add(entrance.getSalary());
+                    }
+
+                    if (entrance.getStatus().equalsIgnoreCase("Pendente")) {
+                        receiveNotOk = receiveNotOk.add(entrance.getSalary());
+                    }
+                }
             }
+
+
         }
 
         graphicResponse.setDataSet(dataSets);
@@ -283,134 +271,34 @@ public class EntranceService {
         return response;
     }
 
-    public static DataSet populateEntrances(List<Entrance> entrances, int month, int year, Member owner) {
+    public DataSet populateEntrances(Long userAuthId, int year, Member owner) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
+        List<Long> ownersIds = new ArrayList<>();
+        ownersIds.add(owner.getId());
 
-        BigDecimal month1 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month2 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month3 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month4 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month5 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month6 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month7 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month8 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month9 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month10 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month11 = new BigDecimal(BigInteger.ZERO);
-        BigDecimal month12 = new BigDecimal(BigInteger.ZERO);
+        for (int i = 1; i <= 12; i++) {
+            List<EntranceResponse> entrances = list(userAuthId, i, year, ownersIds);
+            List<EntranceResponse> entranceFilteredReceived = entrances.stream().filter(entrance ->
+                    entrance.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
 
-        for (Entrance entrance : entrances) {
-            LocalDate initialDate = entrance.getInitialDate().toLocalDateTime().toLocalDate();
-            int initialMonth = initialDate.getMonthValue();
-            int initialYear = initialDate.getYear();
-            if (entrance.getFrequency().equalsIgnoreCase("mensal") && owner.getId().equals(entrance.getOwnerId())) {
-                if (initialMonth <= 1 || initialYear < year) {
-                    month1 = month1.add(entrance.getSalary());
-                }
-                if (initialMonth <= 2 || initialYear < year) {
-                    month2 = month2.add(entrance.getSalary());
-                }
-                if (initialMonth <= 3 || initialYear < year) {
-                    month3 = month3.add(entrance.getSalary());
-                }
-                if (initialMonth <= 4 || initialYear < year) {
-                    month4 = month4.add(entrance.getSalary());
-                }
-                if (initialMonth <= 5 || initialYear < year) {
-                    month5 = month5.add(entrance.getSalary());
-                }
-                if (initialMonth <= 6 || initialYear < year) {
-                    month6 = month6.add(entrance.getSalary());
-                }
-                if (initialMonth <= 7 || initialYear < year) {
-                    month7 = month7.add(entrance.getSalary());
-                }
-                if (initialMonth <= 8 || initialYear < year) {
-                    month8 = month8.add(entrance.getSalary());
-                }
-                if (initialMonth <= 9 || initialYear < year) {
-                    month9 = month9.add(entrance.getSalary());
-                }
-                if (initialMonth <= 10 || initialYear < year) {
-                    month10 = month10.add(entrance.getSalary());
-                }
-                if (initialMonth <= 11 || initialYear < year) {
-                    month11 = month11.add(entrance.getSalary());
-                }
-                if (initialMonth <= 12 || initialYear < year) {
-                    month12 = month12.add(entrance.getSalary());
-                }
+            List<EntranceResponse> entranceFilteredForecast = entrances.stream().filter(entrance ->
+                    !entrance.getStatus().equalsIgnoreCase("confirmado")
+            ).collect(Collectors.toList());
 
-            } else {
-                if (entrance.getFrequency().equalsIgnoreCase("anual") && owner.getId().equals(entrance.getOwnerId()) && initialMonth <= month && year == initialYear) {
-                    if (entrance.getMonthReceive() == 1) {
-                        month1 = month1.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 2) {
-                        month2 = month2.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 3) {
-                        month3 = month3.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 4) {
-                        month4 = month4.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 5) {
-                        month5 = month5.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 6) {
-                        month6 = month6.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 7) {
-                        month7 = month7.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 8) {
-                        month8 = month8.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 9) {
-                        month9 = month9.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 10) {
-                        month10 = month10.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 11) {
-                        month11 = month11.add(entrance.getSalary());
-                    } else if (entrance.getMonthReceive() == 12) {
-                        month12 = month12.add(entrance.getSalary());
-                    }
+            BigDecimal totalReceived = entranceFilteredReceived.stream()
+                    .map(EntranceResponse::getValueReceived)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
 
-                } else if (entrance.getFrequency().equalsIgnoreCase("única") && owner.getId().equals(entrance.getOwnerId()) && initialMonth <= month) {
-                    if (initialMonth == 1 && initialYear == year) {
-                        month1 = month1.add(entrance.getSalary());
-                    } else if (initialMonth == 2 && initialYear == year) {
-                        month2 = month2.add(entrance.getSalary());
-                    } else if (initialMonth == 3 && initialYear == year) {
-                        month3 = month3.add(entrance.getSalary());
-                    } else if (initialMonth == 4 && initialYear == year) {
-                        month4 = month4.add(entrance.getSalary());
-                    } else if (initialMonth == 5 && initialYear == year) {
-                        month5 = month5.add(entrance.getSalary());
-                    } else if (initialMonth == 6 && initialYear == year) {
-                        month6 = month6.add(entrance.getSalary());
-                    } else if (initialMonth == 7 && initialYear == year) {
-                        month7 = month7.add(entrance.getSalary());
-                    } else if (initialMonth == 8 && initialYear == year) {
-                        month8 = month8.add(entrance.getSalary());
-                    } else if (initialMonth == 9 && initialYear == year) {
-                        month9 = month9.add(entrance.getSalary());
-                    } else if (initialMonth == 10 && initialYear == year) {
-                        month10 = month10.add(entrance.getSalary());
-                    } else if (initialMonth == 11 && initialYear == year) {
-                        month11 = month11.add(entrance.getSalary());
-                    } else if (initialMonth == 12 && initialYear == year) {
-                        month12 = month12.add(entrance.getSalary());
-                    }
-                }
-            }
+            BigDecimal totalForecast = entranceFilteredForecast.stream()
+                    .map(EntranceResponse::getSalary)
+                    .reduce(BigDecimal::add)
+                    .orElse(BigDecimal.ZERO);
+
+            data.add(totalReceived.add(totalForecast));
         }
-        data.add(month1);
-        data.add(month2);
-        data.add(month3);
-        data.add(month4);
-        data.add(month5);
-        data.add(month6);
-        data.add(month7);
-        data.add(month8);
-        data.add(month9);
-        data.add(month10);
-        data.add(month11);
-        data.add(month12);
 
         dataSet.setLabel(owner.getName());
         dataSet.setBackgroundColor(owner.getColor().replace("1)", "0.6)"));
@@ -418,7 +306,6 @@ public class EntranceService {
         dataSet.setFill(true);
         dataSet.setData(data);
         return dataSet;
-
     }
 
     public DataResponse<EntranceResponse> edit(EntranceResponse entranceResponse) {
