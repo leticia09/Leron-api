@@ -18,4 +18,6 @@ public class GoalsRequest {
     private String profitabilityMonthly;
     private String goalPreference;
     private String partValue;
+    private String fees;
+    private String contributionTotal;
 }

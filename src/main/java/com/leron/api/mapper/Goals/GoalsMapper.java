@@ -28,12 +28,15 @@ public class GoalsMapper {
             goal.setCurrency(request.getCurrency());
             goal.setProfitabilityMonthly(request.getProfitabilityMonthly());
             goal.setGoalPreference(request.getGoalPreference());
+            goal.setFees(new BigDecimal(request.getFees().replace(",",".")));
+            goal.setContributionTotal(new BigDecimal(request.getContributionTotal().replace(",",".")));
+
             if (Objects.nonNull(request.getValue())) {
-                goal.setValue(new BigDecimal(request.getValue()));
+                goal.setValue(new BigDecimal(request.getValue().replace(",",".")));
             }
 
             if (Objects.nonNull(request.getValue())) {
-                goal.setPartValue(new BigDecimal(request.getPartValue()));
+                goal.setPartValue(new BigDecimal(request.getPartValue().replace(",",".")));
             }
 
             goal.setUserAuthId(request.getUserAuthId());

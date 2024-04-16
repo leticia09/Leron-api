@@ -21,4 +21,6 @@ public class GoalsResponse {
     private String profitabilityMonthly;
     private String goalPreference;
     private BigDecimal partValue;
+    private BigDecimal fees;
+    private BigDecimal contributionTotal;
 }
