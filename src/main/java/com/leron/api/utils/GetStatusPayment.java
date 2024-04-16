@@ -229,7 +229,7 @@ public class GetStatusPayment {
                     if (expense.getInitialDate().after(date) || expense.getMonthPayment() != month) {
                         return "Não Iniciada";
                     } else if (expense.getMonthPayment() == month) {
-                        if (expense.getDayPayment() < currentDay) {
+                        if (expense.getDayPayment() < currentDay && month == currentMonth && year == currentYear) {
                             return "Pendente";
                         } else {
                             return "Aguardando";
