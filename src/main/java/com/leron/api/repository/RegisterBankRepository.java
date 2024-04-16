@@ -11,8 +11,10 @@ import java.util.List;
 @Repository
 public interface RegisterBankRepository extends JpaRepository<Bank, Long> {
 
-    @Query("SELECT b FROM Bank b WHERE b.userAuthId = :userAuthId")
+    @Query("SELECT b FROM Bank b WHERE b.userAuthId = :userAuthId AND b.deleted = false ORDER BY b.name")
     List<Bank> findByUserAuthId(@Param("userAuthId") Long userAuthId);
 
     Bank findBankByUserAuthIdAndId(Long userAuthId, Long id);
+
+    List<Bank> findAllBankByUserAuthIdAndId(Long userAuthId, Long id);
 }

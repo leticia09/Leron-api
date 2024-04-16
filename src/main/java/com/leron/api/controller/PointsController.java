@@ -1,10 +1,7 @@
 package com.leron.api.controller;
 
 import com.leron.api.model.DTO.graphic.GraphicResponse;
-import com.leron.api.model.DTO.points.PointsRequest;
-import com.leron.api.model.DTO.points.PointsResponse;
-import com.leron.api.model.DTO.points.TransferRequest;
-import com.leron.api.model.DTO.points.TypeScoreDTO;
+import com.leron.api.model.DTO.points.*;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataRequest;
@@ -13,7 +10,6 @@ import com.leron.api.service.points.PointsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
 @RestController
@@ -57,11 +53,20 @@ public class PointsController {
         return pointsService.getType();
     }
 
-    @GetMapping("programs/{userAuthId}")
-    public DataResponse<List<TypeScoreDTO>> getProgramsById(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
-        return pointsService.getProgramsById(userAuthId);
+    @GetMapping("status")
+    public DataResponse<List<TypeScoreDTO>> getStatus() {
+        return pointsService.getStatus();
     }
 
+    @GetMapping("programs/{userAuthId}")
+    public DataResponse<List<TypeScoreDTO>> getProgramsByAuth(@PathVariable(value = "userAuthId", required = true) Long userAuthId){
+        return pointsService.getProgramsByAuth(userAuthId);
+    }
+
+    @GetMapping("program/{id}")
+    public DataResponse<List<TypeScoreDTO>> getProgramsById(@PathVariable(value = "id", required = true) Long id){
+        return pointsService.getProgramsById(id);
+    }
     @PostMapping(
             value = "transfer",
             consumes = "application/json",
@@ -91,4 +96,63 @@ public class PointsController {
         return pointsService.getProgramsData(userAuthId);
     }
 
+    @PostMapping(
+            value = "update-status",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<StatusRequest> updateStatus(
+            @RequestBody StatusRequest requestCreation,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+
+        DataRequest<StatusRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<StatusRequest> response = new DataResponse<>();
+
+        try {
+            response = pointsService.updateStatus(request);
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
+
+    @PostMapping(
+            value = "use",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public DataResponse<UseRequest> usePoints(
+            @RequestBody UseRequest requestCreation,
+            @RequestHeader(name = "locale", required = true) String locale,
+            @RequestHeader(name = "Authorization", required = true) String authorization
+    ) {
+
+        DataRequest<UseRequest> request = new DataRequest<>(requestCreation, locale, authorization);
+        DataResponse<UseRequest> response = new DataResponse<>();
+
+        try {
+            response = pointsService.usePoints(request);
+            return response;
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
+
+    @DeleteMapping("{scoreId}")
+    public DataResponse<PointsResponse> delete(@PathVariable Long scoreId)  {
+        DataResponse<PointsResponse> response = new DataResponse<>();
+        try {
+            response = pointsService.delete(scoreId);
+
+        } catch (ApplicationBusinessException error){
+            response.setResponse(error);
+        }
+        return response;
+    }
 }

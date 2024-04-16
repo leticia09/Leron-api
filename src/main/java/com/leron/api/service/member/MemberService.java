@@ -1,9 +1,9 @@
 package com.leron.api.service.member;
 
-import com.leron.api.mapper.member.MemeberMapper;
+import com.leron.api.mapper.member.MemberMapper;
 import com.leron.api.model.DTO.user.MemberRequest;
 import com.leron.api.model.DTO.user.MemberResponse;
-import com.leron.api.model.entities.MemberEntity;
+import com.leron.api.model.entities.Member;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;
@@ -13,6 +13,7 @@ import com.leron.api.validator.user.MemberValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -25,7 +26,11 @@ public class MemberService {
     }
 
     public DataListResponse<MemberResponse> list(Long userAuthId){
-        return MemeberMapper.userEntitiesToDataListResponse(memberRepository.findByUserAuthId(userAuthId));
+        return MemberMapper.userEntitiesToDataListResponse(memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId));
+    }
+
+    public DataListResponse<MemberResponse> get(Long userAuthId){
+        return MemberMapper.userEntitiesToDataListResponse(memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(userAuthId, "ACTIVE"));
     }
 
     public DataResponse<List<MemberResponse>> create(DataRequest<List<MemberRequest>> userRequest,
@@ -33,16 +38,41 @@ public class MemberService {
                                                      String authorization) throws ApplicationBusinessException {
         DataResponse<List<MemberResponse>> response = new DataResponse<>();
 
-        List<MemberEntity> members = memberRepository.findByUserAuthId(userRequest.getData().get(0).getUserAuthId());
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userRequest.getData().get(0).getUserAuthId());
 
         MemberValidator.validateUser(userRequest.getData(),members);
 
 
-        List<MemberEntity> entities = memberRepository.saveAll(MemeberMapper.createUserFromUserRequest(userRequest.getData()));
-        List<MemberResponse> userResponse = MemeberMapper.createUserResponse(entities);
+        List<Member> entities = memberRepository.saveAll(MemberMapper.createUserFromUserRequest(userRequest.getData()));
+        List<MemberResponse> userResponse = MemberMapper.createUserResponse(entities);
         response.setData(userResponse);
-        response.setMessage("Sucesso");
+        response.setSeverity("success");
+        response.setMessage("success");
         return response;
     }
 
+    public DataResponse<MemberResponse> edit(MemberResponse request) throws ApplicationBusinessException {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+        Optional<Member> currentMember = memberRepository.findById(request.getId());
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(request.getUserAuthId());
+        MemberValidator.validateMember(request, members, currentMember.get());
+        Member entities = memberRepository.save(MemberMapper.createUserFromMemberEditRequest(request, currentMember.get()));
+        MemberResponse userResponse = MemberMapper.createMemberResponse(entities);
+        response.setData(userResponse);
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
+    }
+
+    public DataResponse<MemberResponse> delete(Long id, Long userAuthId) throws ApplicationBusinessException {
+        DataResponse<MemberResponse> response = new DataResponse<>();
+        Member currentMember = memberRepository.findMemberByIdAndUserAuthId(id, userAuthId);
+        currentMember.setDeleted(true);
+        Member entities = memberRepository.save(currentMember);
+        MemberResponse userResponse = MemberMapper.createMemberResponse(entities);
+        response.setData(userResponse);
+        response.setSeverity("success");
+        response.setMessage("success");
+        return response;
+    }
 }

@@ -5,28 +5,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class ExpenseResponse {
     private Long id;
-    private String description;
-    private String type;
-    private String userName;
-    private Long userId;
-    private java.util.Date shoppingDate;
     private String local;
-    private String group;
-    private BigDecimal price;
-    private String formPayment;
-    private String payer;
-    private Long cardId;
-    private String cardNickName;
-    private Boolean advance;
-    private String typePayment;
+    private String macroGroup;
+    private String specificGroup;
+    private Long ownerId;
+    private String paymentForm;
+    private Boolean hasSplitExpense;
+    private Long finalCard;
+    private Long quantityPart;
+    private Boolean hasFixed;
+    private Timestamp dateBuy;
+    private String obs;
+    private BigDecimal value;
     private String status;
-    private java.util.Date paymentDate;
-    private Long installment;
-    private Long userAuthId;
+    private String currency;
+    private int partNumber;
+    private BigDecimal partValue;
+    private BigDecimal valuePaid;
+    private Long dayPayment;
 }

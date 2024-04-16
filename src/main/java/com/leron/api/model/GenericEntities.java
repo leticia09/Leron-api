@@ -17,15 +17,9 @@ public class GenericEntities {
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date createdIn;
 
-    @Column(name = "CREATED_BY")
-    private Long createdBy;
-
     @Column(name = "CHANGED_IN")
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date changedIn;
-
-    @Column(name = "CHANGED_BY")
-    private Long changedBy;
 
     @Column(name = "status")
     private String status;

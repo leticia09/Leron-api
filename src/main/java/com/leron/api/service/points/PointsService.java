@@ -1,12 +1,11 @@
 package com.leron.api.service.points;
 
-import com.leron.api.mapper.PointsMapper;
+import com.leron.api.mapper.score.PointsMapper;
+import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
-import com.leron.api.model.DTO.points.PointsRequest;
-import com.leron.api.model.DTO.points.PointsResponse;
-import com.leron.api.model.DTO.points.TransferRequest;
-import com.leron.api.model.DTO.points.TypeScoreDTO;
+import com.leron.api.model.DTO.points.*;
 import com.leron.api.model.entities.*;
+import com.leron.api.repository.MemberRepository;
 import com.leron.api.repository.PointsRepository;
 import com.leron.api.repository.TransferRepository;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -18,24 +17,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
-@Transactional()
+@Transactional(rollbackFor = Exception.class)
 public class PointsService {
 
     private final PointsRepository pointsRepository;
     private final TransferRepository transferRepository;
-    public PointsService(PointsRepository pointsRepository, TransferRepository transferRepository) {
+
+    private final MemberRepository memberRepository;
+
+    public PointsService(PointsRepository pointsRepository, TransferRepository transferRepository, MemberRepository memberRepository) {
         this.pointsRepository = pointsRepository;
         this.transferRepository = transferRepository;
+        this.memberRepository = memberRepository;
     }
 
     public DataListResponse<PointsResponse> list(Long userAuthId) {
         List<Score> pointsEntityList = pointsRepository.findByUserAuthId(userAuthId);
-        return PointsMapper.pointsEntitiesToDataListResponse(pointsEntityList);
+        List<Member> entities = memberRepository.findAllByUserAuthIdAndDeletedFalseOrderByNameAsc(userAuthId);
+        return PointsMapper.pointsEntitiesToDataListResponse(pointsEntityList, entities);
     }
 
     public DataResponse<PointsResponse> create(DataRequest<List<PointsRequest>> request) throws ApplicationBusinessException {
@@ -45,7 +47,7 @@ public class PointsService {
 
         List<Score> entity = PointsMapper.createPointsFromRevenueRequest(request.getData());
         pointsRepository.saveAll(entity);
-        response.setMessage("Sucesso");
+        response.setMessage("success");
         return response;
     }
 
@@ -69,25 +71,58 @@ public class PointsService {
         return response;
     }
 
-    public DataResponse<List<TypeScoreDTO>> getProgramsById(Long userAuthId) {
+    public DataResponse<List<TypeScoreDTO>> getStatus() {
+        DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
+
+        List<TypeScoreDTO> list = new ArrayList<>();
+        TypeScoreDTO typeScoreDTO = new TypeScoreDTO();
+        typeScoreDTO.setId(1L);
+        typeScoreDTO.setDescription("Ativo");
+
+        list.add(typeScoreDTO);
+
+        TypeScoreDTO typeScoreDTO2 = new TypeScoreDTO();
+        typeScoreDTO2.setId(2L);
+        typeScoreDTO2.setDescription("Inativo");
+
+        list.add(typeScoreDTO2);
+
+        response.setData(list);
+        return response;
+    }
+
+    public DataResponse<List<TypeScoreDTO>> getProgramsByAuth(Long userAuthId) {
         DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
         List<Object[]> list = pointsRepository.findIdAndProgramByUserAuthId(userAuthId);
         response.setData(PointsMapper.mapToObjectList(list));
         return response;
     }
 
+    public DataResponse<List<TypeScoreDTO>> getProgramsById(Long id) {
+        DataResponse<List<TypeScoreDTO>> response = new DataResponse<>();
+        List<Score> list = pointsRepository.findAllByOwnerIdAndDeletedFalse(id);
+        response.setData(PointsMapper.mapScoreToObjectList(list));
+        return response;
+    }
+
     public DataResponse<TransferRequest> transfer(DataRequest<TransferRequest> request) throws ApplicationBusinessException {
         PointsValidator.validatorTransfer(request.getData());
-        Score currentValueOriginProgram = pointsRepository.findScoreById(request.getData().getOriginProgramId(), request.getData().getUserAuthId());
-        Score currentValueDestinyProgram = pointsRepository.findScoreById(request.getData().getDestinyProgramId(), request.getData().getUserAuthId());
+        Score currentValueOriginProgram = pointsRepository.findScoreById(
+                request.getData().getOriginProgramId(),
+                request.getData().getUserAuthId(),
+                request.getData().getOwnerIdOrigin()
+        );
+        Score currentValueDestinyProgram = pointsRepository.findScoreById(
+                request.getData().getDestinyProgramId(),
+                request.getData().getUserAuthId(),
+                request.getData().getOwnerIdDestiny()
+        );
 
         return doTransfer(request.getData(), currentValueOriginProgram, currentValueDestinyProgram);
     }
 
     private DataResponse<TransferRequest> doTransfer(TransferRequest request, Score currentValueOriginProgram, Score currentValueDestinyProgram) throws ApplicationBusinessException {
         DataResponse<TransferRequest> response = new DataResponse<>();
-
-        transferRepository.save(PointsMapper.TransferRequestToEntity(request));
 
         BigDecimal saveOriginValue = currentValueOriginProgram.getValue().subtract(request.getQuantity());
 
@@ -96,7 +131,7 @@ public class PointsService {
         BigDecimal valueMulti = request.getDestinyValue().multiply(request.getQuantity());
         BigDecimal quantity = currentValueDestinyProgram.getValue().add(valueMulti);
 
-        if(Objects.nonNull(request.getBonus())) {
+        if (Objects.nonNull(request.getBonus())) {
             BigDecimal divides = request.getBonus().divide(BigDecimal.valueOf(100));
             BigDecimal result = valueMulti.multiply(divides);
             quantity = quantity.add(result);
@@ -104,34 +139,149 @@ public class PointsService {
 
         currentValueDestinyProgram.setValue(quantity);
 
+        PointsValidator.validatorValueTransfer(currentValueOriginProgram, currentValueDestinyProgram);
+
         pointsRepository.save(currentValueOriginProgram);
         pointsRepository.save(currentValueDestinyProgram);
+        transferRepository.save(PointsMapper.TransferRequestToEntity(request));
 
-        response.setMessage("Sucesso");
+        response.setSeverity("success");
+        response.setMessage("success");
+
 
         return response;
     }
+
     public DataResponse<GraphicResponse> getProgramsData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
         List<Score> programData = pointsRepository.findByUserAuthId(authId);
+        List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
+
+        BigDecimal totalMiles = BigDecimal.ZERO;
+        BigDecimal totalPoints = BigDecimal.ZERO;
+        BigDecimal totalProgramActive = BigDecimal.ZERO;
+        BigDecimal totalProgramInactive = BigDecimal.ZERO;
 
         GraphicResponse graphicResponse = new GraphicResponse();
 
+        ArrayList<DataSet> dataSets = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
-        ArrayList<BigDecimal> data = new ArrayList<>();
 
-        for (Score result : programData) {
-            String program = result.getProgram();
-            BigDecimal value = result.getValue();
-            labels.add(program);
-            data.add(value);
+        for (Member member : members) {
+            DataSet dataSet = new DataSet();
+            ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+
+            for (Score score : programData) {
+                if (member.getId().equals(score.getOwnerId())) {
+                    int labelIndex = labels.indexOf(score.getProgram());
+                    if (labelIndex == -1) {
+                        labels.add(score.getProgram());
+                        data.add(score.getValue());
+                    } else {
+                        data.set(labelIndex, data.get(labelIndex).add(score.getValue()));
+                    }
+
+                    if (score.getTypeOfScore().equals("Pontos")) {
+                        totalPoints = totalPoints.add(score.getValue());
+                    } else if (score.getTypeOfScore().equals("Milhas")) {
+                        totalMiles = totalMiles.add(score.getValue());
+                    }
+
+                    if (score.getStatus().equals("ACTIVE")) {
+                        totalProgramActive = totalProgramActive.add(BigDecimal.ONE);
+                    } else if (score.getStatus().equals("INACTIVE")) {
+                        totalProgramInactive = totalProgramInactive.add(BigDecimal.ONE);
+                    }
+                }
+            }
+
+            dataSet.setLabel(member.getName());
+            dataSet.setBackgroundColor(member.getColor());
+            dataSet.setBorderColor(member.getColor());
+            dataSet.setData(data);
+            dataSets.add(dataSet);
         }
 
+        graphicResponse.setDataSet(dataSets);
         graphicResponse.setLabels(labels);
-        graphicResponse.setData(data);
+        graphicResponse.setTotal1(totalMiles);
+        graphicResponse.setTotal2(totalPoints);
+        graphicResponse.setTotal3(totalProgramActive);
+        graphicResponse.setTotal4(totalProgramInactive);
 
         response.setData(graphicResponse);
 
+        return response;
+    }
+
+
+    public DataResponse<StatusRequest> updateStatus(DataRequest<StatusRequest> request) throws ApplicationBusinessException {
+        DataResponse<StatusRequest> response = new DataResponse<>();
+
+        PointsValidator.validateStatus(request.getData());
+
+        Score program = pointsRepository.findScoreByIdWithoutOwner(
+                request.getData().getProgramId(),
+                request.getData().getUserAuthId()
+        );
+
+        if (request.getData().getStatus() == 1L) {
+            program.setStatus("ACTIVE");
+            program.setValue(request.getData().getValue());
+        }
+
+        if (request.getData().getStatus() == 2L) {
+            program.setValue(BigDecimal.ZERO);
+            program.setPointsExpirationDate(null);
+            program.setStatus("INACTIVE");
+        }
+
+
+        program.setChangedIn(new Date());
+
+        pointsRepository.save(program);
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+    public DataResponse<UseRequest> usePoints(DataRequest<UseRequest> request) throws ApplicationBusinessException {
+        DataResponse<UseRequest> response = new DataResponse<>();
+
+        Score program = pointsRepository.findScoreById(
+                request.getData().getProgramId(),
+                request.getData().getUserAuthId(),
+                request.getData().getOwnerId()
+        );
+
+        BigDecimal valueActual = program.getValue().subtract(request.getData().getValue());
+
+        PointsValidator.validateValue(valueActual);
+
+
+        program.setValue(valueActual);
+        program.setChangedIn(new Date());
+
+        pointsRepository.save(program);
+
+        response.setSeverity("success");
+        response.setMessage("success");
+
+        return response;
+    }
+
+    public DataResponse<PointsResponse> delete(Long id) throws ApplicationBusinessException {
+        DataResponse<PointsResponse> response = new DataResponse<>();
+        Optional<Score> current = pointsRepository.findById(id);
+        if (current.isPresent()) {
+            current.get().setDeleted(true);
+            pointsRepository.save(current.get());
+        }
+
+        response.setSeverity("success");
+        response.setMessage("success");
         return response;
     }
 

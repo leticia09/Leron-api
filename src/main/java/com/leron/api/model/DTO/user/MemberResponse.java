@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class MemberResponse {
     private Long id;
     private String name;
-    private String status;
+    private Long status;
     private Long userAuthId;
+    private String color;
 }

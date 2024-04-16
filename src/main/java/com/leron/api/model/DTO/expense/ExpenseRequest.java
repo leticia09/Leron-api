@@ -4,22 +4,36 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class ExpenseRequest {
-    private String userId;
-    private String description;
-    private String type;
-    private java.util.Date shoppingDate;
     private String local;
-    private String group;
-    private String price;
-    private Boolean advance;
-    private String formPayment;
-    private String payer;
-    private String cardId;
-    private String typePayment;
-    private Long installment;
+    private String macroGroup;
+    private String specificGroup;
+    private Long ownerId;
+    private String paymentForm;
+    private Long finalCard;
+    private Long quantityPart;
+    private Boolean hasFixed;
+    private String dateBuy;
+    private String obs;
+    private String value;
     private Long userAuthId;
+    private Long index;
+
+    private Long moneyId;
+    private Long ticketId;
+    private Long cardId;
+    private Boolean hasSplitExpense;
+    private String frequency;
+    private String initialDate;
+    private Long monthPayment;
+    private Long dayPayment;
+
+    private Long accountId;
+    private Long bankId;
 }

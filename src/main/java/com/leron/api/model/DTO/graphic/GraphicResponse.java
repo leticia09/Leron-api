@@ -5,10 +5,20 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @Data
 public class GraphicResponse {
+    private List<DataSet> dataSet;
     private ArrayList<String> labels;
-    private ArrayList<BigDecimal> data;
+    private BigDecimal total1;
+    private BigDecimal total2;
+    private BigDecimal total3;
+    private BigDecimal total4;
+    private BigDecimal total5;
+    private List<LabelTooltip> tooltipLabel;
+
 }
+
+

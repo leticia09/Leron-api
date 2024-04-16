@@ -1,6 +1,10 @@
 package com.leron.api.validator.registerBank;
 
+import com.leron.api.model.DTO.registerBank.AccountResponse;
+import com.leron.api.model.DTO.registerBank.CardResponse;
 import com.leron.api.model.DTO.registerBank.RegisterBankRequest;
+import com.leron.api.model.DTO.registerBank.RegisterBankResponse;
+import com.leron.api.model.entities.Account;
 import com.leron.api.model.entities.Bank;
 import com.leron.api.model.entities.Card;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -64,5 +68,81 @@ public class RegisterBankValidator {
         if (card == null) {
             throw new ApplicationBusinessException("ERROR", "CARD_NOT_FIND");
         }
+    }
+
+    public static void validateEditBank(RegisterBankRequest request, Bank current) throws ApplicationBusinessException {
+
+        AtomicReference<Boolean> areAccountNumbersUnique = new AtomicReference<>(false);
+        AtomicReference<Boolean> areCardNumbersUnique = new AtomicReference<>(false);
+
+//        request.getAccounts().forEach(account -> {
+//            if (request.getAccounts().stream()
+//                    .anyMatch(reqAccount -> reqAccount.getAccountNumber().equals(account.getAccountNumber()))) {
+//                areAccountNumbersUnique.set(true);
+//            }
+//
+//            account.getCards().forEach(card -> {
+//                request.getAccounts().forEach(reqAccount -> {
+//                    if (reqAccount.getCards().stream()
+//                            .anyMatch(reqCard -> reqCard.getFinalNumber().equals(card.getFinalNumber()))) {
+//                        areCardNumbersUnique.set(true);
+//                    }
+//
+//                });
+//            });
+//        });
+
+
+        if (areAccountNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_ACCOUNT_NUMBER");
+        }
+
+        if (areCardNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_CARD_NUMBER");
+        }
+
+    }
+
+    public static void validateEditAccount(AccountResponse request, Account current) throws ApplicationBusinessException {
+        AtomicReference<Boolean> isSameBankName = new AtomicReference<>(false);
+        AtomicReference<Boolean> areAccountNumbersUnique = new AtomicReference<>(false);
+        AtomicReference<Boolean> areCardNumbersUnique = new AtomicReference<>(false);
+
+
+
+
+        if (isSameBankName.get()) {
+            throw new ApplicationBusinessException("ERROR", "BANK_NAME_ALREADY_EXISTS");
+        }
+
+        if (areAccountNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_ACCOUNT_NUMBER");
+        }
+
+        if (areCardNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_CARD_NUMBER");
+        }
+
+    }
+
+    public static void validateEditCard(CardResponse request, Card current) throws ApplicationBusinessException {
+
+        AtomicReference<Boolean> isSameBankName = new AtomicReference<>(false);
+        AtomicReference<Boolean> areAccountNumbersUnique = new AtomicReference<>(false);
+        AtomicReference<Boolean> areCardNumbersUnique = new AtomicReference<>(false);
+
+
+        if (isSameBankName.get()) {
+            throw new ApplicationBusinessException("ERROR", "BANK_NAME_ALREADY_EXISTS");
+        }
+
+        if (areAccountNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_ACCOUNT_NUMBER");
+        }
+
+        if (areCardNumbersUnique.get()) {
+            throw new ApplicationBusinessException("ERROR", "DUPLICATE_CARD_NUMBER");
+        }
+
     }
 }

@@ -17,4 +17,6 @@ public class TransferRequest {
     private BigDecimal destinyValue;
     private BigDecimal bonus;
     private Long userAuthId;
+    private Long ownerIdOrigin;
+    private Long ownerIdDestiny;
 }

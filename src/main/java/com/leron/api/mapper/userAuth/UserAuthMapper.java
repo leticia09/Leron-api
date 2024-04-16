@@ -7,6 +7,7 @@ import com.leron.api.responses.DataListResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -37,6 +38,8 @@ public class UserAuthMapper {
         user.setPassword(userRequest.getPassword());
         user.setCpf(userRequest.getCpf());
         user.setSex(userRequest.getSex());
+        user.setDeleted(false);
+        user.setCreatedIn(new Date());
         return user;
     }
 

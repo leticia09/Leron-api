@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -18,7 +20,9 @@ public class Account extends GenericEntities {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String accountNumber;
-    private String owner;
+    private Long memberId;
+    private BigDecimal value;
+    private String currency;
 
     @ManyToOne
     @JsonIgnore
@@ -27,5 +31,7 @@ public class Account extends GenericEntities {
     private Bank bank;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
+    @Where(clause = "deleted = false")
     private List<Card> cards;
+
 }
