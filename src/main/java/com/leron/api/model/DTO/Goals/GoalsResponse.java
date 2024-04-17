@@ -23,4 +23,8 @@ public class GoalsResponse {
     private BigDecimal partValue;
     private BigDecimal fees;
     private BigDecimal contributionTotal;
+    private String status;
+    private BigDecimal contributionValuePaid;
+    private Integer contributionNumber;
+    private String bankName;
 }

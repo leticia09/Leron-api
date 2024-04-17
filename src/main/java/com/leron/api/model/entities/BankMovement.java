@@ -29,6 +29,7 @@ public class BankMovement extends GenericEntities {
     private String obs;
     private Long entranceId;
     private Long expenseId;
+    private Long goalId;
     private String referencePeriod;
     private String currency;
     private Long financialEntityId;

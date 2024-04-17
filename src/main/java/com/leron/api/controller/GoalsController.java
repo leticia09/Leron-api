@@ -1,5 +1,6 @@
 package com.leron.api.controller;
 
+import com.leron.api.model.DTO.Goals.GoalsManagementResponse;
 import com.leron.api.model.DTO.Goals.GoalsRequest;
 import com.leron.api.model.DTO.Goals.GoalsResponse;
 import com.leron.api.responses.ApplicationBusinessException;
@@ -30,5 +31,13 @@ public class GoalsController {
         }
         return response;
 
+    }
+
+    @GetMapping("/{userAuthId}/{month}/{year}/{owners}")
+    public DataResponse<GoalsManagementResponse> getManagementData(@PathVariable(value = "userAuthId", required = true) Long userAuthId,
+                                                                   @PathVariable(value = "month", required = true) int month,
+                                                                   @PathVariable(value = "year", required = true) int year,
+                                                                   @PathVariable(value = "owners", required = true) List<Long> owners) {
+        return service.getManagementData(userAuthId, month, year, owners);
     }
 }

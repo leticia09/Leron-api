@@ -1,7 +1,6 @@
 package com.leron.api.utils;
 
 import com.leron.api.model.entities.*;
-import com.leron.api.repository.AccountRepository;
 import com.leron.api.repository.CardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Component
@@ -95,13 +93,13 @@ public class GetStatusPayment {
             if (entrance.getFrequency().equalsIgnoreCase("Mensal")) {
                 if (entrance.getInitialDate().after(date)) {
                     return "Não Iniciada";
-                } else if(month == currentMonth && year == currentYear) {
+                } else if (month == currentMonth && year == currentYear) {
                     if (entrance.getDayReceive() <= currentDay) {
                         return "Pendente";
                     } else {
                         return "Aguardando";
                     }
-                } else if(month > currentMonth && year >= currentYear) {
+                } else if (month > currentMonth && year >= currentYear) {
                     return "Aguardando";
                 } else {
                     return "Pendente";
@@ -292,6 +290,46 @@ public class GetStatusPayment {
             }
 
 
+        }
+        return "";
+    }
+
+    public static String getStatus(Goals goal, List<BankMovement> movements, int month, int year) {
+        LocalDate currentDate = LocalDate.now();
+        int currentMonth = currentDate.getMonthValue();
+        int currentYear = currentDate.getYear();
+
+        LocalDate initialDate = goal.getOpenDate().toLocalDateTime().toLocalDate();
+        int initialDay = initialDate.getDayOfMonth();
+
+        LocalDate endDate = initialDate.plusMonths(goal.getValidityInMonths());
+        Timestamp validity = FormatDate.createTimestamp(endDate.getYear(), endDate.getMonthValue(), endDate.getDayOfMonth());
+
+        Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
+
+        if (!movements.isEmpty()) {
+            for (BankMovement bankMovement : movements) {
+                String[] part = bankMovement.getReferencePeriod().split("/");
+                int movementMonth = Integer.parseInt(part[0]);
+                int movementYear = Integer.parseInt(part[1]);
+
+                if (goal.getOpenDate().after(date) || date.after(validity)) {
+                    return "Não Iniciada";
+                } else if (bankMovement.getType().equalsIgnoreCase("Aporte") && movementMonth == month && movementYear == year) {
+                    return "Confirmado";
+                } else {
+                    return "Aguardando";
+                }
+
+            }
+        } else {
+            if (goal.getOpenDate().after(date) || date.after(validity)) {
+                return "Não Iniciada";
+            } else if (month >= currentMonth && year >= currentYear) {
+                return "Aguardando";
+            } else {
+                return "Pendente";
+            }
         }
         return "";
     }
