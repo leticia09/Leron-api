@@ -52,6 +52,7 @@ public class DashboardService {
         GraphicResponse graphicResponseEntranceExpenseMonthTotal = graphicEntranceXExpenseData(authId, year, owners, month, month);
         GraphicResponse graphicResponseEntranceExpense = graphicEntranceXExpenseData(authId, year, owners, month, 12);
         GraphicResponse graphicPatrimonyResponse = graphicPatrimony(authId);
+        GraphicResponse graphicPointsResponse = graphicPointsData(authId);
 
         BigDecimal totalEntrance = graphicResponseEntranceExpense.getDataSet().get(0).getData()
                 .stream()
@@ -65,15 +66,19 @@ public class DashboardService {
                 .stream()
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        BigDecimal totalPoints = graphicPointsResponse.getDataSet().get(0).getData()
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         managementResponse.setGraphicEntranceXExpenseData(graphicResponseEntranceExpense);
-        managementResponse.setGraphicPointsData(graphicPointsData(authId));
+        managementResponse.setGraphicPointsData(graphicPointsResponse);
         managementResponse.setGraphicPatrimony(graphicPatrimonyResponse);
         managementResponse.setGraphicGoal(graphicGoal(authId, year, owners));
 
         managementResponse.setTotalEntrance(totalEntrance);
         managementResponse.setTotalExpense(totalExpense);
         managementResponse.setTotalLeft(totalEntrance.subtract(totalExpense));
-        managementResponse.setTotalPoints(new BigDecimal(BigInteger.ZERO));
+        managementResponse.setTotalPoints(totalPoints);
         managementResponse.setTotalPatrimony(totalPatrimony);
 
         response.setData(managementResponse);

@@ -4,7 +4,9 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;@Component
+import java.util.ArrayList;
+
+@Component
 @Data
 public class DataSet {
     private ArrayList<BigDecimal> data;

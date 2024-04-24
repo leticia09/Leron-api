@@ -16,7 +16,6 @@ import com.leron.api.repository.ForecastDateRepository;
 import com.leron.api.repository.ForecastRepository;
 import com.leron.api.repository.MacroGroupRepository;
 import com.leron.api.responses.ApplicationBusinessException;
-import com.leron.api.responses.DataListResponse;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.entrance.EntranceService;
 import com.leron.api.service.expense.ExpenseService;
@@ -27,11 +26,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.leron.api.utils.FormatDate.getMonth;
@@ -102,7 +99,7 @@ public class ForecastService {
 
     public List<ForecastDate> listForecastAllYear(Long userAuthId, List<Long> owners, Long year) {
         List<Long> forecastId = forecastRepository.findAllByUserAuthIdAndOwnersId(userAuthId, owners);
-        if(!forecastId.isEmpty()) {
+        if (!forecastId.isEmpty()) {
             return forecastDateRepository.findAllByUserAuthIdAndMonthAndYearAndOwnersId(forecastId, year);
         } else {
             return new ArrayList<>();
@@ -187,6 +184,7 @@ public class ForecastService {
         return dataSet;
     }
 
+
     public DataSet populateExpenses(Long userAuthId, int year, List<Long> owners, boolean considerForecast, int maxMonth) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
@@ -232,7 +230,7 @@ public class ForecastService {
                     .orElse(BigDecimal.ZERO);
 
 
-            if(considerForecast) {
+            if (considerForecast) {
                 List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
                 List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
                 BigDecimal totalForecast = getTotalForecast(i, currentMonth, forecastPrevList);
