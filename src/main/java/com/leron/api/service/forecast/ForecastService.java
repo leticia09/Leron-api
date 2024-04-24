@@ -115,8 +115,20 @@ public class ForecastService {
         ArrayList<String> labels = populateMonths();
         ArrayList<DataSet> dataSets = new ArrayList<>();
 
-        dataSets.add(populateEntrances(userAuthId, year.intValue(), owners));
-        dataSets.add(populateExpenses(userAuthId, year.intValue(), owners));
+        DataSet entranceData = populateEntrances(userAuthId, year.intValue(), owners, 12);
+        DataSet expenseData = populateExpenses(userAuthId, year.intValue(), owners, true, 12);
+
+        BigDecimal totalEntrance = entranceData.getData()
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalExpense = expenseData.getData()
+                .stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+
+        dataSets.add(entranceData);
+        dataSets.add(expenseData);
         dataSets.add(populateLeft(dataSets.get(0), dataSets.get(1)));
 
         DataSet percent = populateLeftPercent(dataSets.get(0), dataSets.get(1));
@@ -127,7 +139,7 @@ public class ForecastService {
         response.setTotal2(getTotal(dataSets.get(1).getData(), month));
         response.setTotal3(getTotal(dataSets.get(2).getData(), month));
         response.setTotal4(getTotal(percent.getData(), month));
-        response.setTotal5(getTotalLeft(dataSets.get(2).getData()));
+        response.setTotal5(totalEntrance.subtract(totalExpense));
 
         return response;
     }
@@ -140,11 +152,11 @@ public class ForecastService {
         return ForecastMapper.entityToForecastResponse(forecastDates);
     }
 
-    public DataSet populateEntrances(Long userAuthId, int year, List<Long> owners) {
+    public DataSet populateEntrances(Long userAuthId, int year, List<Long> owners, int maxMonth) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
 
-        for (int i = 1; i <= 12; i++) {
+        for (int i = 1; i <= maxMonth; i++) {
             List<EntranceResponse> entrances = entranceService.list(userAuthId, i, year, owners);
             List<EntranceResponse> entranceFilteredReceived = entrances.stream().filter(entrance ->
                     entrance.getStatus().equalsIgnoreCase("confirmado")
@@ -175,18 +187,15 @@ public class ForecastService {
         return dataSet;
     }
 
-    public DataSet populateExpenses(Long userAuthId, int year, List<Long> owners) {
+    public DataSet populateExpenses(Long userAuthId, int year, List<Long> owners, boolean considerForecast, int maxMonth) {
         DataSet dataSet = new DataSet();
         ArrayList<BigDecimal> data = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
 
         int currentMonth = calendar.get(Calendar.MONTH) + 1;
 
-        for (int i = 1; i <= 12; i++) {
-            List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
+        for (int i = 1; i <= maxMonth; i++) {
             List<ExpenseResponse> expenses = expenseService.list(userAuthId, i, year, owners);
-            List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
-            BigDecimal totalForecast = getTotalForecast(i, currentMonth, forecastPrevList);
 
             List<ExpenseResponse> expenseFilteredPaid = expenses.stream().filter(expense ->
                     expense.getStatus().equalsIgnoreCase("confirmado")
@@ -222,7 +231,16 @@ public class ForecastService {
                     .reduce(BigDecimal::add)
                     .orElse(BigDecimal.ZERO);
 
-            data.add(totalPaid.add(totalSplit.add(totalNotSplitNotPaid).add(totalForecast)));
+
+            if(considerForecast) {
+                List<Forecast> forecasts = listForecast(userAuthId, i, (long) year, owners);
+                List<ForecastPrevResponse> forecastPrevList = forecastPrev(forecasts, expenses);
+                BigDecimal totalForecast = getTotalForecast(i, currentMonth, forecastPrevList);
+                data.add(totalPaid.add(totalSplit.add(totalNotSplitNotPaid).add(totalForecast)));
+            } else {
+                data.add(totalPaid.add(totalSplit.add(totalNotSplitNotPaid)));
+            }
+
         }
 
         dataSet.setLabel("Despesa");

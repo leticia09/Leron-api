@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +57,11 @@ public class MovementBankService {
 
     public DataResponse<GraphicResponse> getData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
+        response.setData(getGraphicWithMember(authId));
+        return response;
+    }
 
+    public GraphicResponse getGraphicWithMember(Long authId) {
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
         List<Bank> banks = bankRepository.findByUserAuthId(authId);
         List<FinancialEntity> financialEntities = financialEntityRepository.findAllByUserAuthIdAndDeletedFalse(authId);
@@ -224,9 +227,121 @@ public class MovementBankService {
         graphicResponse.setTotal4(totalDollar);
         graphicResponse.setTooltipLabel(tooltips);
 
-        response.setData(graphicResponse);
+        return graphicResponse;
+    }
 
-        return response;
+    public GraphicResponse getGraphicWithoutMember(Long authId) {
+        List<Bank> banks = bankRepository.findByUserAuthId(authId);
+        List<FinancialEntity> financialEntities = financialEntityRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+        List<Money> moneyList = moneyRepository.findAllByUserAuthIdAndDeletedFalse(authId);
+
+        GraphicResponse graphicResponse = new GraphicResponse();
+        ArrayList<DataSet> dataSets = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+        DataSet dataSet = new DataSet();
+        ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+
+        for (Bank bank : banks) {
+            ArrayList<String> tooltipLabel = new ArrayList<>();
+            Tooltip tooltip = new Tooltip();
+            tooltipLabel.add("");
+            BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+            String currency = "";
+            for (Account account : bank.getAccounts()) {
+                int labelIndex = labels.indexOf(bank.getName());
+                tooltip.setName(bank.getName());
+                tooltipLabel.add(account.getAccountNumber() + ": " + account.getCurrency() + " " + account.getValue());
+
+                totalAccount = totalAccount.add(account.getValue());
+                currency = account.getCurrency();
+                if (labelIndex == -1) {
+                    labels.add(bank.getName());
+                    data.add(account.getValue());
+                } else {
+                    data.set(labelIndex, data.get(labelIndex).add(account.getValue()));
+                }
+
+            }
+            if (!Objects.equals(currency, "")) {
+                tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                tooltip.setTooltipLabel(tooltipLabel);
+
+            }
+
+
+        }
+
+        if (!financialEntities.isEmpty()) {
+            for (FinancialEntity financialEntity : financialEntities) {
+                ArrayList<String> tooltipLabel = new ArrayList<>();
+                Tooltip tooltip = new Tooltip();
+                tooltipLabel.add("");
+                BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                String currency = "";
+                for (CardFinancialEntity card : financialEntity.getCardFinancialEntityList()) {
+
+                    int labelIndex = labels.indexOf(financialEntity.getName());
+                    tooltip.setName(financialEntity.getName());
+                    tooltipLabel.add(card.getCardName() + ": " + card.getCurrency() + " " + card.getBalance());
+                    totalAccount = totalAccount.add(card.getBalance());
+                    currency = card.getCurrency();
+                    if (labelIndex == -1) {
+                        labels.add(financialEntity.getName());
+                        data.add(card.getBalance());
+                    } else {
+                        data.set(labelIndex, data.get(labelIndex).add(card.getBalance()));
+                    }
+
+                }
+
+                if (!Objects.equals(currency, "")) {
+                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                    tooltip.setTooltipLabel(tooltipLabel);
+                }
+
+            }
+        }
+
+        if (!moneyList.isEmpty()) {
+            for (Money money : moneyList) {
+                ArrayList<String> tooltipLabel = new ArrayList<>();
+                Tooltip tooltip = new Tooltip();
+                tooltipLabel.add("");
+                BigDecimal totalAccount = new BigDecimal(BigInteger.ZERO);
+                String currency = "";
+
+                int labelIndex = labels.indexOf(money.getCurrency());
+                tooltip.setName(money.getCurrency());
+                tooltipLabel.add(money.getCurrency() + " " + money.getValue());
+                totalAccount = totalAccount.add(money.getValue());
+                currency = money.getCurrency();
+                if (labelIndex == -1) {
+                    labels.add(money.getCurrency());
+                    data.add(money.getValue());
+                } else {
+                    data.set(labelIndex, data.get(labelIndex).add(money.getValue()));
+                }
+
+                if (!Objects.equals(currency, "")) {
+                    tooltipLabel.add("Total: " + currency + " " + totalAccount);
+                    tooltip.setTooltipLabel(tooltipLabel);
+                }
+
+            }
+        }
+
+        if (!data.isEmpty()) {
+            dataSet.setBackgroundColor("#a8bf3d");
+            dataSet.setBorderColor("#a8bf3d");
+            dataSet.setData(data);
+            dataSets.add(dataSet);
+        }
+
+
+        graphicResponse.setDataSet(dataSets);
+        graphicResponse.setLabels(labels);
+
+        return graphicResponse;
     }
 
     public DataResponse<BankMovementResponse> createReceive(List<ReceiveRequest> request, Long userAuthId) throws ApplicationBusinessException {
@@ -436,12 +551,12 @@ public class MovementBankService {
     }
 
     private static BigDecimal getMoney(String money, Money currentMoney) {
-            String salaryText = money;
-            salaryText = salaryText.replaceAll("[^\\d.,]", "");
-            salaryText = salaryText.replaceAll("\\.", "");
-            salaryText = salaryText.replace(",", ".");
-            BigDecimal salary = new BigDecimal(salaryText);
-            BigDecimal oldValue = currentMoney.getValue();
+        String salaryText = money;
+        salaryText = salaryText.replaceAll("[^\\d.,]", "");
+        salaryText = salaryText.replaceAll("\\.", "");
+        salaryText = salaryText.replace(",", ".");
+        BigDecimal salary = new BigDecimal(salaryText);
+        BigDecimal oldValue = currentMoney.getValue();
 
         return salary.add(oldValue);
     }

@@ -4,7 +4,8 @@ import com.leron.api.mapper.score.PointsMapper;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.DTO.points.*;
-import com.leron.api.model.entities.*;
+import com.leron.api.model.entities.Member;
+import com.leron.api.model.entities.Score;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.repository.PointsRepository;
 import com.leron.api.repository.TransferRepository;
@@ -154,6 +155,12 @@ public class PointsService {
 
     public DataResponse<GraphicResponse> getProgramsData(Long authId) {
         DataResponse<GraphicResponse> response = new DataResponse<>();
+        response.setData(getGraphicWithMember(authId));
+        return response;
+    }
+
+    public GraphicResponse getGraphicWithMember(Long authId) {
+
         List<Score> programData = pointsRepository.findByUserAuthId(authId);
         List<Member> members = memberRepository.findAllByUserAuthIdAndDeletedFalseAndStatusOrderByNameAsc(authId, "ACTIVE");
 
@@ -209,9 +216,37 @@ public class PointsService {
         graphicResponse.setTotal3(totalProgramActive);
         graphicResponse.setTotal4(totalProgramInactive);
 
-        response.setData(graphicResponse);
+        return graphicResponse;
+    }
 
-        return response;
+    public GraphicResponse getGraphicWithoutMember(Long authId) {
+        List<Score> programData = pointsRepository.findByUserAuthId(authId);
+
+        GraphicResponse graphicResponse = new GraphicResponse();
+        ArrayList<DataSet> dataSets = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+        DataSet dataSet = new DataSet();
+        ArrayList<BigDecimal> data = new ArrayList<>(Collections.nCopies(labels.size(), BigDecimal.ZERO));
+
+        for (Score score : programData) {
+            int labelIndex = labels.indexOf(score.getProgram());
+            if (labelIndex == -1) {
+                labels.add(score.getProgram());
+                data.add(score.getValue());
+            } else {
+                data.set(labelIndex, data.get(labelIndex).add(score.getValue()));
+            }
+        }
+
+        dataSet.setBackgroundColor("#098fd7");
+        dataSet.setBorderColor("#098fd7");
+        dataSet.setData(data);
+        dataSets.add(dataSet);
+
+        graphicResponse.setDataSet(dataSets);
+        graphicResponse.setLabels(labels);
+
+        return graphicResponse;
     }
 
 
