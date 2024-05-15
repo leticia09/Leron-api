@@ -162,7 +162,6 @@ public class GetStatusPayment {
         Timestamp date = FormatDate.createTimestamp(year, month, initialDay);
 
         if (!movements.isEmpty()) {
-
             for (BankMovement bankMovement : movements) {
                 String[] part = bankMovement.getReferencePeriod().split("/");
                 int movementMonth = Integer.parseInt(part[0]);
@@ -179,7 +178,7 @@ public class GetStatusPayment {
                             return "Aguardando";
                         }
                     } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
-                        if (expense.getInitialDate().after(date) || expense.getMonthPayment() >= month) {
+                        if (expense.getInitialDate().after(date) || month < expense.getMonthPayment()) {
                             return "Não Iniciada";
                         } else if (bankMovement.getType().equalsIgnoreCase("Saída") && movementMonth == month && movementYear == year) {
                             return "Confirmado";
@@ -207,7 +206,6 @@ public class GetStatusPayment {
                     }
                 }
             }
-
         } else {
             if (expense.getHasSplitExpense() && !expense.getPaymentForm().equalsIgnoreCase("Crédito")) {
                 int part = month - expense.getInitialDate().toLocalDateTime().toLocalDate().getMonthValue() + 1;
@@ -224,9 +222,9 @@ public class GetStatusPayment {
                         }
                     }
                 } else if (expense.getFrequency().equalsIgnoreCase("Anual")) {
-                    if (expense.getInitialDate().after(date) || expense.getMonthPayment() != month) {
+                    if (expense.getInitialDate().after(date) || month < expense.getMonthPayment()) {
                         return "Não Iniciada";
-                    } else if (expense.getMonthPayment() == month) {
+                    } else if (expense.getMonthPayment() == currentMonth) {
                         if (expense.getDayPayment() < currentDay && month == currentMonth && year == currentYear) {
                             return "Pendente";
                         } else {
@@ -266,7 +264,11 @@ public class GetStatusPayment {
                             if (buyDate.isBefore(currentDateWithParameter)) {
                                 int monthFinished = getMonthFinished(expense, buyDate, card);
                                 if (month <= monthFinished) {
-                                    if (card.getDueDate() < currentDay && month == currentMonth && year == currentYear) {
+                                    if(month < currentMonth && year == currentYear) {
+                                        return "Pendente";
+                                    } else if (card.getDueDate() > currentDay && month == currentMonth && year == currentYear) {
+                                        return "Aguardando";
+                                    }else if (card.getDueDate() < currentDay && month == currentMonth && year == currentYear) {
                                         return "Pendente";
                                     } else if (month >= currentMonth && year >= currentYear) {
                                         return "Aguardando";

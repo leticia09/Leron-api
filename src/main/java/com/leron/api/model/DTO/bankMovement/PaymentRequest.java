@@ -1,4 +1,4 @@
-package com.leron.api.model.DTO.BankMovement;
+package com.leron.api.model.DTO.bankMovement;
 
 import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import lombok.Data;

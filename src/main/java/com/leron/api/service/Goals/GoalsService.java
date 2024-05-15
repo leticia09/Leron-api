@@ -1,9 +1,9 @@
 package com.leron.api.service.Goals;
 
 import com.leron.api.mapper.Goals.GoalsMapper;
-import com.leron.api.model.DTO.Goals.GoalsManagementResponse;
-import com.leron.api.model.DTO.Goals.GoalsRequest;
-import com.leron.api.model.DTO.Goals.GoalsResponse;
+import com.leron.api.model.DTO.goals.GoalsManagementResponse;
+import com.leron.api.model.DTO.goals.GoalsRequest;
+import com.leron.api.model.DTO.goals.GoalsResponse;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.repository.*;

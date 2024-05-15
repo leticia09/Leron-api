@@ -1,4 +1,4 @@
-package com.leron.api.model.DTO.user;
+package com.leron.api.model.DTO.member;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class MemberRequest {
+public class MemberResponse {
+    private Long id;
     private String name;
+    private Long status;
     private Long userAuthId;
-    private Long index;
     private String color;
 }

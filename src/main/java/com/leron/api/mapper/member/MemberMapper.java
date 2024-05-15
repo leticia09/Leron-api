@@ -1,7 +1,7 @@
 package com.leron.api.mapper.member;
 
-import com.leron.api.model.DTO.user.MemberRequest;
-import com.leron.api.model.DTO.user.MemberResponse;
+import com.leron.api.model.DTO.member.MemberRequest;
+import com.leron.api.model.DTO.member.MemberResponse;
 import com.leron.api.model.entities.Member;
 import com.leron.api.responses.DataListResponse;
 import com.leron.api.utils.FormatName;

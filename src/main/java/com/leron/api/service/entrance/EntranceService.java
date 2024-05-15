@@ -84,7 +84,6 @@ public class EntranceService {
     public GraphicResponse getData(Long authId, int month, int year, List<Long> owners) {
         List<Member> members = memberRepository.findMemberByIdsAndUserAuthId(authId, owners);
         List<EntranceResponse> entrances = list(authId, month, year, owners);
-        List<BankMovement> bankMovements = bankMovementRepository.findAllByUserAuthIdAndDeletedFalse(authId);
 
         BigDecimal receiveTotal = BigDecimal.ZERO;
         BigDecimal receiveOk = BigDecimal.ZERO;

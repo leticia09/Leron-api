@@ -1,6 +1,6 @@
 package com.leron.api.validator.Goal;
 
-import com.leron.api.model.DTO.Goals.GoalsRequest;
+import com.leron.api.model.DTO.goals.GoalsRequest;
 import com.leron.api.model.entities.Goals;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;

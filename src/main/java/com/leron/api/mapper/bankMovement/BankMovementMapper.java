@@ -1,9 +1,9 @@
 package com.leron.api.mapper.bankMovement;
 
-import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
-import com.leron.api.model.DTO.BankMovement.PaymentRequest;
-import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
-import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.bankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.bankMovement.PaymentRequest;
+import com.leron.api.model.DTO.bankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.bankMovement.TransferBankRequest;
 import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.responses.DataListResponse;
@@ -11,8 +11,6 @@ import com.leron.api.utils.FormatDate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.sql.Timestamp;
 import java.util.*;
 
 @Component

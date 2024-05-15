@@ -1,6 +1,5 @@
-package com.leron.api.model.DTO.BankMovement;
+package com.leron.api.model.DTO.bankMovement;
 
-import com.leron.api.model.GenericEntities;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 

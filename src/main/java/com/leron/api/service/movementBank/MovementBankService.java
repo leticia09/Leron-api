@@ -1,10 +1,10 @@
 package com.leron.api.service.movementBank;
 
 import com.leron.api.mapper.bankMovement.BankMovementMapper;
-import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
-import com.leron.api.model.DTO.BankMovement.PaymentRequest;
-import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
-import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.bankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.bankMovement.PaymentRequest;
+import com.leron.api.model.DTO.bankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.bankMovement.TransferBankRequest;
 import com.leron.api.model.DTO.expense.ExpensePeriodResponse;
 import com.leron.api.model.DTO.graphic.DataSet;
 import com.leron.api.model.DTO.graphic.GraphicResponse;

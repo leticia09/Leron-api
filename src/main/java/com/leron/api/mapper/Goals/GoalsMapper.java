@@ -1,7 +1,7 @@
 package com.leron.api.mapper.Goals;
 
-import com.leron.api.model.DTO.Goals.GoalsRequest;
-import com.leron.api.model.DTO.Goals.GoalsResponse;
+import com.leron.api.model.DTO.goals.GoalsRequest;
+import com.leron.api.model.DTO.goals.GoalsResponse;
 import com.leron.api.model.entities.*;
 import com.leron.api.utils.FormatDate;
 import com.leron.api.utils.GetStatusPayment;

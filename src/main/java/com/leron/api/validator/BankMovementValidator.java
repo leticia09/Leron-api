@@ -1,11 +1,10 @@
 package com.leron.api.validator;
 
-import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
-import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.bankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.bankMovement.TransferBankRequest;
 import com.leron.api.model.entities.BankMovement;
 import com.leron.api.model.entities.Entrance;
 import com.leron.api.responses.ApplicationBusinessException;
-import com.leron.api.utils.GetStatusPayment;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;

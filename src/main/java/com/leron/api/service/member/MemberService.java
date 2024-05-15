@@ -1,8 +1,8 @@
 package com.leron.api.service.member;
 
 import com.leron.api.mapper.member.MemberMapper;
-import com.leron.api.model.DTO.user.MemberRequest;
-import com.leron.api.model.DTO.user.MemberResponse;
+import com.leron.api.model.DTO.member.MemberRequest;
+import com.leron.api.model.DTO.member.MemberResponse;
 import com.leron.api.model.entities.Member;
 import com.leron.api.repository.MemberRepository;
 import com.leron.api.responses.ApplicationBusinessException;

@@ -61,7 +61,6 @@ public class ExpenseMapper {
         expense.setOwnerId(res.getOwnerId());
         expense.setPaymentForm(res.getPaymentForm());
         expense.setHasFixed(res.getHasFixed());
-        expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
         expense.setUserAuthId(res.getUserAuthId());
         expense.setValue(new BigDecimal(res.getValue().replace(",", ".")));
         expense.setCreatedIn(new Date());
@@ -69,6 +68,9 @@ public class ExpenseMapper {
         expense.setCurrency(account.getCurrency());
         expense.setHasSplitExpense(res.getHasSplitExpense());
         expense.setStatus("Quitado");
+        if (Objects.nonNull(res.getDateBuy())) {
+            expense.setDateBuy(FormatDate.formatDate((res.getDateBuy())));
+        }
         if (Objects.nonNull(res.getFinalCard())) {
             expense.setFinalCard(res.getFinalCard());
         }

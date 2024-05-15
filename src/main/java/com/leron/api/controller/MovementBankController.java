@@ -1,9 +1,9 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.BankMovement.BankMovementResponse;
-import com.leron.api.model.DTO.BankMovement.PaymentRequest;
-import com.leron.api.model.DTO.BankMovement.ReceiveRequest;
-import com.leron.api.model.DTO.BankMovement.TransferBankRequest;
+import com.leron.api.model.DTO.bankMovement.BankMovementResponse;
+import com.leron.api.model.DTO.bankMovement.PaymentRequest;
+import com.leron.api.model.DTO.bankMovement.ReceiveRequest;
+import com.leron.api.model.DTO.bankMovement.TransferBankRequest;
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataListResponse;

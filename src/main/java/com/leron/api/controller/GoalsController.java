@@ -1,8 +1,8 @@
 package com.leron.api.controller;
 
-import com.leron.api.model.DTO.Goals.GoalsManagementResponse;
-import com.leron.api.model.DTO.Goals.GoalsRequest;
-import com.leron.api.model.DTO.Goals.GoalsResponse;
+import com.leron.api.model.DTO.goals.GoalsManagementResponse;
+import com.leron.api.model.DTO.goals.GoalsRequest;
+import com.leron.api.model.DTO.goals.GoalsResponse;
 import com.leron.api.responses.ApplicationBusinessException;
 import com.leron.api.responses.DataResponse;
 import com.leron.api.service.Goals.GoalsService;

@@ -1,4 +1,4 @@
-package com.leron.api.model.DTO.Goals;
+package com.leron.api.model.DTO.goals;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;

@@ -1,13 +1,11 @@
 package com.leron.api.validator.user;
 
-import com.leron.api.model.DTO.user.MemberRequest;
-import com.leron.api.model.DTO.user.MemberResponse;
+import com.leron.api.model.DTO.member.MemberRequest;
+import com.leron.api.model.DTO.member.MemberResponse;
 import com.leron.api.model.entities.Member;
 import com.leron.api.responses.ApplicationBusinessException;
 import org.springframework.stereotype.Component;
 
-import javax.swing.plaf.synth.SynthTextAreaUI;
-import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;

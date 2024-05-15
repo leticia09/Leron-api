@@ -138,10 +138,11 @@ public class EntranceMapper {
             List<BankMovement> bankMovementList = bankMovements.stream()
                     .filter(bm -> Objects.equals(bm.getEntranceId(), entrance.getId()) && bm.getReferencePeriod().equalsIgnoreCase(period)).collect(Collectors.toList());
 
+            BigDecimal valueTotal = bankMovementList.stream()
+                    .map(BankMovement::getValue)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             String status = GetStatusPayment.getStatus(entrance, bankMovementList, month, year);
-
-            final BigDecimal[] valueReceived = {BigDecimal.ZERO};
 
             if (status.equalsIgnoreCase("Não Iniciada")) {
                 entranceResponse.setStatus("Não Iniciada");
@@ -156,10 +157,7 @@ public class EntranceMapper {
             }
             if (status.equalsIgnoreCase("Confirmado")) {
                 entranceResponse.setStatus("Confirmado");
-
-                Optional<BankMovement> bankMovement = bankMovementList.stream().filter(bank -> bank.getReferencePeriod().equalsIgnoreCase(period) && bank.getEntranceId().equals(entrance.getId())).findFirst();
-                bankMovement.ifPresent(movement -> valueReceived[0] = valueReceived[0].add(movement.getValue()));
-                entranceResponse.setValueReceived(valueReceived[0]);
+                entranceResponse.setValueReceived(valueTotal);
             }
 
             if (Objects.nonNull(entrance.getDayReceive())) {

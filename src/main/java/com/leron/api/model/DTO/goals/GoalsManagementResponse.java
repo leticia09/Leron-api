@@ -1,4 +1,4 @@
-package com.leron.api.model.DTO.Goals;
+package com.leron.api.model.DTO.goals;
 
 import com.leron.api.model.DTO.graphic.GraphicResponse;
 import lombok.Data;
